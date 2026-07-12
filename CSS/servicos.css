@@ -1,0 +1,968 @@
+/* =========================================================
+   SERVIÇOS LOCAIS
+   Acento: roxo/índigo (#5c35a8) sobre base branca
+   ========================================================= */
+
+:root {
+    --serv-purple      : #5c35a8;
+    --serv-purple-dark : #3d2277;
+    --serv-purple-mid  : #7c4dbd;
+    --serv-purple-light: #b39ddb;
+    --serv-purple-pale : #ede7f6;
+    --serv-indigo      : #3949ab;
+    --android-nav-active: #ff8a00;
+}
+
+/* Navbar inferior mobile com destaque circular do item ativo */
+.android-bottom-nav {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    width: min(360px, calc(100% - 24px));
+    height: 76px;
+    background: #000;
+    border-radius: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 3500;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+}
+
+.android-nav-item {
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.android-nav-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .32s cubic-bezier(.2,.8,.2,1),
+                border-color .25s ease,
+                color .25s ease,
+                background .25s ease,
+                width .28s ease,
+                height .28s ease;
+}
+
+.android-nav-bubble i {
+    font-size: 20px;
+    color: #fff;
+    transition: color .22s ease;
+}
+
+.android-nav-item.active .android-nav-bubble {
+    width: 62px;
+    height: 62px;
+    border: 2px solid #fff;
+    background: #000;
+    transform: translateY(-24px);
+}
+
+.android-nav-item.active .android-nav-bubble i {
+    color: var(--android-nav-active);
+}
+
+body {
+    padding-bottom: 110px;
+}
+
+/*  Link "Serviços" no nav  */
+.nav-servicos {
+    color: var(--serv-purple) !important;
+    font-weight: 700 !important;
+}
+.nav-servicos:hover,
+.nav-servicos.active {
+    background: var(--serv-purple-pale) !important;
+    color: var(--serv-purple-dark) !important;
+}
+
+/*  Seção geral  */
+.servicos-section {
+    background: #f9f7fd;
+    border-top: 4px solid var(--serv-purple-mid);
+}
+
+.servicos-title {
+    color: var(--serv-purple-dark) !important;
+}
+.servicos-title::after {
+    background: var(--serv-purple) !important;
+}
+
+.servicos-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--serv-purple-pale);
+    color: var(--serv-purple-dark);
+    font-size: .8rem;
+    font-weight: 700;
+    padding: 6px 18px;
+    border-radius: 50px;
+    border: 1.5px solid var(--serv-purple-light);
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    margin-bottom: 14px;
+}
+
+/*  Banner cadastro  */
+.servicos-banner {
+    background: linear-gradient(135deg, var(--serv-purple-dark) 0%, var(--serv-purple) 55%, var(--serv-purple-mid) 100%);
+    border-radius: var(--radius);
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 44px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+.servicos-banner::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,.07);
+    border-radius: 50%;
+    right: -80px;
+    top: -100px;
+}
+
+.servicos-banner-text h3 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.servicos-banner-text p { font-size: .88rem; opacity: .9; }
+
+.btn-servicos-hero {
+    background: white;
+    color: var(--serv-purple-dark);
+    border: 2px solid white;
+    flex-shrink: 0;
+    font-weight: 700;
+}
+.btn-servicos-hero:hover {
+    background: var(--serv-purple-pale);
+    border-color: var(--serv-purple-pale);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,.2);
+}
+
+/*  Filtros (acento roxo)  */
+.filter-servicos.active,
+.filter-servicos:hover {
+    background: var(--serv-purple) !important;
+    border-color: var(--serv-purple) !important;
+    color: white !important;
+}
+
+/*  Grid de profissionais  */
+.servicos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 24px;
+}
+
+/*  Card do profissional  */
+.servico-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1.5px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: all var(--transition);
+    position: relative;
+}
+.servico-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--serv-purple-light);
+}
+
+/*  Galeria de fotos do prestador  */
+.servico-galeria {
+    position: relative;
+    width: 100%;
+    height: 195px;
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+    background: #c9d4df;
+    flex-shrink: 0;
+}
+
+.galeria-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+.galeria-slide {
+    min-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    pointer-events: none;
+}
+
+.galeria-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,.45);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .25s, background .2s;
+    z-index: 2;
+    padding: 0;
+}
+.servico-galeria:hover .galeria-btn { opacity: 1; }
+.galeria-btn:hover { background: rgba(0,0,0,.7); }
+.galeria-prev { left: 8px; }
+.galeria-next { right: 8px; }
+
+.galeria-dots {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+}
+.galeria-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.55);
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+    border: none;
+    padding: 0;
+}
+.galeria-dot.active {
+    background: #fff;
+    transform: scale(1.3);
+}
+
+/* Faixa colorida de especialidade — fica na base da galeria */
+.galeria-stripe {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    z-index: 3;
+}
+
+/* Faixa superior colorida por especialidade (fallback sem galeria) */
+.servico-card-header {
+    height: 7px;
+    background: var(--serv-purple);
+}
+
+/* Corpo */
+.servico-card-body {
+    padding: 20px 18px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Avatar + nome + estrelas */
+.servico-perfil {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+.servico-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--serv-purple);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 3px solid var(--serv-purple-pale);
+}
+.servico-perfil-info { flex: 1; min-width: 0; }
+.servico-nome {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--gray-900);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.servico-ocupacao {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--serv-purple);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 5px;
+}
+.servico-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.servico-rating .stars { color: #ffc107; font-size: .76rem; }
+.servico-rating .count { font-size: .73rem; color: var(--gray-500); }
+
+/* Badge "Verificado" */
+.servico-verificado {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: .66rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 50px;
+    border: 1px solid #a5d6a7;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    align-self: flex-start;
+    margin-bottom: 10px;
+}
+
+/* Descrição */
+.servico-desc {
+    font-size: .82rem;
+    color: var(--gray-700);
+    line-height: 1.55;
+    margin-bottom: 12px;
+}
+
+/* Tags de especialidades */
+.servico-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+.servico-tag {
+    background: var(--serv-purple-pale);
+    color: var(--serv-purple-dark);
+    font-size: .7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 50px;
+    border: 1px solid var(--serv-purple-light);
+}
+
+/* Infos de localização + disponibilidade */
+.servico-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 14px;
+    background: var(--gray-50);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    border: 1px solid var(--gray-200);
+}
+.servico-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    color: var(--gray-700);
+}
+.servico-meta-item i {
+    color: var(--serv-purple);
+    min-width: 13px;
+    font-size: .82rem;
+}
+.servico-meta-item strong { color: var(--gray-900); }
+
+/* Preço/hora */
+.servico-preco {
+    margin-top: auto;
+    margin-bottom: 14px;
+}
+.servico-preco-label {
+    font-size: .72rem;
+    color: var(--gray-500);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.servico-preco-valor {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--serv-purple-dark);
+    line-height: 1.2;
+}
+.servico-preco-valor span {
+    font-size: .78rem;
+    font-weight: 500;
+    color: var(--gray-500);
+}
+
+/* Botões de contato */
+.servico-actions {
+    display: flex;
+    gap: 8px;
+}
+.btn-servico-contato {
+    flex: 1;
+    background: var(--serv-purple);
+    color: white;
+    border: none;
+    padding: 11px 10px;
+    border-radius: var(--radius-sm);
+    font-size: .85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.btn-servico-contato:hover  { background: var(--serv-purple-dark); transform: translateY(-2px); }
+.btn-servico-contato:active { transform: scale(.97); }
+
+.btn-servico-wpp {
+    background: #25d366;
+    color: white;
+    border: none;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-servico-wpp:hover { background: #1da851; transform: translateY(-2px); }
+
+/* Disponibilidade badge */
+.servico-disponivel {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+.disponivel-sim { background: #4caf50; box-shadow: 0 0 6px rgba(76,175,80,.7); }
+.disponivel-nao { background: #e53935; }
+
+/* -- Responsivo de servicos -- */
+@media (max-width: 768px) {
+    .servicos-banner         { flex-direction: column; text-align: center; padding: 24px 20px; }
+    .servicos-banner-text h3 { justify-content: center; }
+    .servicos-grid           { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .galeria-btn             { opacity: 1; }
+}
+@media (max-width: 480px) {
+    .servicos-grid       { grid-template-columns: 1fr; }
+    .servico-card-body   { padding: 16px 14px 12px; }
+    .servico-avatar      { width: 50px; height: 50px; font-size: 1.25rem; }
+    .servico-preco-valor { font-size: 1.15rem; }
+    .btn-servicos-hero   { width: 100%; justify-content: center; }
+}
+@media (max-width: 360px) {
+    .servico-actions { flex-direction: column; }
+    .servico-perfil  { gap: 10px; }
+    .servico-nome    { font-size: .9rem; }
+}
+
+/* =========================================================
+   SUB-ABAS DA SEfO SERVIÇOS
+   ========================================================= */
+
+/*  Barra de sub-abas  */
+.servicos-subtabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2.5px solid var(--serv-purple-pale);
+    margin-bottom: 38px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.servicos-subtabs::-webkit-scrollbar { display: none; }
+
+.subtab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border: none;
+    background: transparent;
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2.5px;
+    white-space: nowrap;
+    transition: all var(--transition);
+}
+.subtab-btn:hover {
+    color: var(--serv-purple);
+    background: var(--serv-purple-pale);
+}
+.subtab-btn.active {
+    color: var(--serv-purple-dark);
+    border-bottom-color: var(--serv-purple);
+    background: var(--serv-purple-pale);
+}
+
+/*  Painéis de conteúdo  */
+.subtab-panel {
+    display: none;
+    animation: fadeInUp .35s ease both;
+}
+.subtab-panel.active { display: block; }
+
+/*  Vagas de Emprego  */
+.vagas-banner { background: linear-gradient(135deg, #1a237e 0%, #3949ab 55%, #5c6bc0 100%) !important; }
+
+.vagas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.vaga-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all var(--transition);
+}
+.vaga-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: #9fa8da;
+}
+
+.vaga-card-header {
+    background: linear-gradient(90deg, #3949ab, #5c6bc0);
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+.vaga-card-header h3 {
+    color: white;
+    font-size: .97rem;
+    font-weight: 800;
+    line-height: 1.3;
+    flex: 1;
+}
+.vaga-regime-badge {
+    background: rgba(255,255,255,.22);
+    color: white;
+    font-size: .68rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 50px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,.3);
+    text-transform: uppercase;
+}
+
+.vaga-card-body {
+    padding: 14px 18px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.vaga-empresa-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .84rem;
+    font-weight: 700;
+    color: var(--gray-900);
+}
+.vaga-empresa-row i { color: #3949ab; }
+
+.vaga-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.vaga-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--gray-100);
+    border-radius: 50px;
+    padding: 4px 11px;
+    font-size: .76rem;
+    color: var(--gray-700);
+    font-weight: 600;
+}
+.vaga-chip i { color: #3949ab; font-size: .75rem; }
+.vaga-chip.salario { background: #e8f5e9; color: #2e7d32; }
+.vaga-chip.salario i { color: #2e7d32; }
+
+.vaga-desc {
+    font-size: .81rem;
+    color: var(--gray-700);
+    line-height: 1.55;
+    margin-top: 2px;
+    flex: 1;
+}
+
+.vaga-publicada {
+    font-size: .72rem;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+.btn-vaga-candidatar {
+    width: 100%;
+    background: #3949ab;
+    color: white;
+    border: none;
+    padding: 11px;
+    border-radius: var(--radius-sm);
+    font-size: .87rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 10px;
+}
+.btn-vaga-candidatar:hover { background: #1a237e; transform: translateY(-2px); }
+
+/*  Currículo  */
+.curriculo-intro {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: var(--serv-purple-pale);
+    border: 1.5px solid var(--serv-purple-light);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+}
+.curriculo-intro-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--serv-purple);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+.curriculo-intro h3 { font-size: 1.05rem; font-weight: 800; color: var(--serv-purple-dark); margin-bottom: 4px; }
+.curriculo-intro p  { font-size: .85rem; color: var(--gray-700); }
+
+/* Form do currículo */
+.curriculo-form  { display: flex; flex-direction: column; gap: 20px; }
+
+.curriculo-bloco {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+}
+.curriculo-bloco-titulo {
+    font-size: .82rem;
+    font-weight: 800;
+    color: var(--serv-purple);
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1.5px solid var(--serv-purple-pale);
+}
+
+/* Estilos de formulário reutilizáveis */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.form-group label {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: .88rem;
+    font-family: var(--font);
+    color: var(--gray-900);
+    background: var(--white);
+    outline: none;
+    transition: border-color var(--transition);
+    resize: vertical;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--serv-purple);
+    box-shadow: 0 0 0 3px rgba(92,53,168,.12);
+}
+
+/* Preview do currículo */
+.cv-preview-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.cv-preview-actions .btn-servicos-hero {
+    background: var(--serv-purple);
+    color: white;
+    border: 2px solid var(--serv-purple);
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--transition);
+}
+.cv-preview-actions .btn-servicos-hero:hover {
+    background: var(--serv-purple-dark);
+    border-color: var(--serv-purple-dark);
+    transform: translateY(-2px);
+}
+
+.cv-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 2px solid var(--serv-purple-light);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+.cv-topo {
+    background: linear-gradient(135deg, var(--serv-purple-dark), var(--serv-purple-mid));
+    padding: 28px 28px 24px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.cv-avatar-grande {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.2);
+    border: 3px solid rgba(255,255,255,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+.cv-topo-info h2  { font-size: 1.45rem; font-weight: 900; margin-bottom: 4px; }
+.cv-topo-info p   { font-size: .9rem; opacity: .85; margin-bottom: 8px; }
+.cv-topo-contatos { display: flex; gap: 14px; flex-wrap: wrap; }
+.cv-contato-item  { display: flex; align-items: center; gap: 6px; font-size: .78rem; opacity: .9; }
+
+.cv-corpo { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+.cv-secao h4 {
+    font-size: .78rem;
+    font-weight: 800;
+    color: var(--serv-purple);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--serv-purple-pale);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.cv-secao p   { font-size: .86rem; color: var(--gray-700); line-height: 1.6; }
+.cv-exp-item  { margin-bottom: 10px; }
+.cv-exp-cargo { font-size: .9rem; font-weight: 700; color: var(--gray-900); }
+.cv-exp-emp   { font-size: .82rem; color: var(--serv-purple); font-weight: 600; }
+.cv-exp-per   { font-size: .77rem; color: var(--gray-500); margin-bottom: 4px; }
+.cv-exp-ativ  { font-size: .82rem; color: var(--gray-700); }
+
+.cv-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.cv-tag {
+    background: var(--serv-purple-pale);
+    color: var(--serv-purple-dark);
+    font-size: .76rem;
+    font-weight: 600;
+    padding: 4px 13px;
+    border-radius: 50px;
+    border: 1px solid var(--serv-purple-light);
+}
+.cv-disponivel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: 1px solid #a5d6a7;
+}
+
+/*  Modal genérico  */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 3000;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    backdrop-filter: blur(3px);
+    animation: fadeInModal .2s ease both;
+}
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.modal-overlay[style*="display:none"] { display: none !important; }
+
+.modal-box {
+    background: white;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 660px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: slideInModal .3s ease both;
+}
+@keyframes slideInModal {
+    from { transform: translateY(-30px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}
+
+.modal-header {
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+.modal-purple { background: linear-gradient(90deg, var(--serv-purple-dark), var(--serv-purple-mid)); }
+.modal-header h3 { font-size: 1rem; display: flex; align-items: center; gap: 10px; }
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+    opacity: .8;
+    transition: opacity var(--transition);
+}
+.modal-close:hover { opacity: 1; }
+
+.modal-form { padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+/* -- Responsivo sub-abas -- */
+@media (max-width: 768px) {
+    .form-row            { grid-template-columns: 1fr; }
+    .cv-topo             { flex-direction: column; text-align: center; }
+    .cv-topo-contatos    { justify-content: center; }
+    .subtab-btn          { padding: 12px 18px; font-size: .82rem; }
+    .vagas-grid          { grid-template-columns: 1fr; }
+    .curriculo-intro     { align-items: flex-start; gap: 14px; }
+    .cv-corpo            { padding: 18px 20px; }
+    .vaga-card-header h3 { font-size: .88rem; }
+}
+@media (max-width: 480px) {
+    .cv-preview-actions  { flex-direction: column; }
+    .curriculo-intro     { flex-direction: column; align-items: center; text-align: center; padding: 16px 18px; }
+    .curriculo-bloco     { padding: 16px; }
+    .cv-corpo            { padding: 14px 16px; }
+    .cv-topo             { padding: 22px 18px 18px; }
+    .modal-box           { max-width: 100%; }
+    .modal-form          { padding: 16px 16px 20px; }
+}
+@media (max-width: 360px) {
+    .subtab-btn          { padding: 10px 12px; font-size: .78rem; }
+    .vaga-card-header h3 { font-size: .82rem; }
+    .cv-topo-info h2     { font-size: 1.2rem; }
+    .cv-topo-info p      { font-size: .82rem; }
+}

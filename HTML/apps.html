@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apps - Magé Express</title>
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/apps.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="apps-layout apps-drawer-page">
+
+    <main class="apps-drawer-shell">
+        <header class="apps-drawer-top">
+            <a href="../index.html" class="logo" aria-label="Magé Express">
+                <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+                <span class="logo-text">Magé <strong>Express</strong></span>
+            </a>
+        </header>
+
+        <section class="apps-pinned-panel" aria-label="Aplicativos fixados">
+            <div class="apps-pinned-header">
+                <h2><i class="fas fa-thumbtack"></i> Meus Apps Fixados</h2>
+                <button id="open-app-store-btn" class="apps-store-btn" type="button" aria-label="Abrir loja de aplicativos">
+                    <i class="fas fa-store"></i>
+                    <span>Loja de Apps</span>
+                </button>
+            </div>
+            <p>Seus atalhos aparecem aqui primeiro. Para ver todos os apps, abra a loja.</p>
+            <div class="apps-grid" id="apps-pinned-grid"></div>
+            <div class="apps-no-results" id="apps-pinned-empty" style="display:none;">
+                <i class="fas fa-mobile-alt"></i>
+                <p>Você ainda não fixou nenhum app.</p>
+            </div>
+        </section>
+
+        <section class="apps-store-panel" id="apps-store-panel" aria-label="Loja de aplicativos" style="display:none;">
+            <div class="apps-store-top">
+                <h3><i class="fas fa-store"></i> Loja de Aplicativos</h3>
+                <button id="close-app-store-btn" class="apps-store-close" type="button" aria-label="Fechar loja">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="apps-search-panel">
+                <div class="apps-search-box">
+                    <i class="fas fa-search"></i>
+                    <input id="apps-search-input" type="search" placeholder="Buscar aplicativo, loja ou recurso" autocomplete="off">
+                </div>
+                <div class="apps-filter-row">
+                    <label for="apps-category-filter">Categoria</label>
+                    <select id="apps-category-filter">
+                        <option value="todas">Todas</option>
+                        <option value="mercado">Mercado</option>
+                        <option value="bazar">Bazar</option>
+                        <option value="servicos">Serviços</option>
+                        <option value="comunidade">Comunidade</option>
+                        <option value="saude">Saúde</option>
+                        <option value="pets">Pets</option>
+                    </select>
+                </div>
+                <div class="apps-category-tabs" id="apps-category-tabs">
+                    <button class="app-cat-chip active" data-app-cat="todas">Todas</button>
+                    <button class="app-cat-chip" data-app-cat="mercado">Mercado</button>
+                    <button class="app-cat-chip" data-app-cat="bazar">Bazar</button>
+                    <button class="app-cat-chip" data-app-cat="servicos">Serviços</button>
+                    <button class="app-cat-chip" data-app-cat="comunidade">Comunidade</button>
+                    <button class="app-cat-chip" data-app-cat="saude">Saúde</button>
+                    <button class="app-cat-chip" data-app-cat="pets">Pets</button>
+                </div>
+            </div>
+
+            <div class="apps-content">
+                <div class="apps-grid" id="apps-store-grid"></div>
+            </div>
+            <div class="apps-no-results" id="apps-store-no-results" style="display:none;">
+                <i class="fas fa-box-open"></i>
+                <p>Nenhum app encontrado para esse filtro.</p>
+            </div>
+        </section>
+    </main>
+
+    <nav class="floating-bottom-nav" id="floating-bottom-nav" aria-label="Navegação inferior flutuante">
+        <a class="floating-nav-item" data-nav-item="inicio" href="../index.html#inicio" aria-label="Início">
+            <span class="floating-nav-bubble"><i class="fas fa-house"></i></span>
+        </a>
+        <a class="floating-nav-item active" data-nav-item="apps" href="apps.html" aria-label="Apps">
+            <span class="floating-nav-bubble">
+                <i class="fas fa-mobile-alt"></i>
+                <span class="app-drawer-count" id="app-drawer-count">0</span>
+            </span>
+        </a>
+        <a class="floating-nav-item" data-nav-item="feed" href="feed.html" aria-label="Feed">
+            <span class="floating-nav-bubble"><i class="fas fa-stream"></i></span>
+        </a>
+        <a class="floating-nav-item" data-nav-item="usuario" href="gerenciamento.html" aria-label="Gerenciamento">
+            <span class="floating-nav-bubble"><i class="fas fa-user"></i></span>
+        </a>
+    </nav>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="../JS/apps.js"></script>
+</body>
+</html>

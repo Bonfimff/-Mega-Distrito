@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed - Magé Express</title>
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/feed.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="feed-page">
+
+    <!-- ========================================================
+         HEADER
+    ======================================================== -->
+    <header id="header">
+        <div class="header-container">
+
+            <!-- Logo -->
+            <a href="../index.html#inicio" class="logo">
+                <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+                <span class="logo-text">Magé <strong>Express</strong></span>
+            </a>
+
+            <!-- Hamburger (mobile) -->
+            <button class="hamburger" id="hamburger" aria-label="Abrir menu">
+                <span></span><span></span><span></span>
+            </button>
+
+            <!-- Navegação -->
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="../index.html#produtos"   class="nav-link">Produtos</a></li>
+                    <li><a href="../index.html#categorias" class="nav-link">Categorias</a></li>
+                    <li><a href="../index.html#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a></li>
+                    <li><a href="servicos.html"            class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a></li>
+                    <li><a href="#contato"                 class="nav-link">Contato</a></li>
+                </ul>
+            </nav>
+
+            <!-- Busca + Carrinho -->
+            <div class="header-actions">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Buscar produtos." autocomplete="off">
+                    <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                </div>
+                <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ========================================================
+         REEL - Barra de abas (Para Você / Produtos / Usados / Serviços)
+    ======================================================== -->
+    <div class="reel-tabbar" id="reel-tabbar" role="tablist">
+        <button class="active" data-feed-filtro="todos"   role="tab" aria-selected="true">Para Você</button>
+        <button data-feed-filtro="produto"                role="tab" aria-selected="false">Produtos</button>
+        <button data-feed-filtro="usado"                  role="tab" aria-selected="false">Usados</button>
+        <button data-feed-filtro="servico"                role="tab" aria-selected="false">?? Serviços</button>
+    </div>
+
+    <!-- ========================================================
+         REEL - Container dos cards (preenchido pelo JS)
+    ======================================================== -->
+    <div class="feed-reel-container" id="feed-reel-container" role="feed" aria-label="Feed de produtos e serviços">
+        <!-- Preenchido por feed.js -->
+    </div>
+
+    <!-- Contador de posição -->
+    <div class="reel-counter" id="reel-counter" aria-live="polite">1 / --</div>
+
+    <!-- ========================================================
+         CARRINHO (SIDEBAR)
+    ======================================================== -->
+    <div class="overlay" id="overlay"></div>
+
+    <aside class="cart-sidebar" id="cart-sidebar" aria-label="Carrinho de compras">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> Meu Carrinho</h3>
+            <button id="close-cart" aria-label="Fechar carrinho"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <strong id="cart-total">R$ 0,00</strong>
+            </div>
+            <button class="btn btn-primary btn-block" id="checkout-btn">
+                Finalizar Compra <i class="fas fa-arrow-right"></i>
+            </button>
+            <button class="btn btn-outline btn-block" id="clear-cart-btn">
+                Limpar Carrinho
+            </button>
+        </div>
+    </aside>
+
+    <!-- Modal de anúncio do feed -->
+    <div class="feed-modal-overlay" id="feed-modal" role="dialog" aria-modal="true" aria-label="Detalhes do anúncio">
+        <div class="feed-modal-box" id="feed-modal-body">
+            <!-- Preenchido pelo JS -->
+        </div>
+    </div>
+
+    <!-- Notificação toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Barra inferior flutuante -->
+    <nav class="feed-bottom-nav" aria-label="Navegação inferior">
+        <a class="feed-bottom-item" href="../index.html#inicio" aria-label="Início">
+            <span class="feed-bottom-bubble"><i class="fas fa-house"></i></span>
+        </a>
+        <a class="feed-bottom-item" href="apps.html" aria-label="Apps">
+            <span class="feed-bottom-bubble"><i class="fas fa-mobile-alt"></i></span>
+        </a>
+        <a class="feed-bottom-item active" href="feed.html" aria-label="Feed">
+            <span class="feed-bottom-bubble"><i class="fas fa-stream"></i></span>
+        </a>
+        <a class="feed-bottom-item" href="gerenciamento.html" aria-label="Gerenciamento">
+            <span class="feed-bottom-bubble"><i class="fas fa-user"></i></span>
+        </a>
+    </nav>
+
+    <!-- script.js primeiro (dados + carrinho), depois feed.js -->
+    <script src="../JS/script.js"></script>
+    <script src="../JS/feed.js"></script>
+</body>
+</html>

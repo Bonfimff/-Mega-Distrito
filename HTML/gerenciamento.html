@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Gerenciamento - Magé Express</title>
+	<link rel="stylesheet" href="../CSS/style.css">
+	<link rel="stylesheet" href="../CSS/apps.css">
+	<link rel="stylesheet" href="../CSS/gerenciamento.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="apps-layout">
+
+	<header id="header">
+		<div class="header-container">
+			<a href="../index.html#inicio" class="logo">
+				<span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+				<span class="logo-text">Magé <strong>Express</strong></span>
+			</a>
+
+			<button class="hamburger" id="hamburger" aria-label="Abrir menu">
+				<span></span><span></span><span></span>
+			</button>
+
+			<nav class="nav" id="nav">
+				<ul>
+					<li><a href="gerenciamento.html" class="nav-link active"><i class="fas fa-sliders-h"></i> Gerenciamento</a></li>
+					<li><a href="gerenciamento.html#panel-catalogo" class="nav-link"><i class="fas fa-layer-group"></i> Editar catálogo</a></li>
+					<li><a href="gerenciamento.html#acessos-catalogo" class="nav-link"><i class="fas fa-link"></i> Acessos</a></li>
+					<li><a href="gerenciamento.html#vendas" class="nav-link"><i class="fas fa-cash-register"></i> Vendas</a></li>
+					<li><a href="gerenciamento.html#configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main class="section gm-page" style="padding-top: 96px;">
+		<div class="container">
+			
+
+			<div class="gm-layout gm-layout--preview-hidden">
+				<div class="gm-tabs" role="tablist" aria-label="Seções de gerenciamento">
+					<button class="gm-tab active" role="tab" type="button" aria-selected="true" aria-controls="panel-loja">
+						<i class="fas fa-store"></i> Loja
+					</button>
+					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-catalogo">
+						<i class="fas fa-layer-group"></i> Catálogo
+					</button>
+					<button id="gm-tab-preview" class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-preview">
+						<i class="fas fa-mobile-screen"></i> Prévia
+					</button>
+				</div>
+
+				<section class="gm-editor" aria-label="Editor do app">
+					<div class="gm-editor-head">
+						<h3><i class="fas fa-wand-magic-sparkles"></i> Configurar App</h3>
+					</div>
+
+					<!-- Painel: Loja -->
+					<div id="panel-loja" class="gm-tab-panel">
+						<div id="configuracoes" aria-hidden="true"></div>
+						<form id="gm-form" class="gm-form" onsubmit="return false;">
+							<nav class="gm-stepper" aria-label="Etapas de configuração da loja">
+								<a class="gm-step-link" href="#gm-step-1"><span>1</span> Dados</a>
+								<a class="gm-step-link" href="#gm-step-2"><span>2</span> Aparência</a>
+								<a class="gm-step-link" href="#gm-step-3"><span>3</span> Horários</a>
+								<a class="gm-step-link" href="#gm-step-4"><span>4</span> Filtros</a>
+								<a class="gm-step-link" href="#gm-step-5"><span>5</span> Prévia</a>
+							</nav>
+
+							<details id="gm-step-1" class="gm-step" open>
+								<summary class="gm-step-summary">
+									<span class="gm-step-number">Etapa 1</span>
+									<strong>Dados da loja</strong>
+								</summary>
+								<section class="gm-form-section" aria-label="Informações da loja">
+									<div class="gm-form-section-head">
+										<h4><i class="fas fa-store"></i> Informações da loja</h4>
+									</div>
+									<div class="gm-row-2">
+										<div class="gm-group">
+											<label for="gm-app-name">Nome do App</label>
+											<input id="gm-app-name" type="text" value="Loja Central" maxlength="40">
+										</div>
+										<div class="gm-group">
+											<label for="gm-store-category">Categoria da Loja</label>
+											<select id="gm-store-category">
+												<option value="">Selecione...</option>
+												<option value="Alimentação">Alimentação</option>
+												<option value="Moda e Vestuário">Moda e Vestuário</option>
+												<option value="Eletrônicos">Eletrônicos</option>
+												<option value="Beleza e Saúde">Beleza e Saúde</option>
+												<option value="Casa e Decoração">Casa e Decoração</option>
+												<option value="Esportes">Esportes</option>
+												<option value="Serviços Gerais">Serviços Gerais</option>
+												<option value="Construção e Reforma">Construção e Reforma</option>
+												<option value="Pet Shop">Pet Shop</option>
+												<option value="Farmácia">Farmácia</option>
+												<option value="Mercado / Mercearia">Mercado / Mercearia</option>
+												<option value="Outro">Outro</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="gm-group">
+										<label for="gm-app-subtitle">Subtítulo</label>
+										<input id="gm-app-subtitle" type="text" value="Ofertas e novidades para você" maxlength="60">
+									</div>
+
+									<div class="gm-row-2">
+										<div class="gm-group">
+											<label for="gm-address">Endereço</label>
+											<input id="gm-address" type="text" value="Rua Principal, 123 - Magé" maxlength="80">
+										</div>
+										<div class="gm-group">
+											<label for="gm-address-url">URL do Endereço</label>
+											<input id="gm-address-url" type="url" placeholder="https://..." value="https://maps.google.com">
+										</div>
+									</div>
+								</section>
+							</details>
+
+							<details id="gm-step-2" class="gm-step">
+								<summary class="gm-step-summary">
+									<span class="gm-step-number">Etapa 2</span>
+									<strong>Aparência e visual</strong>
+								</summary>
+								<section class="gm-form-section" aria-label="Aparência do app">
+									<div class="gm-form-section-head">
+										<h4><i class="fas fa-palette"></i> Aparência do app</h4>
+									</div>
+									<div class="gm-row-2">
+										<div class="gm-group">
+											<label for="gm-primary-color">Cor principal</label>
+											<input id="gm-primary-color" type="color" value="#2e7d32">
+										</div>
+										<div class="gm-group">
+											<label for="gm-accent-color">Cor de destaque</label>
+											<input id="gm-accent-color" type="color" value="#1565c0">
+										</div>
+									</div>
+
+									<div class="gm-group">
+										<label for="gm-banner-url">Imagem do Banner (URL)</label>
+										<input id="gm-banner-url" type="url" placeholder="https://..." value="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80">
+									</div>
+									<div class="gm-group">
+										<label for="gm-card-url">Imagem da Vitrine (URL)</label>
+										<input id="gm-card-url" type="url" placeholder="https://..." value="https://images.unsplash.com/photo-1468495244123-6c6f332b7a90?auto=format&fit=crop&w=900&q=80">
+									</div>
+									<div class="gm-group">
+										<label for="gm-app-icon-url">Ícone do App (URL)</label>
+										<input id="gm-app-icon-url" type="url" placeholder="https://..." value="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=200&q=80">
+									</div>
+									<div class="gm-group">
+										<label for="gm-preview-card-mode">Exibição dos itens</label>
+										<select id="gm-preview-card-mode">
+											<option value="portrait" selected>Retrato (1 por linha)</option>
+											<option value="landscape">Paisagem (2 por linha)</option>
+										</select>
+										<small>Defina se os cards aparecem em modo retrato ou paisagem.</small>
+									</div>
+								</section>
+							</details>
+
+							<details id="gm-step-3" class="gm-step">
+								<summary class="gm-step-summary">
+									<span class="gm-step-number">Etapa 3</span>
+									<strong>Horários de funcionamento</strong>
+								</summary>
+								<section class="gm-builder-block" aria-label="Horário de funcionamento">
+									<div class="gm-builder-head">
+										<h4><i class="fas fa-clock"></i> Horário de funcionamento</h4>
+										<p>Defina horários e dias de operação para sua loja.</p>
+									</div>
+									<div class="gm-row-2">
+										<div class="gm-group">
+											<label for="gm-open-time">Abre às</label>
+											<input id="gm-open-time" type="time" value="09:00">
+										</div>
+										<div class="gm-group">
+											<label for="gm-close-time">Fecha às</label>
+											<input id="gm-close-time" type="time" value="18:00">
+										</div>
+									</div>
+									<div class="gm-group">
+										<label>Dias da semana abertos</label>
+										<div class="gm-weekdays-grid">
+											<label class="gm-check-option"><input type="checkbox" name="gm-weekday" data-day-name="Segunda" value="mon" checked> Seg</label>
+											<label class="gm-check-option"><input type="checkbox" name="gm-weekday" data-day-name="Terça" value="tue" checked> Ter</label>
+											<label class="gm-check-option"><input type="checkbox" name="gm-weekday" data-day-name="Quarta" value="wed" checked> Qua</label>
+											<label class="gm-check-option"><input type="checkbox" name="gm-weekday" data-day-name="Quinta" value="thu" checked> Qui</label>
+											<label class="gm-check-option"><input type="checkbox" name="gm-weekday" data-day-name="Sexta" value="fri" checked> Sex</label>
+											<label class="gm-check-option"><input type="checkbox" name="gm-weekday" data-day-name="Sábado" value="sat"> Sáb</label>
+											<label class="gm-check-option"><input type="checkbox" name="gm-weekday" data-day-name="Domingo" value="sun"> Dom</label>
+										</div>
+									</div>
+									<div class="gm-group">
+										<label for="gm-closed-date">Datas fechadas</label>
+										<div class="gm-row-2 gm-inline-options">
+											<input id="gm-closed-date" type="date">
+											<button id="gm-add-closed-date" type="button" class="btn btn-primary">Adicionar data</button>
+										</div>
+										<div id="gm-closed-dates-list" class="gm-closed-dates-list"></div>
+									</div>
+								</section>
+							</details>
+
+							<details id="gm-step-4" class="gm-step">
+								<summary class="gm-step-summary">
+									<span class="gm-step-number">Etapa 4</span>
+									<strong>Filtros da vitrine</strong>
+								</summary>
+								<section class="gm-builder-block" aria-label="Filtros do app">
+									<div class="gm-builder-head">
+										<h4><i class="fas fa-filter"></i> Filtros do App</h4>
+										<p>Crie filtros rápidos que serão exibidos na página do app.</p>
+									</div>
+
+									<div class="gm-row-2">
+										<div class="gm-group">
+											<label for="gm-filter-name">Nome do filtro</label>
+											<input id="gm-filter-name" type="text" placeholder="Ex.: Bebidas">
+										</div>
+										<div class="gm-group">
+											<label for="gm-filter-value">Valor do filtro</label>
+											<input id="gm-filter-value" type="text" placeholder="Ex.: bebidas">
+											<small>Referência a categoria/subcategoria que o filtro deve agrupar.</small>
+										</div>
+									</div>
+									<div class="gm-group">
+										<label for="gm-filter-manual">Produtos manuais</label>
+										<input id="gm-filter-manual" type="text" placeholder="Separe por vírgula: Suco Cola, Heineken, Super Combo">
+										<small>Adicione produtos específicos ao filtro mesmo que pertençam a outra categoria.</small>
+									</div>
+
+									<div class="gm-actions gm-actions-duo">
+										<button id="gm-add-filter" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar filtro</button>
+										<button id="gm-clear-filter-fields" type="button" class="btn btn-outline">Limpar filtros</button>
+									</div>
+
+									<div class="gm-filter-list" id="gm-filter-list" aria-live="polite"></div>
+								</section>
+							</details>
+
+							<section id="gm-step-5" class="gm-builder-block" aria-label="Prévia da loja">
+								<div class="gm-builder-head">
+									<h4><i class="fas fa-mobile-screen-button"></i> Etapa 5: Prévia</h4>
+									<p>Abra a aba de prévia para revisar a loja em tempo real.</p>
+								</div>
+								<div class="gm-actions gm-actions-duo">
+									<button id="gm-open-preview-tab" type="button" class="btn btn-outline"><i class="fas fa-eye"></i> Abrir Prévia</button>
+									<button id="gm-generate" type="button" class="btn btn-primary"><i class="fas fa-check"></i> Salvar Loja</button>
+								</div>
+							</section>
+						</form>
+					</div>
+
+					<!-- Painel: Catálogo -->
+					<div id="panel-catalogo" class="gm-tab-panel gm-tab-panel--hidden">
+						<div id="vendas" aria-hidden="true"></div>
+						<section id="acessos-catalogo" class="gm-builder-block" aria-label="Acessos do catálogo">
+							<div class="gm-builder-head">
+								<h4><i class="fas fa-link"></i> Acessos</h4>
+								<p>Atalhos rápidos para editar o catálogo.</p>
+							</div>
+							<div class="gm-actions gm-actions-duo">
+								<a class="btn btn-outline" href="#gm-item-name"><i class="fas fa-pen"></i> Editar item</a>
+								<a class="btn btn-outline" href="#gm-add-item"><i class="fas fa-plus"></i> Novo item</a>
+							</div>
+							<div class="gm-actions gm-actions-duo">
+								<a class="btn btn-outline" href="#gm-item-price"><i class="fas fa-tags"></i> Editar preço</a>
+								<a class="btn btn-outline" href="#gm-items-admin-list"><i class="fas fa-list"></i> Ver itens</a>
+							</div>
+						</section>
+						<section class="gm-builder-block gm-builder-block--flat" aria-label="Cadastro de itens do catálogo">
+							<div class="gm-builder-head">
+								<h4><i class="fas fa-plus-circle"></i> Novo Item</h4>
+								<p>Adicione produtos e serviços com descrição, preço, foto e vídeo.</p>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-item-type">Tipo</label>
+									<select id="gm-item-type">
+										<option value="produto" selected>Produto</option>
+										<option value="servico">Serviço</option>
+									</select>
+								</div>
+								<div class="gm-group">
+									<label for="gm-item-name">Nome</label>
+									<input id="gm-item-name" type="text" placeholder="Ex.: Pizza Família">
+								</div>
+							</div>
+
+							<div class="gm-group">
+								<label for="gm-item-description">Descrição</label>
+								<textarea id="gm-item-description" rows="3" placeholder="Descrição completa do item"></textarea>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-item-price">Preço / Valor</label>
+									<input id="gm-item-price" type="text" placeholder="Ex.: 49,90">
+								</div>
+								<div class="gm-group">
+									<label for="gm-item-photo">Foto (URL)</label>
+									<input id="gm-item-photo" type="url" placeholder="https://...">
+								</div>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-item-category">Categoria</label>
+									<select id="gm-item-category">
+										<option value="">Selecione...</option>
+										<option value="Alimentação">Alimentação</option>
+										<option value="Eletrônicos">Eletrônicos</option>
+										<option value="Moda e Vestuário">Moda e Vestuário</option>
+										<option value="Casa e Decoração">Casa e Decoração</option>
+										<option value="Beleza e Saúde">Beleza e Saúde</option>
+										<option value="Serviços Gerais">Serviços Gerais</option>
+										<option value="Mercado / Mercearia">Mercado / Mercearia</option>
+										<option value="Outro">Outro</option>
+									</select>
+								</div>
+								<div class="gm-group">
+									<label for="gm-item-subcategory">Subcategoria</label>
+									<select id="gm-item-subcategory">
+										<option value="">Selecione...</option>
+										<option value="Personalizada">Personalizada</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="gm-group gm-hidden" id="gm-item-subcategory-custom-wrap">
+								<label for="gm-item-subcategory-custom">Subcategoria personalizada</label>
+								<input id="gm-item-subcategory-custom" type="text" placeholder="Ex.: Combo Família">
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-item-brand">Marca</label>
+									<input id="gm-item-brand" type="text" placeholder="Ex.: Samsung">
+								</div>
+								<div class="gm-group">
+									<label for="gm-item-qty">Quantidade disponível</label>
+									<input id="gm-item-qty" type="number" min="0" placeholder="Ex.: 10">
+								</div>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-item-color">Cor</label>
+									<input id="gm-item-color" type="text" placeholder="Ex.: Preto, Branco">
+								</div>
+								<div class="gm-group">
+									<label for="gm-item-voltage">Voltagem</label>
+									<select id="gm-item-voltage">
+										<option value="">Não se aplica</option>
+										<option value="110V">110V</option>
+										<option value="220V">220V</option>
+										<option value="Bivolt">Bivolt</option>
+										<option value="USB">USB</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label>Modalidades</label>
+									<div class="gm-inline-options gm-inline-options--sm" role="group">
+										<label class="gm-check-option" for="gm-item-delivery">
+											<input id="gm-item-delivery" type="checkbox" checked>
+											<span><i class="fas fa-truck"></i> Entrega</span>
+										</label>
+										<label class="gm-check-option" for="gm-item-pickup">
+											<input id="gm-item-pickup" type="checkbox" checked>
+											<span><i class="fas fa-store"></i> Retirada</span>
+										</label>
+									</div>
+								</div>
+							</div>
+
+							<div class="gm-group">
+								<label for="gm-item-video">Vídeo do item (URL)</label>
+								<input id="gm-item-video" type="url" placeholder="https://...mp4">
+							</div>
+
+							<div class="gm-actions gm-actions-duo">
+								<button id="gm-add-item" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar item</button>
+								<button id="gm-clear-item-fields" type="button" class="btn btn-outline">Limpar campos</button>
+							</div>
+						</section>
+
+						<div class="gm-admin-list" id="gm-items-admin-list" aria-live="polite"></div>
+					</div>
+
+					<div id="panel-preview" class="gm-tab-panel gm-tab-panel--hidden"></div>
+				</section>
+
+				<section class="gm-preview" aria-label="Prévia do app">
+					<div class="gm-preview-head">
+						<h3><i class="fas fa-mobile-screen-button"></i> Prévia em tempo real</h3>
+						<button id="gm-generate-preview" type="button" class="btn btn-primary"><i class="fas fa-check"></i> Salvar Loja</button>
+					</div>
+
+					<article id="gm-phone" class="gm-phone" style="--gm-primary:#2e7d32;--gm-accent:#1565c0;">
+						<div class="gm-phone-banner" id="gm-preview-banner"></div>
+						<div class="gm-phone-body">
+							<div class="gm-app-head">
+								<div class="gm-app-icon" id="gm-preview-app-icon" aria-hidden="true"></div>
+								<h4 id="gm-preview-title">Loja Central</h4>
+							</div>
+							<p id="gm-preview-subtitle">Ofertas e novidades para você</p>
+							<a id="gm-preview-address" class="gm-address-link" href="https://maps.google.com" target="_blank" rel="noopener noreferrer">
+								<i class="fas fa-location-dot"></i>
+								<span>Rua Principal, 123 - Magé</span>
+							</a>
+							<div id="gm-preview-schedule" class="gm-preview-schedule" aria-label="Horário de funcionamento"></div>
+						<div class="gm-preview-filters" id="gm-preview-opt-services" aria-label="Filtros do app"></div>
+							<section class="gm-preview-catalog" aria-label="Catálogo do app">
+								<div class="gm-preview-catalog-head">
+									<h5>Catálogo Cadastrado</h5>
+								</div>
+								<div id="gm-preview-items" class="gm-preview-items"></div>
+							</section>
+
+						</div>
+					</article>
+				</section>
+			</div>
+		</div>
+	</main>
+
+	<nav class="floating-bottom-nav" id="floating-bottom-nav" aria-label="Navegação inferior flutuante">
+		<a class="floating-nav-item" data-nav-item="inicio" href="../index.html#inicio" aria-label="Início">
+			<span class="floating-nav-bubble"><i class="fas fa-house"></i></span>
+		</a>
+		<a class="floating-nav-item" data-nav-item="apps" href="apps.html" aria-label="Apps">
+			<span class="floating-nav-bubble"><i class="fas fa-mobile-alt"></i></span>
+		</a>
+		<a class="floating-nav-item" data-nav-item="feed" href="feed.html" aria-label="Feed">
+			<span class="floating-nav-bubble"><i class="fas fa-stream"></i></span>
+		</a>
+		<a class="floating-nav-item active" data-nav-item="usuario" href="gerenciamento.html" aria-label="Gerenciamento">
+			<span class="floating-nav-bubble"><i class="fas fa-user"></i></span>
+		</a>
+	</nav>
+
+	<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+	<script src="../JS/gerenciamento.js"></script>
+
+</body>
+</html>

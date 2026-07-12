@@ -6,8 +6,18 @@ const expoRoot = process.cwd();
 
 const htmlPath = path.join(projectRoot, 'index.html');
 const cssPath = path.join(projectRoot, 'CSS', 'style.css');
-const jsPath = path.join(projectRoot, 'JS', 'script.js');
 const outPath = path.join(expoRoot, 'app', 'webContent.js');
+
+// Mesmos scripts, na mesma ordem, que o index.html carrega
+const jsFiles = [
+  path.join(projectRoot, 'JS', 'utils.js'),
+  path.join(projectRoot, 'JS', 'data', 'categorias.js'),
+  path.join(projectRoot, 'JS', 'data', 'produtos.js'),
+  path.join(projectRoot, 'JS', 'data', 'apps-catalogo.js'),
+  path.join(projectRoot, 'JS', 'data', 'lojas.js'),
+  path.join(projectRoot, 'JS', 'script.js'),
+  path.join(projectRoot, 'JS', 'apps.js'),
+];
 
 function readUtf8(filePath) {
   return fs.readFileSync(filePath, 'utf8');
@@ -15,7 +25,7 @@ function readUtf8(filePath) {
 
 const htmlRaw = readUtf8(htmlPath);
 const cssRaw = readUtf8(cssPath);
-const jsRaw = readUtf8(jsPath);
+const jsRaw = jsFiles.map(readUtf8).join('\n;\n');
 
 const bodyMatch = htmlRaw.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
 let bodyContent = bodyMatch ? bodyMatch[1] : htmlRaw;

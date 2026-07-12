@@ -17,6 +17,6 @@ Fluxo para gerar APK
 7. Gere APK de teste: npx eas build -p android --profile preview
 
 Observacoes importantes
-- Sempre que mudar index.html, CSS/style.css ou JS/script.js, rode novamente npm run build:webcontent.
+- Sempre que mudar index.html, CSS/style.css ou qualquer arquivo em JS/ (utils.js, data/*.js, script.js, apps.js), rode novamente npm run build:webcontent.
 - O perfil preview em eas.json foi configurado para gerar APK.
 - O perfil production gera AAB para Play Store.

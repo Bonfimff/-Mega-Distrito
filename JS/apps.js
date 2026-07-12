@@ -1,67 +1,10 @@
 'use strict';
 
-const LOJA_APPS = [
-    {
-        id: 1,
-        nome: 'Mercado Express',
-        loja: 'Magé Express',
-        desc: 'Ofertas rapidas e produtos em destaque da semana.',
-        icone: 'fas fa-bolt',
-        cor: '#2e7d32',
-        categoria: 'mercado',
-        url: '#produtos',
-    },
-    {
-        id: 2,
-        nome: 'Bazar Local',
-        loja: 'Vendedores da Regiao',
-        desc: 'Compre usados em bom estado direto com vendedores locais.',
-        icone: 'fas fa-recycle',
-        cor: '#ef6c00',
-        categoria: 'bazar',
-        url: '#bazar',
-    },
-    {
-        id: 3,
-        nome: 'Servicos Pro',
-        loja: 'Prestadores',
-        desc: 'Encontre profissionais para eletrica, limpeza, reformas e mais.',
-        icone: 'fas fa-hard-hat',
-        cor: '#1565c0',
-        categoria: 'servicos',
-        url: 'HTML/servicos.html',
-    },
-    {
-        id: 4,
-        nome: 'Feed da Cidade',
-        loja: 'Comunidade',
-        desc: 'Novidades, postagens e anuncios da comunidade de Mage.',
-        icone: 'fas fa-stream',
-        cor: '#00897b',
-        categoria: 'comunidade',
-        url: 'HTML/feed.html',
-    },
-    {
-        id: 5,
-        nome: 'Farmacia 24h',
-        loja: 'Drogaria Central',
-        desc: 'Entrega de remedios e itens de farmacia para todo o municipio.',
-        icone: 'fas fa-clinic-medical',
-        cor: '#8e24aa',
-        categoria: 'saude',
-        url: '#',
-    },
-    {
-        id: 6,
-        nome: 'Pet Shop Magico',
-        loja: 'Mundo Pet',
-        desc: 'Racao, banho e tosa, e itens para seu pet em um clique.',
-        icone: 'fas fa-paw',
-        cor: '#5d4037',
-        categoria: 'pets',
-        url: '#',
-    },
-];
+/* =========================================================
+   MAGÉ EXPRESS — Gaveta de Apps
+   Dados do catálogo em JS/data/apps-catalogo.js;
+   helpers compartilhados em JS/utils.js (carregar antes).
+   ========================================================= */
 
 let atalhosApps = carregarAtalhosApps();
 let appsBusca = '';
@@ -72,23 +15,7 @@ function isPaginaAppsSeparada() {
 }
 
 function notificar(msg) {
-    if (typeof toast === 'function') {
-        toast(msg);
-        return;
-    }
-
-    const el = document.getElementById('toast');
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-function normalizar(txt) {
-    return (txt || '')
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
+    toast(msg);
 }
 
 function resolverDestinoApp(destino) {

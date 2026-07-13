@@ -33,12 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
    ───────────────────────────────────────────── */
 function renderCategorias() {
     const grid = document.getElementById('categories-grid');
+    if (!grid) return;
     grid.innerHTML = CATEGORIAS.map(c => `
-        <div class="category-card" data-cat="${c.id}" onclick="filtrarCategoria('${c.id}')">
-            <div class="category-icon"><i class="${c.icone}"></i></div>
-            <h3>${c.nome}</h3>
-            <small>${c.qtd} produtos</small>
-        </div>
+        <button type="button" class="category-card" data-cat="${c.id}" onclick="filtrarCategoria('${c.id}')">
+            <span class="category-icon"><i class="${c.icone}"></i></span>
+            <span class="category-name">${c.nome}</span>
+        </button>
     `).join('');
 }
 
@@ -72,37 +72,51 @@ function renderProdutos(lista) {
 }
 
 function buildCardHTML(p) {
-    const badge = p.badge
-        ? `<span class="product-badge ${p.badgeCls}">${p.badge}</span>`
-        : '';
+    // Selo de desconto (%) quando há preço antigo; senão badge textual
+    const desconto = p.precoAntigo
+        ? Math.round((1 - p.preco / p.precoAntigo) * 100)
+        : 0;
+    const selo = desconto >= 5
+        ? `<span class="product-discount">-${desconto}%</span>`
+        : (p.badge ? `<span class="product-badge ${p.badgeCls}">${p.badge}</span>` : '');
 
     const precoAntigo = p.precoAntigo
-        ? `<div class="product-price-old">De: ${brl(p.precoAntigo)}</div>`
+        ? `<span class="product-price-old">${brl(p.precoAntigo)}</span>`
         : '';
 
-    const parcelas   = Math.max(1, Math.floor(p.preco / 10));
+    // Parcelamento realista: até 12x, parcela mínima de R$ 10
+    const parcelas   = Math.min(12, Math.max(1, Math.floor(p.preco / 10)));
     const vlrParcela = brl(p.preco / parcelas);
-    const catNome    = nomeDaCategoria(p.categoria);
-    const estrelas   = buildEstrelas(p.avaliacao);
+    const parcelaHtml = parcelas > 1
+        ? `<div class="product-installment">em ${parcelas}x ${vlrParcela} sem juros</div>`
+        : '';
+
+    // Frete grátis acima de R$ 99 (regra promocional)
+    const freteHtml = p.preco >= 99
+        ? `<div class="product-shipping"><i class="fas fa-truck"></i> Frete grátis</div>`
+        : '';
 
     return `
         <div class="product-card" data-id="${p.id}">
-            ${badge}
-            <div class="product-img-wrapper">${p.emoji}</div>
+            <div class="product-img-wrapper">
+                ${selo}
+                <span class="product-emoji">${p.emoji}</span>
+            </div>
             <div class="product-info">
-                <span class="product-category">${catNome}</span>
                 <h3 class="product-name">${p.nome}</h3>
                 <div class="product-rating">
-                    <span class="stars">${estrelas}</span>
+                    <i class="fas fa-star"></i>
+                    <span class="nota">${p.avaliacao.toFixed(1)}</span>
                     <span class="count">(${p.avaliacoes})</span>
                 </div>
                 <div class="product-prices">
                     ${precoAntigo}
                     <div class="product-price">${brl(p.preco)}</div>
-                    <div class="product-installment">em até ${parcelas}x de ${vlrParcela}</div>
+                    ${parcelaHtml}
+                    ${freteHtml}
                 </div>
                 <button class="btn-add-cart" onclick="adicionarAoCarrinho(${p.id})">
-                    <i class="fas fa-cart-plus"></i> Comprar
+                    <i class="fas fa-cart-plus"></i> Adicionar
                 </button>
             </div>
         </div>
@@ -377,8 +391,11 @@ function bindActiveNav() {
    HAMBURGER (MENU MOBILE)
    ───────────────────────────────────────────── */
 function bindHamburger() {
+    // Header atual não usa hamburger; guarda mantida para
+    // páginas que ainda tenham o menu antigo.
     const btn = document.getElementById('hamburger');
     const nav = document.getElementById('nav');
+    if (!btn || !nav) return;
 
     btn.addEventListener('click', () => {
         btn.classList.toggle('active');

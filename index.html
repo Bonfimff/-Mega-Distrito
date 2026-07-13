@@ -22,34 +22,35 @@
                 <span class="logo-text">Magé <strong>Express</strong></span>
             </a>
 
-            <!-- Hamburger (mobile) -->
-            <button class="hamburger" id="hamburger" aria-label="Abrir menu">
-                <span></span><span></span><span></span>
-            </button>
-
-            <!-- Navegação -->
-            <nav class="nav" id="nav">
-                <ul>
-                    <li><a href="#produtos"   class="nav-link">Produtos</a></li>
-                    <li><a href="#categorias" class="nav-link">Categorias</a></li>
-                    <li><a href="#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a></li>
-                    <li><a href="HTML/servicos.html" class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a></li>
-                    <li><a href="#contato"    class="nav-link">Contato</a></li>
-                </ul>
-            </nav>
-
-            <!-- Busca + Carrinho -->
-            <div class="header-actions">
-                <div class="search-box">
-                    <input type="text" id="search-input" placeholder="Buscar produtos." autocomplete="off">
-                    <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
-                </div>
-                <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count" id="cart-count">0</span>
-                </button>
+            <!-- Busca (protagonista, estilo marketplace) -->
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off">
+                <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
             </div>
 
+            <!-- Carrinho -->
+            <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </button>
+
+        </div>
+
+        <!-- Linha de navegação + localização -->
+        <div class="header-nav-row">
+            <div class="header-nav-inner">
+                <span class="header-location">
+                    <i class="fas fa-map-marker-alt"></i> Entrega em <strong>Magé e região</strong>
+                </span>
+                <nav class="header-links" aria-label="Navegação principal">
+                    <a href="#produtos"   class="nav-link">Ofertas do Dia</a>
+                    <a href="#categorias" class="nav-link">Categorias</a>
+                    <a href="#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
+                    <a href="HTML/servicos.html" class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a>
+                    <a href="HTML/feed.html" class="nav-link">Feed</a>
+                    <a href="#contato"    class="nav-link">Contato</a>
+                </nav>
+            </div>
         </div>
     </header>
 
@@ -57,19 +58,25 @@
          BANNER PRINCIPAL
     ======================================================== -->
     <section id="inicio" class="banner">
-        <div class="banner-content">
-            <span class="banner-badge"><i class="fas fa-bolt"></i> Novidades toda semana!</span>
-            <h1>Tudo que você precisa,<br><span>aqui em Magé</span></h1>
-            <p>Os melhores produtos com o menor preço.<br>Entrega rápida para todo o município.</p>
-            <div class="banner-buttons">
-                <a href="#produtos"   class="btn btn-white">Ver Produtos <i class="fas fa-arrow-right"></i></a>
-                <a href="#categorias" class="btn btn-ghost">Ver Categorias</a>
+        <div class="banner-inner">
+            <div class="banner-content">
+                <span class="banner-badge"><i class="fas fa-bolt"></i> Novidades toda semana</span>
+                <h1>Tudo que você precisa, <span>aqui em Magé</span></h1>
+                <p>Os melhores preços da cidade com entrega rápida para todo o município.</p>
+                <a href="#produtos" class="btn btn-white">Ver ofertas <i class="fas fa-arrow-right"></i></a>
             </div>
-
-            <div id="categorias" class="categories-grid banner-categories-grid" data-nav-anchor></div>
+            <div class="banner-deco" aria-hidden="true">
+                <div class="banner-circle"><i class="fas fa-store"></i></div>
+            </div>
         </div>
-        <div class="banner-deco" aria-hidden="true">
-            <div class="banner-circle"><i class="fas fa-store"></i></div>
+    </section>
+
+    <!-- ========================================================
+         TRILHO DE CATEGORIAS
+    ======================================================== -->
+    <section id="categorias" class="cat-rail-section" data-nav-anchor>
+        <div class="container">
+            <div class="cat-rail" id="categories-grid"></div>
         </div>
     </section>
 
@@ -78,9 +85,9 @@
     ======================================================== -->
     <section id="produtos" class="section section-alt">
         <div class="container">
-            <div class="section-header">
-                <h2>Nossos Produtos</h2>
-                <p>Confira nossa seleção especial com os melhores preços</p>
+            <div class="section-bar">
+                <h2><i class="fas fa-bolt"></i> Ofertas do Dia</h2>
+                <button type="button" class="section-link" onclick="resetarFiltros()">Ver tudo <i class="fas fa-chevron-right"></i></button>
             </div>
 
             <!-- Filtros por categoria -->
@@ -111,10 +118,9 @@
         <div class="container">
 
             <!-- Cabeçalho da seção -->
-            <div class="section-header">
-                <div class="bazar-label"><i class="fas fa-recycle"></i> Produtos Usados</div>
-                <h2 class="bazar-title">Bazar Magé Express</h2>
-                <p>Achados com ótimo estado e preço especial - compre e venda com segurança!</p>
+            <div class="section-bar">
+                <h2 class="bazar-title"><i class="fas fa-recycle"></i> Bazar — Usados</h2>
+                <button type="button" class="section-link section-link-bazar" onclick="resetarBazar()">Ver tudo <i class="fas fa-chevron-right"></i></button>
             </div>
 
             <!-- Destaque do bazar -->
@@ -123,7 +129,7 @@
                     <h3><i class="fas fa-hand-holding-usd"></i> Quer vender algo?</h3>
                     <p>Anuncie seu produto usado gratuitamente e alcance compradores em Magé e região.</p>
                 </div>
-                <button class="btn btn-bazar-hero" onclick="toast('Em breve você poderá anunciar seus produtos aqui! ??')">
+                <button class="btn btn-bazar-hero" onclick="toast('Em breve você poderá anunciar seus produtos aqui!')">
                     <i class="fas fa-plus-circle"></i> Anunciar Produto
                 </button>
             </div>

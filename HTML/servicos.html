@@ -22,34 +22,33 @@
                 <span class="logo-text">Magé <strong>Express</strong></span>
             </a>
 
-            <!-- Hamburger (mobile) -->
-            <button class="hamburger" id="hamburger" aria-label="Abrir menu">
-                <span></span><span></span><span></span>
-            </button>
-
-            <!-- Navegação -->
-            <nav class="nav" id="nav">
-                <ul>
-                    <li><a href="../index.html#produtos"   class="nav-link">Produtos</a></li>
-                    <li><a href="../index.html#categorias" class="nav-link">Categorias</a></li>
-                    <li><a href="../index.html#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a></li>
-                    <li><a href="#servicos"                class="nav-link nav-servicos active"><i class="fas fa-hard-hat"></i> Serviços</a></li>
-                    <li><a href="#contato"                 class="nav-link">Contato</a></li>
-                </ul>
-            </nav>
-
-            <!-- Busca + Carrinho -->
-            <div class="header-actions">
-                <div class="search-box">
-                    <input type="text" id="search-input" placeholder="Buscar produtos." autocomplete="off">
-                    <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
-                </div>
-                <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count" id="cart-count">0</span>
-                </button>
+            <!-- Busca -->
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off">
+                <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
             </div>
 
+            <!-- Carrinho -->
+            <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </button>
+
+        </div>
+
+        <div class="header-nav-row">
+            <div class="header-nav-inner">
+                <span class="header-location">
+                    <i class="fas fa-map-marker-alt"></i> Entrega em <strong>Magé e região</strong>
+                </span>
+                <nav class="header-links" aria-label="Navegação principal">
+                    <a href="../index.html#produtos"   class="nav-link">Ofertas do Dia</a>
+                    <a href="../index.html#categorias" class="nav-link">Categorias</a>
+                    <a href="../index.html#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
+                    <a href="#servicos"                class="nav-link nav-servicos active"><i class="fas fa-hard-hat"></i> Serviços</a>
+                    <a href="feed.html"                class="nav-link">Feed</a>
+                </nav>
+            </div>
         </div>
     </header>
 
@@ -88,7 +87,7 @@
                         <h3><i class="fas fa-briefcase"></i> É prestador de serviço?</h3>
                         <p>Cadastre seu perfil gratuitamente e seja encontrado por centenas de clientes em Magé e região.</p>
                     </div>
-                    <button class="btn btn-servicos-hero" onclick="toast('Cadastro de profissionais em breve! ??')">
+                    <button class="btn btn-servicos-hero" onclick="toast('Cadastro de profissionais em breve!')">
                         <i class="fas fa-user-plus"></i> Cadastrar-se
                     </button>
                 </div>

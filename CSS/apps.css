@@ -465,20 +465,20 @@ body.apps-drawer-page {
 .floating-bottom-nav {
     position: fixed;
     left: 50%;
-    bottom: 18px;
+    bottom: 16px;
     transform: translateX(-50%);
-    width: min(332px, calc(100% - 24px));
-    height: 58px;
-    border-radius: 30px;
-    background: linear-gradient(140deg, rgba(17, 22, 30, .82), rgba(9, 13, 19, .88));
-    border: 1px solid rgba(255, 255, 255, .26);
+    width: min(400px, calc(100% - 24px));
+    height: 66px;
+    border-radius: 24px;
+    background: linear-gradient(145deg, rgba(22, 28, 37, .88), rgba(11, 15, 21, .93));
+    border: 1px solid rgba(255, 255, 255, .1);
     display: flex;
-    align-items: center;
-    justify-content: space-around;
+    align-items: stretch;
+    padding: 0 6px;
     z-index: 2450;
-    box-shadow: 0 16px 30px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(255, 255, 255, .18);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .12);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
     overflow: visible;
     animation: floatingNavIn .55s cubic-bezier(.2,.8,.2,1);
 }
@@ -486,72 +486,84 @@ body.apps-drawer-page {
 .floating-bottom-nav::before {
     content: '';
     position: absolute;
-    left: 14px;
-    right: 14px;
-    top: 6px;
+    left: 20px;
+    right: 20px;
+    top: 5px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .52), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .38), transparent);
     pointer-events: none;
 }
 
 .floating-nav-item {
     flex: 1;
-    height: 100%;
     border: none;
     background: transparent;
     color: #fff;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 4px;
     cursor: pointer;
     position: relative;
-    transition: transform .22s ease;
+    text-decoration: none;
+    padding: 8px 0;
+    transition: transform .2s ease;
 }
 
 .floating-nav-bubble {
-    width: 31px;
-    height: 31px;
-    background: rgba(255, 255, 255, .09);
-    border: 1px solid rgba(255, 255, 255, .2);
-    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    transition: transform .32s cubic-bezier(.2,.8,.2,1), background .24s ease, border-color .24s ease, width .28s ease, height .28s ease, box-shadow .24s ease;
+    transition: background .28s cubic-bezier(.2,.8,.2,1), transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s ease;
 }
 
 .floating-nav-bubble i {
-    color: #f5fbff;
-    font-size: .92rem;
+    color: rgba(255, 255, 255, .6);
+    font-size: 1.05rem;
     transition: color .22s ease, transform .22s ease;
 }
 
+.floating-nav-label {
+    font-size: .64rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+    color: rgba(255, 255, 255, .5);
+    transition: color .22s ease;
+}
+
 .floating-nav-item:hover .floating-nav-bubble {
-    transform: translateY(-1px) scale(1.03);
     background: rgba(255, 255, 255, .08);
 }
 
-.floating-nav-item:hover .floating-nav-bubble i {
-    color: #fff;
+.floating-nav-item:hover .floating-nav-bubble i,
+.floating-nav-item:hover .floating-nav-label {
+    color: rgba(255, 255, 255, .9);
 }
 
 .floating-nav-item:active .floating-nav-bubble {
-    transform: translateY(0) scale(.97);
+    transform: scale(.92);
 }
 
 .floating-nav-item.active .floating-nav-bubble {
-    width: 52px;
-    height: 52px;
-    background: radial-gradient(circle at 35% 25%, rgba(24, 33, 46, .96), rgba(10, 15, 21, .98) 74%);
-    border: 3px solid rgba(255, 255, 255, .96);
-    transform: translateY(-15px);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, .45), 0 0 0 2px rgba(255, 255, 255, .22);
+    background: linear-gradient(135deg, var(--green-mid, #43a047), var(--green-dark, #2e7d32));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(46, 125, 50, .5);
 }
 
 .floating-nav-item.active .floating-nav-bubble i {
-    color: #66d3ff;
+    color: #fff;
     transform: scale(1.05);
+}
+
+.floating-nav-item.active .floating-nav-label {
+    color: #a5d6a7;
+    font-weight: 700;
 }
 
 @keyframes floatingNavIn {
@@ -568,14 +580,16 @@ body.apps-drawer-page {
 
 .app-drawer-count {
     position: absolute;
-    top: -4px;
-    right: -2px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #ef4444;
+    top: -5px;
+    right: -6px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #ff5722;
+    border: 2px solid rgba(11, 15, 21, .95);
     color: #fff;
-    font-size: .72rem;
+    font-size: .66rem;
     font-weight: 800;
     display: flex;
     align-items: center;
@@ -745,14 +759,13 @@ body.apps-drawer-page {
     .floating-bottom-nav {
         width: calc(100% - 16px);
         bottom: 10px;
-        height: 56px;
-        border-radius: 28px;
+        height: 62px;
+        border-radius: 22px;
     }
 
-    .floating-nav-item.active .floating-nav-bubble {
-        width: 50px;
-        height: 50px;
-        transform: translateY(-13px);
+    .floating-nav-bubble {
+        width: 36px;
+        height: 36px;
     }
 }
 

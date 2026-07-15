@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feed - Magé Express</title>
+    <title>Feed - Mega Distrito</title>
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/feed.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -19,37 +19,51 @@
             <!-- Logo -->
             <a href="../index.html#inicio" class="logo">
                 <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
-                <span class="logo-text">Magé <strong>Express</strong></span>
+                <span class="logo-text">Mega <strong>Distrito</strong></span>
             </a>
 
-            <!-- Hamburger (mobile) -->
-            <button class="hamburger" id="hamburger" aria-label="Abrir menu">
-                <span></span><span></span><span></span>
-            </button>
-
-            <!-- Navegação -->
-            <nav class="nav" id="nav">
-                <ul>
-                    <li><a href="../index.html#produtos"   class="nav-link">Produtos</a></li>
-                    <li><a href="../index.html#categorias" class="nav-link">Categorias</a></li>
-                    <li><a href="../index.html#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a></li>
-                    <li><a href="servicos.html"            class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a></li>
-                    <li><a href="#contato"                 class="nav-link">Contato</a></li>
-                </ul>
-            </nav>
-
-            <!-- Busca + Carrinho -->
-            <div class="header-actions">
-                <div class="search-box">
-                    <input type="text" id="search-input" placeholder="Buscar produtos." autocomplete="off">
-                    <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
-                </div>
-                <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count" id="cart-count">0</span>
-                </button>
+            <!-- Busca -->
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off">
+                <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
             </div>
 
+            <!-- Navegação de seções (desktop) -->
+            <nav class="header-app-nav" aria-label="Seções">
+                <a class="header-app-link" href="../index.html#inicio" aria-label="Início">
+                    <span class="header-app-icon"><i class="fas fa-house"></i></span>
+                    <span>Início</span>
+                </a>
+                <a class="header-app-link" href="apps.html" aria-label="Apps">
+                    <span class="header-app-icon"><i class="fas fa-grip"></i></span>
+                    <span>Apps</span>
+                </a>
+                <a class="header-app-link active" href="feed.html" aria-label="Feed">
+                    <span class="header-app-icon"><i class="fas fa-stream"></i></span>
+                    <span>Feed</span>
+                </a>
+                <a class="header-app-link" href="conta.html" aria-label="Conta">
+                    <span class="header-app-icon"><i class="fas fa-user"></i></span>
+                    <span>Conta</span>
+                </a>
+            </nav>
+
+            <!-- Carrinho -->
+            <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </button>
+
+        </div>
+
+        <div class="header-nav-row">
+            <div class="header-nav-inner">
+                <nav class="header-links" aria-label="Navegação principal">
+                    <a href="../index.html#bazar" class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
+                    <a href="servicos.html"       class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a>
+                    <a href="feed.html"           class="nav-link active">Feed</a>
+                </nav>
+            </div>
         </div>
     </header>
 
@@ -60,7 +74,7 @@
         <button class="active" data-feed-filtro="todos"   role="tab" aria-selected="true">Para Você</button>
         <button data-feed-filtro="produto"                role="tab" aria-selected="false">Produtos</button>
         <button data-feed-filtro="usado"                  role="tab" aria-selected="false">Usados</button>
-        <button data-feed-filtro="servico"                role="tab" aria-selected="false">?? Serviços</button>
+        <button data-feed-filtro="servico"                role="tab" aria-selected="false">Serviços</button>
     </div>
 
     <!-- ========================================================
@@ -114,14 +128,21 @@
             <span class="feed-bottom-bubble"><i class="fas fa-house"></i></span>
         </a>
         <a class="feed-bottom-item" href="apps.html" aria-label="Apps">
-            <span class="feed-bottom-bubble"><i class="fas fa-table-cells-large"></i></span>
+            <span class="feed-bottom-bubble"><i class="fas fa-grip"></i></span>
         </a>
         <a class="feed-bottom-item active" href="feed.html" aria-label="Feed">
             <span class="feed-bottom-bubble"><i class="fas fa-stream"></i></span>
         </a>
+        <a class="feed-bottom-item" href="conta.html" aria-label="Conta">
+            <span class="feed-bottom-bubble"><i class="fas fa-user"></i></span>
+        </a>
     </nav>
 
-    <!-- script.js primeiro (dados + carrinho), depois feed.js -->
+    <!-- utils + dados primeiro, depois script.js (carrinho) e feed.js -->
+    <script src="../JS/utils.js"></script>
+    <script src="../JS/data/categorias.js"></script>
+    <script src="../JS/data/produtos.js"></script>
+    <script src="../JS/data/profissionais.js"></script>
     <script src="../JS/script.js"></script>
     <script src="../JS/feed.js"></script>
 </body>

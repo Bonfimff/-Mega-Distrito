@@ -1,5 +1,5 @@
 /* ============================================
-   MAGÉ EXPRESS — FEED DE VÍDEOS CURTOS
+   MEGA DISTRITO — FEED DE VÍDEOS CURTOS
    Estilo TikTok / Reels
    ============================================ */
 
@@ -13,16 +13,16 @@ body.feed-page {
     background: #f0f2f5;
 }
 
-/* ?? Header claro (tema claro) ?? */
-body.feed-page #header {
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,.10);
-    border-bottom: 1px solid #e8e8e8;
-}
+/* Header mantém o verde padrão do site; a altura real é
+   medida em JS e aplicada em --feed-header-h. */
 
-/* ??????????????????????????????????????????
-   BARRA DE ABAS (Para Você / Produtos / .)
-?????????????????????????????????????????? */
+/* Sem o rótulo de localização, centraliza os links restantes */
+.header-nav-inner { justify-content: center; }
+.header-links { margin-left: 0; }
+
+/* =========================================================
+   BARRA DE ABAS (Para Você / Produtos / Usados / Serviços)
+   ========================================================= */
 .reel-tabbar {
     position: fixed;
     top: var(--feed-header-h, 68px);
@@ -31,9 +31,9 @@ body.feed-page #header {
     z-index: 820;
     display: flex;
     justify-content: center;
-    background: #fff;
+    background: var(--white);
     border-bottom: 1px solid #e8e8e8;
-    padding: 0 12px;
+    padding: 0 var(--space-3);
 }
 .reel-tabbar button {
     background: none;
@@ -42,7 +42,7 @@ body.feed-page #header {
     color: #888;
     font-size: 13px;
     font-weight: 600;
-    padding: 0 14px;
+    padding: 0 var(--space-3);
     height: 100%;
     position: relative;
     transition: color .2s;
@@ -53,14 +53,14 @@ body.feed-page #header {
     position: absolute;
     bottom: 0; left: 14px; right: 14px;
     height: 2px;
-    background: #2e7d32;
+    background: var(--green-dark);
     border-radius: 2px 2px 0 0;
     transform: scaleX(0);
     transition: transform .2s;
 }
-.reel-tabbar button.active { color: #2e7d32; }
+.reel-tabbar button.active { color: var(--green-dark); }
 .reel-tabbar button.active::after { transform: scaleX(1); }
-.reel-tabbar button:hover { color: #2e7d32; }
+.reel-tabbar button:hover { color: var(--green-dark); }
 
 /* ??????????????????????????????????????????
    CONTAINER DO REEL
@@ -171,10 +171,10 @@ body.feed-page #header {
     position: absolute;
     top: 14px; right: 14px;
     background: #e53935;
-    color: #fff;
+    color: var(--white);
     font-size: 12px;
     font-weight: 700;
-    padding: 4px 10px;
+    padding: var(--space-1) var(--space-2);
     border-radius: 20px;
     z-index: 5;
     letter-spacing: .5px;
@@ -198,7 +198,7 @@ body.feed-page #header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-1);
 }
 .reel-action-btn {
     width: 50px; height: 50px;
@@ -217,7 +217,7 @@ body.feed-page #header {
     flex-shrink: 0;
     box-shadow: 0 2px 10px rgba(0,0,0,.18);
 }
-.reel-action-btn:hover  { background: #fff; transform: scale(1.08); }
+.reel-action-btn:hover  { background: var(--white); transform: scale(1.08); }
 .reel-action-btn:active { transform: scale(.9); }
 .reel-like-btn.curtido  { background: rgba(229,57,53,.12); color: #e53935; }
 .reel-like-btn.curtido i { color: #e53935; }
@@ -236,14 +236,14 @@ body.feed-page #header {
     position: relative;
     z-index: 8;
     width: 100%;
-    padding: 0 76px 22px 16px;
+    padding: 0 76px var(--space-5) var(--space-4);
     box-sizing: border-box;
 }
 
 /* Badges de tipo + rating */
 .reel-tipo-row {
     display: flex;
-    gap: 6px;
+    gap: var(--space-1);
     align-items: center;
     margin-bottom: 6px;
     flex-wrap: wrap;
@@ -251,11 +251,11 @@ body.feed-page #header {
 .reel-tipo-badge {
     font-size: 11px;
     font-weight: 700;
-    padding: 2px 9px;
+    padding: var(--space-1) var(--space-2);
     border-radius: 20px;
     letter-spacing: .4px;
 }
-.rtb-produto { background: rgba(46,125,50,.85);  color: #e8f5e9; }
+.rtb-produto { background: rgba(46,125,50,.85);  color: var(--green-pale); }
 .rtb-usado   { background: rgba(245,124,0,.85);  color: #fff3e0; }
 .rtb-servico { background: rgba(92,53,168,.85);  color: #ede7f6; }
 
@@ -263,7 +263,7 @@ body.feed-page #header {
 .reel-seller-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     margin-bottom: 6px;
     flex-wrap: wrap;
 }
@@ -273,7 +273,7 @@ body.feed-page #header {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--white);
     font-size: 12px;
     font-weight: 700;
     flex-shrink: 0;
@@ -296,8 +296,8 @@ body.feed-page #header {
 .reel-title {
     font-size: 16px;
     font-weight: 700;
-    color: #fff;
-    margin: 0 0 4px;
+    color: var(--white);
+    margin: 0 0 var(--space-1);
     text-shadow: 0 1px 7px rgba(0,0,0,.65);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -324,7 +324,7 @@ body.feed-page #header {
 .reel-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: var(--space-1);
     margin-bottom: 12px;
 }
 .reel-tag {
@@ -333,7 +333,7 @@ body.feed-page #header {
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     color: rgba(255,255,255,.9);
-    padding: 2px 8px;
+    padding: var(--space-1) var(--space-2);
     border-radius: 20px;
     font-weight: 500;
 }
@@ -343,13 +343,13 @@ body.feed-page #header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: var(--space-2);
     flex-wrap: wrap;
 }
 .reel-price-block {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: var(--space-1);
 }
 .reel-price-old {
     font-size: 11px;
@@ -360,7 +360,7 @@ body.feed-page #header {
 .reel-price-main {
     font-size: 24px;
     font-weight: 800;
-    color: #fff;
+    color: var(--white);
     text-shadow: 0 2px 10px rgba(0,0,0,.6);
     line-height: 1;
 }
@@ -374,11 +374,11 @@ body.feed-page #header {
     cursor: pointer;
     font-size: 13px;
     font-weight: 700;
-    padding: 10px 18px;
+    padding: var(--space-2) var(--space-4);
     border-radius: 22px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1);
     white-space: nowrap;
     transition: transform .15s, opacity .2s;
     box-shadow: 0 4px 14px rgba(0,0,0,.35);
@@ -386,9 +386,9 @@ body.feed-page #header {
 }
 .reel-cta-btn:hover  { opacity: .9; transform: scale(1.04); }
 .reel-cta-btn:active { transform: scale(.96); }
-.reel-cta-produto { background: #2e7d32; color: #fff; }
-.reel-cta-usado   { background: #f57c00; color: #fff; }
-.reel-cta-servico { background: #5c35a8; color: #fff; }
+.reel-cta-produto { background: var(--green-dark); color: var(--white); }
+.reel-cta-usado   { background: var(--bazar-orange); color: var(--white); }
+.reel-cta-servico { background: #5c35a8; color: var(--white); }
 
 /* ?? Indicador "role para ver mais" ?? */
 .reel-swipe-hint {
@@ -399,7 +399,7 @@ body.feed-page #header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: var(--space-1);
     color: rgba(255,255,255,.7);
     font-size: 11px;
     font-weight: 600;
@@ -427,11 +427,11 @@ body.feed-page #header {
     z-index: 830;
     font-size: 12px;
     font-weight: 700;
-    color: #fff;
+    color: var(--white);
     background: rgba(0,0,0,.40);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    padding: 3px 10px;
+    padding: var(--space-1) var(--space-2);
     border-radius: 20px;
     letter-spacing: .5px;
     pointer-events: none;
@@ -441,55 +441,95 @@ body.feed-page #header {
 .feed-bottom-nav {
     position: fixed;
     left: 50%;
-    bottom: 14px;
+    bottom: 18px;
     transform: translateX(-50%);
-    width: min(380px, calc(100% - 20px));
-    height: 78px;
-    border-radius: 40px;
-    background: rgba(10, 10, 10, .96);
+    width: min(332px, calc(100% - 24px));
+    height: 58px;
+    border-radius: 30px;
+    background: linear-gradient(140deg, rgba(17, 22, 30, .82), rgba(9, 13, 19, .88));
+    border: 1px solid rgba(255, 255, 255, .26);
     display: flex;
     align-items: center;
     justify-content: space-around;
     z-index: 1250;
-    box-shadow: 0 18px 42px rgba(0, 0, 0, .34);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(255, 255, 255, .18);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    overflow: visible;
+    animation: feedBottomNavIn .55s cubic-bezier(.2,.8,.2,1);
+}
+
+.feed-bottom-nav::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 6px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .52), transparent);
+    pointer-events: none;
 }
 
 .feed-bottom-item {
-    width: 33.33%;
+    flex: 1;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform .22s ease;
 }
 
 .feed-bottom-bubble {
-    width: 46px;
-    height: 46px;
+    width: 31px;
+    height: 31px;
+    background: rgba(255, 255, 255, .09);
+    border: 1px solid rgba(255, 255, 255, .2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform .32s cubic-bezier(.2,.8,.2,1), background .24s ease, border-color .24s ease, width .28s ease, height .28s ease;
+    transition: transform .32s cubic-bezier(.2,.8,.2,1), background .24s ease, border-color .24s ease, width .28s ease, height .28s ease, box-shadow .24s ease;
 }
 
 .feed-bottom-bubble i {
-    color: #fff;
-    font-size: 1.18rem;
-    transition: color .22s ease;
+    color: #f5fbff;
+    font-size: var(--text-sm);
+    transition: color .22s ease, transform .22s ease;
+}
+
+.feed-bottom-item:hover .feed-bottom-bubble {
+    transform: translateY(-1px) scale(1.03);
+    background: rgba(255, 255, 255, .12);
+}
+
+.feed-bottom-item:active .feed-bottom-bubble {
+    transform: translateY(0) scale(.97);
 }
 
 .feed-bottom-item.active .feed-bottom-bubble {
-    width: 62px;
-    height: 62px;
-    background: #000;
-    border: 2px solid #fff;
-    transform: translateY(-24px);
+    width: 52px;
+    height: 52px;
+    background: radial-gradient(circle at 35% 25%, rgba(24, 33, 46, .96), rgba(10, 15, 21, .98) 74%);
+    border: 3px solid rgba(255, 255, 255, .96);
+    transform: translateY(-15px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, .45), 0 0 0 2px rgba(255, 255, 255, .22);
 }
 
 .feed-bottom-item.active .feed-bottom-bubble i {
-    color: #ff8a00;
+    color: #66d3ff;
+    transform: scale(1.05);
+}
+
+@keyframes feedBottomNavIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(18px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
 }
 
 /* ?? Coração flutuante ?? */
@@ -527,7 +567,7 @@ body.feed-page #header {
 .feed-modal-box {
     width: 100%;
     max-height: 88vh;
-    background: #fff;
+    background: var(--white);
     border-radius: 22px 22px 0 0;
     overflow-y: auto;
     transform: translateY(100%);
@@ -538,16 +578,31 @@ body.feed-page #header {
 
 @media (max-width: 768px) {
     .feed-bottom-nav {
-        width: calc(100% - 12px);
-        bottom: 8px;
-        height: 74px;
-        border-radius: 32px;
+        width: calc(100% - 16px);
+        bottom: 10px;
+        height: 56px;
+        border-radius: 28px;
     }
 
     .feed-bottom-item.active .feed-bottom-bubble {
-        width: 58px;
-        height: 58px;
-        transform: translateY(-21px);
+        width: 50px;
+        height: 50px;
+        transform: translateY(-13px);
+    }
+}
+
+/* No desktop a navegação vai para o header; a barra inferior some. */
+@media (min-width: 769px) {
+    .feed-bottom-nav { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .feed-bottom-nav,
+    .feed-bottom-item,
+    .feed-bottom-bubble,
+    .feed-bottom-bubble i {
+        animation: none !important;
+        transition: none !important;
     }
 }
 
@@ -556,7 +611,7 @@ body.feed-page #header {
     width: 44px; height: 4px;
     background: #ddd;
     border-radius: 4px;
-    margin: 12px auto 0;
+    margin: var(--space-3) auto 0;
 }
 
 /* Mídia do modal */
@@ -582,7 +637,7 @@ body.feed-page #header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 10px;
+    gap: var(--space-2);
     margin-bottom: 6px;
 }
 .feed-modal-titulo {
@@ -612,7 +667,7 @@ body.feed-page #header {
 }
 .feed-modal-preco {
     font-size: 26px; font-weight: 800;
-    color: #2e7d32;
+    color: var(--green-dark);
     margin-bottom: 14px; line-height: 1.1;
 }
 .feed-modal-preco.servico-cor { color: #5c35a8; }
@@ -621,13 +676,13 @@ body.feed-page #header {
 .feed-modal-meta {
     background: #f9f9f9;
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: var(--space-2) var(--space-3);
     margin-bottom: 14px;
     display: flex; flex-direction: column; gap: 6px;
 }
 .feed-modal-meta-row {
     display: flex; align-items: center;
-    gap: 8px; font-size: 13px; color: #444;
+    gap: var(--space-2); font-size: 13px; color: #444;
 }
 .feed-modal-meta-row i { width: 16px; text-align: center; color: #888; flex-shrink: 0; }
 .feed-modal-descricao { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 14px; }

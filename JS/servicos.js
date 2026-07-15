@@ -1,6 +1,6 @@
 'use strict';
 /* =========================================================
-   MAGÉ EXPRESS - SERVIÇOS
+   MEGA DISTRITO - SERVIÇOS
    Renderização de profissionais, vagas e currículo
    ========================================================= */
 function renderServicos(lista) {
@@ -61,7 +61,7 @@ function buildServicoCardHTML(p) {
     const tags = p.tags.map(t => `<span class="servico-tag">${t}</span>`).join('');
 
     return `
-        <div class="servico-card">
+        <div class="servico-card" data-servico-id="${p.id}">
             ${galeriaHTML}
             <span class="servico-disponivel ${dispCls}" title="${dispTitle}"></span>
             <div class="servico-card-body">
@@ -106,6 +106,46 @@ function buildServicoCardHTML(p) {
             </div>
         </div>
     `;
+}
+
+function buildDestaqueCardHTML(p) {
+    const cor     = SERVICO_CORES[p.especialidade] || '#607d8b';
+    const inicial = p.nome.charAt(0).toUpperCase();
+    return `
+        <article class="servico-destaque-card" data-servico-id="${p.id}">
+            <div class="servico-destaque-avatar" style="background:${cor};">${inicial}</div>
+            <div class="servico-destaque-info">
+                <strong>${p.nome}</strong>
+                <span>${p.ocupacao}</span>
+                <span class="servico-destaque-rating"><i class="fas fa-star"></i> ${p.avaliacao.toFixed(1)} (${p.avaliacoes})</span>
+            </div>
+            <button class="servico-destaque-btn" onclick="verPerfilDestaque(${p.id})">Ver perfil</button>
+        </article>
+    `;
+}
+
+/** Renderiza a esteira de profissionais em destaque (verificados e melhor avaliados) */
+function renderDestaqueProfissionais() {
+    const rail = document.getElementById('servicos-destaque-rail');
+    if (!rail) return;
+
+    const destaques = [...PROFISSIONAIS]
+        .filter(p => p.verificado)
+        .sort((a, b) => b.avaliacao - a.avaliacao || b.avaliacoes - a.avaliacoes)
+        .slice(0, 6);
+
+    rail.innerHTML = destaques.map(buildDestaqueCardHTML).join('');
+}
+
+/** Filtra pela especialidade do profissional em destaque e rola até o card dele */
+function verPerfilDestaque(id) {
+    const p = PROFISSIONAIS.find(x => x.id === id);
+    if (!p) return;
+    filtrarServicos('todos');
+    requestAnimationFrame(() => {
+        const card = document.querySelector(`.servico-card[data-servico-id="${id}"]`);
+        card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
 }
 
 const _galeriaTimers = new Map();
@@ -183,7 +223,7 @@ function wppProfissional(id) {
     const p = PROFISSIONAIS.find(x => x.id === id);
     if (!p) return;
     const msg = encodeURIComponent(
-        `Olá ${p.nome.split(' ')[0]}! Vi seu perfil no Magé Express e gostaria de solicitar um orçamento de ${p.ocupacao}.`
+        `Olá ${p.nome.split(' ')[0]}! Vi seu perfil no Mega Distrito e gostaria de solicitar um orçamento de ${p.ocupacao}.`
     );
     window.open(`https://wa.me/55${p.telefone}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
@@ -207,79 +247,6 @@ function bindSubtabs() {
         });
     });
 }
-
-const VAGAS = [
-    {
-        id: 301, cargo: 'Atendente de Loja',         empresa: 'Mercado Central Magé',
-        area: 'comercio', regime: 'CLT',
-        salario: 'R$ 1.518', local: 'Centro, Magé',
-        desc: 'Atendimento ao cliente, organização de gôndolas e frente de caixa. Experiência desejável.',
-        contato: '21999990101', publicada: 'Hoje',
-    },
-    {
-        id: 302, cargo: 'Auxiliar de Pedreiro',      empresa: 'Construtora Bramax',
-        area: 'construcao', regime: 'CLT',
-        salario: 'R$ 1.700', local: 'Piabetá, Magé',
-        desc: 'Suporte em obras residenciais. Necessário ter experiência mínima de 6 meses.',
-        contato: '21999990102', publicada: 'Hoje',
-    },
-    {
-        id: 303, cargo: 'Técnico de TI / Suporte',   empresa: 'Prefeitura de Magé',
-        area: 'tecnologia', regime: 'Temporário',
-        salario: 'R$ 2.200', local: 'Centro, Magé',
-        desc: 'Suporte técnico em hardware e software para equipamentos da prefeitura. Necessário diploma técnico.',
-        contato: '21999990103', publicada: 'Ontem',
-    },
-    {
-        id: 304, cargo: 'Cozinheira / Cozinheiro',   empresa: 'Restaurante Sabor Real',
-        area: 'servicos', regime: 'CLT',
-        salario: 'A combinar', local: 'Suruí, Magé',
-        desc: 'Preparo de pratos executivos e a la carte. Experiência em cozinha industrial é diferencial.',
-        contato: '21999990104', publicada: 'Há 2 dias',
-    },
-    {
-        id: 305, cargo: 'Auxiliar de Enfermagem',    empresa: 'Clínica Saúde Magé',
-        area: 'saude', regime: 'CLT',
-        salario: 'R$ 1.900', local: 'Centro, Magé',
-        desc: 'Assistência a pacientes, coleta de amostras e apoio em procedimentos clínicos.',
-        contato: '21999990105', publicada: 'Há 2 dias',
-    },
-    {
-        id: 306, cargo: 'Motorista Entregador',      empresa: 'DistribuiMagé Logística',
-        area: 'servicos', regime: 'CLT',
-        salario: 'R$ 2.000 + comissão', local: 'Magé',
-        desc: 'Entrega de mercadorias em Magé e municípios vizinhos. CNH B obrigatória.',
-        contato: '21999990106', publicada: 'Há 3 dias',
-    },
-    {
-        id: 307, cargo: 'Recepcionista',             empresa: 'Academia Fit Magé',
-        area: 'servicos', regime: 'CLT',
-        salario: 'R$ 1.518', local: 'Barbuda, Magé',
-        desc: 'Recepção de alunos, controle de acesso, agendamentos e suporte administrativo.',
-        contato: '21999990107', publicada: 'Há 4 dias',
-    },
-    {
-        id: 308, cargo: 'Eletricista Autônomo',      empresa: 'Obras Piabetá',
-        area: 'construcao', regime: 'Autônomo',
-        salario: 'A combinar', local: 'Piabetá, Magé',
-        desc: 'Instalações elétricas em obra de médio porte. Disponibilidade imediata.',
-        contato: '21999990108', publicada: 'Há 5 dias',
-    },
-    {
-        id: 309, cargo: 'Designer Gráfico Freelancer', empresa: 'Agência Digital Local',
-        area: 'tecnologia', regime: 'Freelancer',
-        salario: 'R$ 80–120/peça', local: 'Remoto / Magé',
-        desc: 'Criação de posts para redes sociais, flyers e identidade visual. Portfólio obrigatório.',
-        contato: '21999990109', publicada: 'Há 6 dias',
-    },
-    {
-        id: 310, cargo: 'Auxiliar de Limpeza',       empresa: 'Escola Estadual Magé',
-        area: 'outros', regime: 'CLT',
-        salario: 'R$ 1.518', local: 'Centro, Magé',
-        desc: 'Serviços de limpeza e conservação em ambiente escolar. Turnos manhã ou tarde.',
-        contato: '21999990110', publicada: 'Há 7 dias',
-    },
-];
 
 // Armazena vagas adicionadas pelo usuário
 let vagasExtra = [];
@@ -356,7 +323,7 @@ function candidatarVaga(id) {
     const v = [...VAGAS, ...vagasExtra].find(x => x.id === id);
     if (!v) return;
     const msg = encodeURIComponent(
-        `Olá! Vi a vaga de "${v.cargo}" na empresa "${v.empresa}" pelo Magé Express e gostaria de me candidatar.`
+        `Olá! Vi a vaga de "${v.cargo}" na empresa "${v.empresa}" pelo Mega Distrito e gostaria de me candidatar.`
     );
     window.open(`https://wa.me/55${v.contato}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
@@ -482,48 +449,14 @@ function publicarCurriculo() {
     toast('Ótimo. Currículo publicado! Recrutadores de Magé já podem te encontrar.');
 }
 
-function initAndroidBottomNav() {
-    const nav = document.getElementById('android-bottom-nav');
-    if (!nav) return;
-
-    const itens = Array.from(nav.querySelectorAll('.android-nav-item'));
-    const hamburger = document.getElementById('hamburger');
-
-    function ativar(item) {
-        itens.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-    }
-
-    itens.forEach(item => {
-        item.addEventListener('click', e => {
-            ativar(item);
-
-            const tipo = item.dataset.navItem;
-            if (tipo === 'gaveta') {
-                e.preventDefault();
-                if (hamburger) hamburger.click();
-                return;
-            }
-
-            const destino = item.getAttribute('href');
-            if (destino) {
-                e.preventDefault();
-                setTimeout(() => {
-                    window.location.href = destino;
-                }, 170);
-            }
-        });
-    });
-}
-
-/* ?????????????????????????????????????????????
+/* =========================================================
    INICIALIZAÇÃO
-????????????????????????????????????????????? */
+   ========================================================= */
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('servicos-grid')) renderServicos(PROFISSIONAIS);
     if (document.getElementById('vagas-grid'))    renderVagas(VAGAS);
+    renderDestaqueProfissionais();
     bindFiltrosServicos();
     bindSubtabs();
     bindFiltrosVagas();
-    initAndroidBottomNav();
 });

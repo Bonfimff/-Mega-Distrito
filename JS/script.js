@@ -1,187 +1,13 @@
 'use strict';
 
 /* =========================================================
-   MAGÉ EXPRESS — Script Principal
+   MEGA DISTRITO — Script Principal
    Funcionalidades: Produtos · Categorias · Carrinho · Busca
+   ---------------------------------------------------------
+   Dados (CATEGORIAS, PRODUTOS, PRODUTOS_USADOS, PROFISSIONAIS…)
+   vivem em JS/data/*.js; helpers compartilhados em JS/utils.js.
+   Ambos devem ser carregados ANTES deste arquivo.
    ========================================================= */
-
-// =====================
-// DADOS DAS CATEGORIAS
-// =====================
-const CATEGORIAS = [
-    { id: 'eletronicos', nome: 'Eletrônicos',      icone: 'fas fa-laptop',       qtd: 3 },
-    { id: 'casa',        nome: 'Casa e Cozinha',   icone: 'fas fa-blender',      qtd: 3 },
-    { id: 'ferramentas', nome: 'Ferramentas',       icone: 'fas fa-tools',        qtd: 3 },
-    { id: 'moda',        nome: 'Moda',              icone: 'fas fa-tshirt',       qtd: 3 },
-];
-
-// =====================
-// DADOS DOS PRODUTOS
-// =====================
-const PRODUTOS = [
-    {
-        id: 1, nome: 'Smartphone Galaxy A55',       categoria: 'eletronicos',
-        preco: 1299.90, precoAntigo: 1599.90,
-        emoji: '🛍️', avaliacao: 4.5, avaliacoes: 128, badge: 'Novo',  badgeCls: 'badge-novo',
-    },
-    {
-        id: 2, nome: 'Fone Bluetooth Premium',      categoria: 'eletronicos',
-        preco: 199.90,  precoAntigo: 249.90,
-        emoji: '🛍️', avaliacao: 4.8, avaliacoes: 256, badge: 'Top',   badgeCls: 'badge-top',
-    },
-    {
-        id: 3, nome: 'Notebook Ultrafino i5',       categoria: 'eletronicos',
-        preco: 2899.90, precoAntigo: 3499.90,
-        emoji: '🛍️', avaliacao: 4.6, avaliacoes:  89, badge: 'Oferta', badgeCls: 'sale',
-    },
-    {
-        id: 4, nome: 'Panela de Pressão 7 L',       categoria: 'casa',
-        preco: 129.90,  precoAntigo: null,
-        emoji: '🛍️', avaliacao: 4.4, avaliacoes: 312, badge: null,    badgeCls: '',
-    },
-    {
-        id: 5, nome: 'Kit Organizador Doméstico',   categoria: 'casa',
-        preco: 89.90,   precoAntigo: 119.90,
-        emoji: '🛍️', avaliacao: 4.2, avaliacoes: 174, badge: 'Promoção', badgeCls: 'sale',
-    },
-    {
-        id: 6, nome: 'Ventilador de Mesa 40 cm',    categoria: 'casa',
-        preco: 159.90,  precoAntigo: null,
-        emoji: '🛍️', avaliacao: 4.0, avaliacoes:  95, badge: null,    badgeCls: '',
-    },
-    {
-        id: 7, nome: 'Furadeira de Impacto 750 W',  categoria: 'ferramentas',
-        preco: 349.90,  precoAntigo: 429.90,
-        emoji: '🛍️', avaliacao: 4.7, avaliacoes: 203, badge: 'Top',  badgeCls: 'badge-top',
-    },
-    {
-        id: 8, nome: 'Caixa de Ferramentas 22"',    categoria: 'ferramentas',
-        preco: 189.90,  precoAntigo: null,
-        emoji: '🛍️', avaliacao: 4.5, avaliacoes: 147, badge: null,   badgeCls: '',
-    },
-    {
-        id: 9, nome: 'Serra Circular 7¼"',          categoria: 'ferramentas',
-        preco: 499.90,  precoAntigo: 599.90,
-        emoji: '🛍️', avaliacao: 4.6, avaliacoes:  68, badge: 'Oferta', badgeCls: 'sale',
-    },
-    {
-        id: 10, nome: 'Camiseta Básica Premium',    categoria: 'moda',
-        preco: 59.90,   precoAntigo: 79.90,
-        emoji: '🛍️', avaliacao: 4.3, avaliacoes: 421, badge: null,   badgeCls: '',
-    },
-    {
-        id: 11, nome: 'Tênis Esportivo Runner',     categoria: 'moda',
-        preco: 289.90,  precoAntigo: 399.90,
-        emoji: '🛍️', avaliacao: 4.9, avaliacoes: 567, badge: 'Destaque', badgeCls: 'badge-top',
-    },
-    {
-        id: 12, nome: 'Jaqueta Corta-Vento',        categoria: 'moda',
-        preco: 179.90,  precoAntigo: 229.90,
-        emoji: '🛍️', avaliacao: 4.4, avaliacoes: 189, badge: 'Promoção', badgeCls: 'sale',
-    },
-];
-
-// =====================
-// DADOS — BAZAR (USADOS)
-// =====================
-const PRODUTOS_USADOS = [
-    {
-        id: 101, nome: 'Smartphone Samsung S21 (256 GB)',
-        categoria: 'eletronicos', emoji: '🛍️',
-        preco: 1200.00, precoOrig: 3500.00,
-        condicao: 'otimo', condicaoLabel: 'Ótimo Estado',
-        desc: 'Sem arranhões, bateria 92%. Acompanha carregador e caixa original.',
-        vendedor: 'Rafael M.', bairro: 'Centro, Magé',
-    },
-    {
-        id: 102, nome: 'Notebook Dell Inspiron 15"',
-        categoria: 'eletronicos', emoji: '🛍️',
-        preco: 1350.00, precoOrig: 3200.00,
-        condicao: 'bom', condicaoLabel: 'Bom Estado',
-        desc: 'Intel i5 10ª geração, 8 GB RAM, SSD 256 GB. Pequeno risco na tampa.',
-        vendedor: 'Ana Paula S.', bairro: 'Suruí, Magé',
-    },
-    {
-        id: 103, nome: 'Fone JBL Tune 510BT',
-        categoria: 'eletronicos', emoji: '🛍️',
-        preco: 89.00, precoOrig: 199.00,
-        condicao: 'bom', condicaoLabel: 'Bom Estado',
-        desc: 'Funcionando perfeitamente, uso de 4 meses. Sem caixa.',
-        vendedor: 'Lucas F.', bairro: 'Fragoso, Magé',
-    },
-    {
-        id: 104, nome: 'Jogo de Panelas Tramontina (7 peças)',
-        categoria: 'casa', emoji: '🛍️',
-        preco: 120.00, precoOrig: 350.00,
-        condicao: 'bom', condicaoLabel: 'Bom Estado',
-        desc: 'Jogo completo antiaderente, leve desgaste no exterior. Ótimo para uso diário.',
-        vendedor: 'Cláudia R.', bairro: 'Santo Aleixo, Magé',
-    },
-    {
-        id: 105, nome: 'Ar-Condicionado Split 12.000 BTU',
-        categoria: 'casa', emoji: '🛍️',
-        preco: 800.00, precoOrig: 2500.00,
-        condicao: 'otimo', condicaoLabel: 'Ótimo Estado',
-        desc: 'Higienizado recentemente. Gelando muito bem, com controle remoto.',
-        vendedor: 'Jorge P.', bairro: 'Barbuda, Magé',
-    },
-    {
-        id: 106, nome: 'Mesa de Jantar 6 Cadeiras',
-        categoria: 'casa', emoji: '🛍️',
-        preco: 380.00, precoOrig: 1200.00,
-        condicao: 'regular', condicaoLabel: 'Estado Regular',
-        desc: 'Madeira maciça, precisa de envernizamento. Estrutura firme, cadeiras sem avaria.',
-        vendedor: 'Fernanda L.', bairro: 'Mauá, Magé',
-    },
-    {
-        id: 107, nome: 'Furadeira Bosch 500W',
-        categoria: 'ferramentas', emoji: '🛍️',
-        preco: 180.00, precoOrig: 480.00,
-        condicao: 'otimo', condicaoLabel: 'Ótimo Estado',
-        desc: 'Pouco uso, guardada há 2 anos. Acompanha maleta e acessórios originais.',
-        vendedor: 'Carlos A.', bairro: 'Piabetá, Magé',
-    },
-    {
-        id: 108, nome: 'Conjunto de Chaves (40 peças)',
-        categoria: 'ferramentas', emoji: '🛍️',
-        preco: 55.00, precoOrig: 150.00,
-        condicao: 'bom', condicaoLabel: 'Bom Estado',
-        desc: 'Chaves allen, fendas e philips. Caixa plástica com pequena trinca na tampa.',
-        vendedor: 'Marcos T.', bairro: 'Inhomirim, Magé',
-    },
-    {
-        id: 109, nome: 'Tênis Nike Air Max 42',
-        categoria: 'moda', emoji: '🛍️',
-        preco: 250.00, precoOrig: 850.00,
-        condicao: 'otimo', condicaoLabel: 'Ótimo Estado',
-        desc: 'Usado 3 vezes apenas. Sem defeitos, sola perfeita. Acompanha caixa.',
-        vendedor: 'Beatriz O.', bairro: 'Centro, Magé',
-    },
-    {
-        id: 110, nome: 'Jaqueta Couro Sintético G',
-        categoria: 'moda', emoji: '🛍️',
-        preco: 95.00, precoOrig: 249.00,
-        condicao: 'bom', condicaoLabel: 'Bom Estado',
-        desc: 'Pouco uso, apenas pequeno desgaste na gola. Cor preta, tamanho G.',
-        vendedor: 'Talita B.', bairro: 'Raiz da Serra, Magé',
-    },
-    {
-        id: 111, nome: 'Bicicleta Infantil Aro 20',
-        categoria: 'outros', emoji: '🛍️',
-        preco: 150.00, precoOrig: 450.00,
-        condicao: 'bom', condicaoLabel: 'Bom Estado',
-        desc: 'Guidão e selim ajustáveis, pneus bons, com rodinhas. Cor azul.',
-        vendedor: 'Patrícia G.', bairro: 'Cachoeiras, Magé',
-    },
-    {
-        id: 112, nome: 'Estante de Livros 5 Prateleiras',
-        categoria: 'outros', emoji: '🛍️',
-        preco: 80.00, precoOrig: 299.00,
-        condicao: 'regular', condicaoLabel: 'Estado Regular',
-        desc: 'MDF, algumas marcas de uso. Fácil desmontagem, retirar no local.',
-        vendedor: 'Eduardo N.', bairro: 'Magé Centro',
-    },
-];
 
 // =====================
 // ESTADO DO CARRINHO
@@ -189,7 +15,6 @@ const PRODUTOS_USADOS = [
 // =====================
 let carrinho = carregarCarrinho();
 
-// INICIALIZAÇÃO
 // INICIALIZAÇÃO
 // =====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -208,12 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
    ───────────────────────────────────────────── */
 function renderCategorias() {
     const grid = document.getElementById('categories-grid');
+    if (!grid) return;
     grid.innerHTML = CATEGORIAS.map(c => `
-        <div class="category-card" data-cat="${c.id}" onclick="filtrarCategoria('${c.id}')">
-            <div class="category-icon"><i class="${c.icone}"></i></div>
-            <h3>${c.nome}</h3>
-            <small>${c.qtd} produtos</small>
-        </div>
+        <button type="button" class="category-card" data-cat="${c.id}" onclick="filtrarCategoria('${c.id}')">
+            <span class="category-icon"><i class="${c.icone}"></i></span>
+            <span class="category-name">${c.nome}</span>
+        </button>
     `).join('');
 }
 
@@ -247,37 +72,51 @@ function renderProdutos(lista) {
 }
 
 function buildCardHTML(p) {
-    const badge = p.badge
-        ? `<span class="product-badge ${p.badgeCls}">${p.badge}</span>`
-        : '';
+    // Selo de desconto (%) quando há preço antigo; senão badge textual
+    const desconto = p.precoAntigo
+        ? Math.round((1 - p.preco / p.precoAntigo) * 100)
+        : 0;
+    const selo = desconto >= 5
+        ? `<span class="product-discount">-${desconto}%</span>`
+        : (p.badge ? `<span class="product-badge ${p.badgeCls}">${p.badge}</span>` : '');
 
     const precoAntigo = p.precoAntigo
-        ? `<div class="product-price-old">De: ${brl(p.precoAntigo)}</div>`
+        ? `<span class="product-price-old">${brl(p.precoAntigo)}</span>`
         : '';
 
-    const parcelas   = Math.max(1, Math.floor(p.preco / 10));
+    // Parcelamento realista: até 12x, parcela mínima de R$ 10
+    const parcelas   = Math.min(12, Math.max(1, Math.floor(p.preco / 10)));
     const vlrParcela = brl(p.preco / parcelas);
-    const catNome    = nomeDaCategoria(p.categoria);
-    const estrelas   = buildEstrelas(p.avaliacao);
+    const parcelaHtml = parcelas > 1
+        ? `<div class="product-installment">em ${parcelas}x ${vlrParcela} sem juros</div>`
+        : '';
+
+    // Frete grátis acima de R$ 99 (regra promocional)
+    const freteHtml = p.preco >= 99
+        ? `<div class="product-shipping"><i class="fas fa-truck"></i> Frete grátis</div>`
+        : '';
 
     return `
         <div class="product-card" data-id="${p.id}">
-            ${badge}
-            <div class="product-img-wrapper">${p.emoji}</div>
+            <div class="product-img-wrapper">
+                ${selo}
+                <span class="product-emoji">${p.emoji}</span>
+            </div>
             <div class="product-info">
-                <span class="product-category">${catNome}</span>
                 <h3 class="product-name">${p.nome}</h3>
                 <div class="product-rating">
-                    <span class="stars">${estrelas}</span>
+                    <i class="fas fa-star"></i>
+                    <span class="nota">${p.avaliacao.toFixed(1)}</span>
                     <span class="count">(${p.avaliacoes})</span>
                 </div>
                 <div class="product-prices">
                     ${precoAntigo}
                     <div class="product-price">${brl(p.preco)}</div>
-                    <div class="product-installment">em até ${parcelas}x de ${vlrParcela}</div>
+                    ${parcelaHtml}
+                    ${freteHtml}
                 </div>
                 <button class="btn-add-cart" onclick="adicionarAoCarrinho(${p.id})">
-                    <i class="fas fa-cart-plus"></i> Comprar
+                    <i class="fas fa-cart-plus"></i> Adicionar
                 </button>
             </div>
         </div>
@@ -504,18 +343,6 @@ function simularCheckout() {
 }
 
 /* ─────────────────────────────────────────────
-   TOAST NOTIFICATION
-   ───────────────────────────────────────────── */
-let toastTimer = null;
-function toast(msg) {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
-}
-
-/* ─────────────────────────────────────────────
    ANIMAÇÃO DO ÍCONE DO CARRINHO
    ───────────────────────────────────────────── */
 function pulsarBotaoCarrinho() {
@@ -564,8 +391,11 @@ function bindActiveNav() {
    HAMBURGER (MENU MOBILE)
    ───────────────────────────────────────────── */
 function bindHamburger() {
+    // Header atual não usa hamburger; guarda mantida para
+    // páginas que ainda tenham o menu antigo.
     const btn = document.getElementById('hamburger');
     const nav = document.getElementById('nav');
+    if (!btn || !nav) return;
 
     btn.addEventListener('click', () => {
         btn.classList.toggle('active');
@@ -734,7 +564,7 @@ function demonstrarInteresse(id) {
     const item = PRODUTOS_USADOS.find(p => p.id === id);
     if (!item) return;
     const msg = encodeURIComponent(
-        `Olá! Vi o anúncio "${item.nome}" por ${brl(item.preco)} no Magé Express. Ainda está disponível?`
+        `Olá! Vi o anúncio "${item.nome}" por ${brl(item.preco)} no Mega Distrito. Ainda está disponível?`
     );
     // Abre WhatsApp do vendedor (número ficticio)
     window.open(`https://wa.me/5521999990000?text=${msg}`, '_blank', 'noopener,noreferrer');
@@ -768,179 +598,8 @@ function adicionarBazarAoCarrinho(id) {
 }
 
 /* ─────────────────────────────────────────────
-   SERVIÇOS LOCAIS — DADOS
-   ───────────────────────────────────────────── */
-
-// Cores da faixa superior por especialidade
-const SERVICO_CORES = {
-    construcao : '#795548',
-    eletrica   : '#f9a825',
-    hidraulica : '#0288d1',
-    limpeza    : '#00897b',
-    tecnologia : '#5c35a8',
-    beleza     : '#e91e63',
-    outros     : '#607d8b',
-};
-
-/* Fotos de exemplo por especialidade (3 por área) */
-const FOTOS_ESPECIALIDADE = {
-    construcao: [
-        { src: 'https://picsum.photos/seed/const-obra/400/220',   alt: 'Obra de alvenaria' },
-        { src: 'https://picsum.photos/seed/const-piso/400/220',   alt: 'Assentamento de pisos e revestimentos' },
-        { src: 'https://picsum.photos/seed/const-reform/400/220', alt: 'Reforma residencial concluída' },
-    ],
-    eletrica: [
-        { src: 'https://picsum.photos/seed/elec-painel/400/220',  alt: 'Quadro de distribuição elétrica' },
-        { src: 'https://picsum.photos/seed/elec-fio/400/220',     alt: 'Instalação de cabeamentos' },
-        { src: 'https://picsum.photos/seed/elec-tomada/400/220',  alt: 'Instalação de tomadas e interruptores' },
-    ],
-    hidraulica: [
-        { src: 'https://picsum.photos/seed/hid-cano/400/220',     alt: 'Encanamento de canos' },
-        { src: 'https://picsum.photos/seed/hid-banheiro/400/220', alt: 'Instalação de banheiro' },
-        { src: 'https://picsum.photos/seed/hid-caixa/400/220',    alt: 'Caixa d\'água instalada' },
-    ],
-    limpeza: [
-        { src: 'https://picsum.photos/seed/clean-sala/400/220',   alt: 'Limpeza de sala' },
-        { src: 'https://picsum.photos/seed/clean-kit/400/220',    alt: 'Cozinha higienizada' },
-        { src: 'https://picsum.photos/seed/clean-obra/400/220',   alt: 'Limpeza pós-obra' },
-    ],
-    tecnologia: [
-        { src: 'https://picsum.photos/seed/tech-pc/400/220',      alt: 'Manutenção de computador' },
-        { src: 'https://picsum.photos/seed/tech-rede/400/220',    alt: 'Instalação de rede Wi-Fi' },
-        { src: 'https://picsum.photos/seed/tech-cftv/400/220',    alt: 'Câmeras CFTV instaladas' },
-    ],
-    beleza: [
-        { src: 'https://picsum.photos/seed/beauty-mani/400/220',  alt: 'Manicure e pedicure' },
-        { src: 'https://picsum.photos/seed/beauty-cab/400/220',   alt: 'Corte e coloração' },
-        { src: 'https://picsum.photos/seed/beauty-unh/400/220',   alt: 'Alongamento de unhas' },
-    ],
-    outros: [
-        { src: 'https://picsum.photos/seed/outros-jard/400/220',  alt: 'Jardim cuidado' },
-        { src: 'https://picsum.photos/seed/outros-serv/400/220',  alt: 'Serviço em andamento' },
-        { src: 'https://picsum.photos/seed/outros-res/400/220',   alt: 'Resultado final' },
-    ],
-};
-
-const PROFISSIONAIS = [
-    {
-        id: 201, nome: 'João Carlos Silva',      especialidade: 'construcao',
-        ocupacao: 'Pedreiro & Azulejista',
-        avaliacao: 4.8, avaliacoes: 74, verificado: true, disponivel: true,
-        desc: 'Especialista em alvenaria, assentamento de pisos, revestimentos e pequenas reformas residenciais.',
-        tags: ['Pedreiro', 'Azulejista', 'Reforma', 'Pinturas'],
-        horario: 'Seg–Sáb: 07h–17h',
-        horario: 'Seg—Sáb: 07h—17h',
-        preco: 200, unidade: 'diária',
-        telefone: '21999990001',
-    },
-    {
-        id: 202, nome: 'Marcos Andrade',          especialidade: 'eletrica',
-        ocupacao: 'Eletricista Residencial',
-        avaliacao: 5.0, avaliacoes: 112, verificado: true, disponivel: true,
-        desc: 'Instalações elétricas residenciais e comerciais, quadros de distribuição, SPDA e tomadas.',
-        tags: ['Elétrica', 'Instalações', 'SPDA', 'Iluminação'],
-        horario: 'Seg–Sex: 08h–18h | Sáb: 08h–12h',
-        horario: 'Seg—Sex: 08h—18h | Sáb: 08h—12h',
-        preco: 120, unidade: 'hora',
-        telefone: '21999990002',
-    },
-    {
-        id: 203, nome: 'Roberto Fonseca',          especialidade: 'hidraulica',
-        ocupacao: 'Encanador & Hidráulico',
-        avaliacao: 4.7, avaliacoes: 89, verificado: true, disponivel: false,
-        desc: 'Conserto de vazamentos, instalação de boxes, torneiras, chuveiros e caixas d\'água.',
-        tags: ['Encanamento', 'Infiltração', 'Caixa D\'água', 'Box'],
-        horario: 'Seg–Sex: 07h–17h',
-        horario: 'Seg—Sex: 07h—17h',
-        preco: 150, unidade: 'hora',
-        telefone: '21999990003',
-    },
-    {
-        id: 204, nome: 'Sandra Oliveira',          especialidade: 'limpeza',
-        ocupacao: 'Diarista & Faxineira',
-        avaliacao: 4.9, avaliacoes: 203, verificado: true, disponivel: true,
-        desc: 'Limpeza residencial completa, pós-obra, escritórios e eventos. Produto de qualidade incluso.',
-        tags: ['Limpeza', 'Faxina', 'Pós-obra', 'Escritório'],
-        horario: 'Seg–Sáb: 08h–17h',
-        horario: 'Seg—Sáb: 08h—17h',
-        preco: 180, unidade: 'diária',
-        telefone: '21999990004',
-    },
-    {
-        id: 205, nome: 'Felipe Rocha',             especialidade: 'tecnologia',
-        ocupacao: 'Técnico de Informática',
-        avaliacao: 4.6, avaliacoes: 58, verificado: false, disponivel: true,
-        desc: 'Formatação, montagem de PCs, redes Wi-Fi, CFTV, instalação de programas e suporte remoto.',
-        tags: ['Informática', 'Redes', 'CFTV', 'Formatação'],
-        horario: 'Seg–Sex: 09h–19h | Sáb: 09h–14h',
-        horario: 'Seg—Sex: 09h—19h | Sáb: 09h—14h',
-        preco: 80, unidade: 'hora',
-        telefone: '21999990005',
-    },
-    {
-        id: 206, nome: 'Camila Ferreira',          especialidade: 'beleza',
-        ocupacao: 'Manicure & Cabeleireira',
-        avaliacao: 4.9, avaliacoes: 347, verificado: true, disponivel: true,
-        desc: 'Atendimento em domicílio. Manicure, pedicure, escova, coloração e alongamento de unhas.',
-        tags: ['Manicure', 'Pedicure', 'Cabelo', 'Alongamento'],
-        horario: 'Seg–Sáb: 09h–20h',
-        horario: 'Seg—Sáb: 09h—20h',
-        preco: 60, unidade: 'serviço',
-        telefone: '21999990006',
-    },
-    {
-        id: 207, nome: 'Antônio Pereira',          especialidade: 'construcao',
-        ocupacao: 'Pintor Predial & Residencial',
-        avaliacao: 4.5, avaliacoes: 61, verificado: false, disponivel: true,
-        desc: 'Pintura interna, externa, textura, grafiato e epóxi para pisos. Acabamento impecável.',
-        tags: ['Pintura', 'Textura', 'Grafiato', 'Epóxi'],
-        horario: 'Seg–Sáb: 07h–17h',
-        horario: 'Seg—Sáb: 07h—17h',
-        preco: 180, unidade: 'diária',
-        telefone: '21999990007',
-    },
-    {
-        id: 208, nome: 'Tiago Souza',              especialidade: 'construcao',
-        ocupacao: 'Marceneiro & Instalador',
-        avaliacao: 4.7, avaliacoes: 44, verificado: true, disponivel: false,
-        desc: 'Montagem de móveis planejados, portas, janelas, decks e pequenos consertos em madeira.',
-        tags: ['Marcenaria', 'Móveis', 'Deck', 'Portas'],
-        horario: 'Seg–Sex: 08h–17h',
-        horario: 'Seg—Sex: 08h—17h',
-        preco: 120, unidade: 'hora',
-        telefone: '21999990008',
-    },
-    {
-        id: 209, nome: 'Patrícia Gomes',           especialidade: 'outros',
-        ocupacao: 'Cuidadora de Idosos',
-        avaliacao: 5.0, avaliacoes: 29, verificado: true, disponivel: true,
-        desc: 'Cuidados diurnos e noturnos, acompanhamento médico, higiene pessoal e companhia.',
-        tags: ['Cuidadora', 'Idosos', 'Enfermagem', 'Diário/Noturno'],
-        bairro: 'Raiz da Serra, Magé', atende: 'Magé e Guapimirim',
-        horario: 'Disponível 24h (combinar)',
-        preco: 220, unidade: 'diária',
-        telefone: '21999990009',
-    },
-    {
-        id: 210, nome: 'Wesley Nascimento',        especialidade: 'outros',
-        ocupacao: 'Jardineiro & Paisagista',
-        avaliacao: 4.4, avaliacoes: 37, verificado: false, disponivel: true,
-        desc: 'Corte de grama, poda de árvores, plantio, paisagismo e manutenção de jardins.',
-        tags: ['Jardinagem', 'Paisagismo', 'Poda', 'Manutenção'],
-        horario: 'Seg–Sáb: 07h–16h',
-        horario: 'Seg—Sáb: 07h—16h',
-        preco: 150, unidade: 'diária',
-        telefone: '21999990010',
-    },
-];
-
-/* ─────────────────────────────────────────────
    HELPERS
    ───────────────────────────────────────────── */
-function brl(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
 /** Retorna o nome legível de uma categoria pelo id */
 function nomeDaCategoria(id) {
     return (CATEGORIAS.find(c => c.id === id) || { nome: id }).nome;

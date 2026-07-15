@@ -144,42 +144,7 @@ const GM_DASHBOARD = {
 	],
 };
 
-const GM_MENSAGENS = [
-	{
-		id: 1,
-		tipo: 'interacao',
-		cliente: 'Fernanda Souza',
-		mensagem: 'O combo serve para 2 pessoas?',
-		item: 'Combo da Casa',
-		quando: 'Há 12 minutos',
-		lida: false,
-		anexosCliente: [],
-		respostas: [],
-	},
-	{
-		id: 2,
-		tipo: 'compra',
-		cliente: 'Carlos Eduardo',
-		mensagem: 'Qual o prazo pra instalação essa semana?',
-		item: 'Instalação Residencial',
-		quando: 'Há 2 horas',
-		lida: false,
-		anexosCliente: [],
-		respostas: [],
-	},
-	{
-		id: 3,
-		tipo: 'compra',
-		cliente: 'Juliana Alves',
-		mensagem: 'Perfeito, obrigada pela entrega rápida!',
-		item: 'Combo da Casa',
-		quando: 'Ontem',
-		lida: true,
-		anexosCliente: [],
-		respostas: [],
-	},
-];
-
+let gmLojaId = null;
 let gmMensagens = [];
 let gmMensagemAbertaId = -1;
 let gmComposerAnexos = [];
@@ -1398,6 +1363,36 @@ function renderMensagens() {
 	list.appendChild(buildMensagensGrupo('', filtradas));
 }
 
+function mapMensagemApi(m) {
+	return {
+		id: m.id,
+		tipo: m.tipo,
+		cliente: m.cliente_nome || 'Cliente',
+		mensagem: m.texto,
+		item: m.item_nome || '—',
+		quando: tempoRelativo(m.criado_em),
+		lida: Boolean(m.lida),
+		anexosCliente: (m.anexos || []).map(a => ({ nome: a.nome_arquivo, tipo: a.tipo })),
+		respostas: (m.respostas || []).map(r => ({ texto: r.texto, anexos: [], quando: tempoRelativo(r.criado_em) })),
+	};
+}
+
+async function carregarMensagens() {
+	if (!gmLojaId) return;
+	const dados = await fetchMensagensLoja(gmLojaId);
+	if (!Array.isArray(dados)) return;
+	gmMensagens = dados.map(mapMensagemApi);
+	renderMensagens();
+	atualizarBadgeAtividade();
+}
+
+async function inicializarLojaGerenciamento() {
+	const loja = await fetchLojaPorSlug('loja-central');
+	if (!loja || loja.erro) return;
+	gmLojaId = loja.id;
+	await carregarMensagens();
+}
+
 function filtrarMensagens(valor) {
 	gmMensagensFiltro = valor;
 	renderMensagens();
@@ -1410,7 +1405,10 @@ function abrirMensagem(id) {
 	gmComposerMenuAberto = false;
 
 	const msg = gmMensagens.find(m => m.id === id);
-	if (msg) msg.lida = true;
+	if (msg && !msg.lida) {
+		msg.lida = true;
+		marcarMensagemLida(id);
+	}
 
 	renderMensagens();
 	atualizarBadgeAtividade();
@@ -1434,7 +1432,7 @@ function removerAnexoComposer(nome) {
 	renderMensagens();
 }
 
-function enviarRespostaMensagem(id) {
+async function enviarRespostaMensagem(id) {
 	const texto = gmComposerTexto.trim();
 	if (!texto && !gmComposerAnexos.length) {
 		gmToast('Escreva uma resposta ou anexe um arquivo antes de enviar.');
@@ -1443,6 +1441,12 @@ function enviarRespostaMensagem(id) {
 
 	const msg = gmMensagens.find(m => m.id === id);
 	if (!msg) return;
+
+	const resultado = await responderMensagem(id, texto);
+	if (!resultado) {
+		gmToast('Não foi possível enviar a resposta. Tente novamente.');
+		return;
+	}
 
 	msg.respostas = msg.respostas || [];
 	msg.respostas.push({ texto, anexos: gmComposerAnexos, quando: 'agora' });
@@ -1537,7 +1541,6 @@ function bindGerenciamento() {
 	gmFilters = [...GM_DEFAULT.filters];
 	gmClosedDates = [...GM_DEFAULT.closedDates];
 	gmPedidos = GM_PEDIDOS.map(pedido => ({ ...pedido }));
-	gmMensagens = GM_MENSAGENS.map(msg => ({ ...msg, anexosCliente: [...msg.anexosCliente], respostas: [] }));
 	renderAdminItems();
 	renderFilterList();
 	renderClosedDates();
@@ -1546,6 +1549,7 @@ function bindGerenciamento() {
 	renderPainel();
 	atualizarBadgeAtividade();
 	refreshSubcategoryOptions(GM_DEFAULT.itemCategory, GM_DEFAULT.itemSubcategory);
+	inicializarLojaGerenciamento();
 
 	document.getElementById('gm-pedidos-list')?.addEventListener('click', event => {
 		const target = event.target;

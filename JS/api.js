@@ -83,6 +83,7 @@ const criarAvaliacao = (pedidoId, dados) => apiPost(`/pedidos/${pedidoId}/avalia
 const fetchMensagensLoja = (lojaId, tipo) =>
     apiGet(`/lojas/${lojaId}/mensagens${tipo ? `?tipo=${tipo}` : ''}`);
 const responderMensagem = (mensagemId, texto) => apiPost(`/mensagens/${mensagemId}/respostas`, { texto });
+const marcarMensagemLida = mensagemId => apiPatch(`/mensagens/${mensagemId}/lida`);
 
 // ── Sessão local (usuário logado no navegador) ──
 const CONTA_SESSAO_KEY = 'mage-usuario-logado';

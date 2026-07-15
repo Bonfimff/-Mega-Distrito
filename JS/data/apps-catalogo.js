@@ -1,7 +1,7 @@
 'use strict';
 
 /* =========================================================
-   MAGÉ EXPRESS — DADOS: CATÁLOGO DA LOJA DE APPS
+   MEGA DISTRITO — DADOS: CATÁLOGO DA LOJA DE APPS
    Cada entrada é um "mini-app" que aparece na gaveta de apps.
    Estabelecimentos com página própria devem apontar `url`
    para HTML/loja.html?id=<slug> (ver JS/data/lojas.js).
@@ -11,12 +11,14 @@ const LOJA_APPS = [
     {
         id: 1,
         nome: 'Mercado Express',
-        loja: 'Magé Express',
+        loja: 'Mega Distrito',
         desc: 'Ofertas rapidas e produtos em destaque da semana.',
         icone: 'fas fa-bolt',
         cor: '#2e7d32',
         categoria: 'mercado',
         url: '#produtos',
+        destaque: true,
+        selo: 'Mais usado',
     },
     {
         id: 2,
@@ -27,6 +29,8 @@ const LOJA_APPS = [
         cor: '#ef6c00',
         categoria: 'bazar',
         url: '#bazar',
+        destaque: true,
+        selo: '',
     },
     {
         id: 3,
@@ -37,6 +41,8 @@ const LOJA_APPS = [
         cor: '#1565c0',
         categoria: 'servicos',
         url: 'HTML/servicos.html',
+        destaque: false,
+        selo: '',
     },
     {
         id: 4,
@@ -47,6 +53,8 @@ const LOJA_APPS = [
         cor: '#00897b',
         categoria: 'comunidade',
         url: 'HTML/feed.html',
+        destaque: false,
+        selo: '',
     },
     {
         id: 5,
@@ -57,6 +65,8 @@ const LOJA_APPS = [
         cor: '#8e24aa',
         categoria: 'saude',
         url: '#',
+        destaque: false,
+        selo: '24h',
     },
     {
         id: 6,
@@ -67,5 +77,55 @@ const LOJA_APPS = [
         cor: '#5d4037',
         categoria: 'pets',
         url: '#',
+        destaque: false,
+        selo: '',
+    },
+    {
+        id: 7,
+        nome: 'Salão Bella',
+        loja: 'Bella Estética',
+        desc: 'Agende cabelo, unha e estetica facial sem sair de casa.',
+        icone: 'fas fa-spa',
+        cor: '#d81b60',
+        categoria: 'beleza',
+        url: '#',
+        destaque: true,
+        selo: 'Novo',
+    },
+    {
+        id: 8,
+        nome: 'Moda & Cia',
+        loja: 'Boutique Central',
+        desc: 'Roupas, calcados e acessorios das marcas que voce ama.',
+        icone: 'fas fa-shirt',
+        cor: '#5c35a8',
+        categoria: 'moda',
+        url: '#',
+        destaque: false,
+        selo: 'Novo',
+    },
+    {
+        id: 9,
+        nome: 'Oficina do Zé',
+        loja: 'Auto Center Zé',
+        desc: 'Revisao, troca de oleo e socorro mecanico no municipio.',
+        icone: 'fas fa-car',
+        cor: '#37474f',
+        categoria: 'servicos',
+        url: '#',
+        destaque: false,
+        selo: '',
+    },
+    {
+        id: 10,
+        nome: 'Painel do Lojista',
+        loja: 'Mega Distrito',
+        desc: 'Gerencie sua loja: produtos, pedidos, mensagens e indicadores de vendas.',
+        icone: 'fas fa-store',
+        cor: '#1b5e20',
+        categoria: 'lojista',
+        url: 'HTML/gerenciamento.html',
+        destaque: true,
+        selo: 'Seu app',
     },
 ];

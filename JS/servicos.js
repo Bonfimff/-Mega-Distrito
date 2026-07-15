@@ -1,6 +1,6 @@
 'use strict';
 /* =========================================================
-   MAGÉ EXPRESS - SERVIÇOS
+   MEGA DISTRITO - SERVIÇOS
    Renderização de profissionais, vagas e currículo
    ========================================================= */
 function renderServicos(lista) {
@@ -61,7 +61,7 @@ function buildServicoCardHTML(p) {
     const tags = p.tags.map(t => `<span class="servico-tag">${t}</span>`).join('');
 
     return `
-        <div class="servico-card">
+        <div class="servico-card" data-servico-id="${p.id}">
             ${galeriaHTML}
             <span class="servico-disponivel ${dispCls}" title="${dispTitle}"></span>
             <div class="servico-card-body">
@@ -106,6 +106,46 @@ function buildServicoCardHTML(p) {
             </div>
         </div>
     `;
+}
+
+function buildDestaqueCardHTML(p) {
+    const cor     = SERVICO_CORES[p.especialidade] || '#607d8b';
+    const inicial = p.nome.charAt(0).toUpperCase();
+    return `
+        <article class="servico-destaque-card" data-servico-id="${p.id}">
+            <div class="servico-destaque-avatar" style="background:${cor};">${inicial}</div>
+            <div class="servico-destaque-info">
+                <strong>${p.nome}</strong>
+                <span>${p.ocupacao}</span>
+                <span class="servico-destaque-rating"><i class="fas fa-star"></i> ${p.avaliacao.toFixed(1)} (${p.avaliacoes})</span>
+            </div>
+            <button class="servico-destaque-btn" onclick="verPerfilDestaque(${p.id})">Ver perfil</button>
+        </article>
+    `;
+}
+
+/** Renderiza a esteira de profissionais em destaque (verificados e melhor avaliados) */
+function renderDestaqueProfissionais() {
+    const rail = document.getElementById('servicos-destaque-rail');
+    if (!rail) return;
+
+    const destaques = [...PROFISSIONAIS]
+        .filter(p => p.verificado)
+        .sort((a, b) => b.avaliacao - a.avaliacao || b.avaliacoes - a.avaliacoes)
+        .slice(0, 6);
+
+    rail.innerHTML = destaques.map(buildDestaqueCardHTML).join('');
+}
+
+/** Filtra pela especialidade do profissional em destaque e rola até o card dele */
+function verPerfilDestaque(id) {
+    const p = PROFISSIONAIS.find(x => x.id === id);
+    if (!p) return;
+    filtrarServicos('todos');
+    requestAnimationFrame(() => {
+        const card = document.querySelector(`.servico-card[data-servico-id="${id}"]`);
+        card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
 }
 
 const _galeriaTimers = new Map();
@@ -183,7 +223,7 @@ function wppProfissional(id) {
     const p = PROFISSIONAIS.find(x => x.id === id);
     if (!p) return;
     const msg = encodeURIComponent(
-        `Olá ${p.nome.split(' ')[0]}! Vi seu perfil no Magé Express e gostaria de solicitar um orçamento de ${p.ocupacao}.`
+        `Olá ${p.nome.split(' ')[0]}! Vi seu perfil no Mega Distrito e gostaria de solicitar um orçamento de ${p.ocupacao}.`
     );
     window.open(`https://wa.me/55${p.telefone}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
@@ -283,7 +323,7 @@ function candidatarVaga(id) {
     const v = [...VAGAS, ...vagasExtra].find(x => x.id === id);
     if (!v) return;
     const msg = encodeURIComponent(
-        `Olá! Vi a vaga de "${v.cargo}" na empresa "${v.empresa}" pelo Magé Express e gostaria de me candidatar.`
+        `Olá! Vi a vaga de "${v.cargo}" na empresa "${v.empresa}" pelo Mega Distrito e gostaria de me candidatar.`
     );
     window.open(`https://wa.me/55${v.contato}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
@@ -409,48 +449,29 @@ function publicarCurriculo() {
     toast('Ótimo. Currículo publicado! Recrutadores de Magé já podem te encontrar.');
 }
 
-function initAndroidBottomNav() {
-    const nav = document.getElementById('android-bottom-nav');
-    if (!nav) return;
-
-    const itens = Array.from(nav.querySelectorAll('.android-nav-item'));
-    const hamburger = document.getElementById('hamburger');
-
-    function ativar(item) {
-        itens.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-    }
-
-    itens.forEach(item => {
-        item.addEventListener('click', e => {
-            ativar(item);
-
-            const tipo = item.dataset.navItem;
-            if (tipo === 'gaveta') {
-                e.preventDefault();
-                if (hamburger) hamburger.click();
-                return;
-            }
-
-            const destino = item.getAttribute('href');
-            if (destino) {
-                e.preventDefault();
-                setTimeout(() => {
-                    window.location.href = destino;
-                }, 170);
-            }
-        });
-    });
+/* =========================================================
+   CARREGAMENTO (API)
+   ========================================================= */
+async function carregarProfissionais() {
+    const profissionais = await fetchProfissionais();
+    if (profissionais) PROFISSIONAIS = profissionais.map(mapProfissional);
 }
 
-/* ?????????????????????????????????????????????
+async function carregarVagas() {
+    const vagas = await fetchVagas();
+    if (vagas) VAGAS = vagas.map(mapVaga);
+}
+
+/* =========================================================
    INICIALIZAÇÃO
-????????????????????????????????????????????? */
-document.addEventListener('DOMContentLoaded', () => {
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', async () => {
+    await Promise.all([carregarProfissionais(), carregarVagas()]);
+
     if (document.getElementById('servicos-grid')) renderServicos(PROFISSIONAIS);
     if (document.getElementById('vagas-grid'))    renderVagas(VAGAS);
+    renderDestaqueProfissionais();
     bindFiltrosServicos();
     bindSubtabs();
     bindFiltrosVagas();
-    initAndroidBottomNav();
 });

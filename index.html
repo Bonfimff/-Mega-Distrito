@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magé Express - Tudo que você precisa, aqui em Magé</title>
+    <title>Mega Distrito - Tudo que você precisa, aqui em Magé</title>
     <link rel="stylesheet" href="CSS/style.css">
     <link rel="stylesheet" href="CSS/apps.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -19,7 +19,7 @@
             <!-- Logo -->
             <a href="#inicio" class="logo">
                 <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
-                <span class="logo-text">Magé <strong>Express</strong></span>
+                <span class="logo-text">Mega <strong>Distrito</strong></span>
             </a>
 
             <!-- Busca (protagonista, estilo marketplace) -->
@@ -27,6 +27,26 @@
                 <input type="text" id="search-input" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off">
                 <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
             </div>
+
+            <!-- Navegação de seções (desktop) -->
+            <nav class="header-app-nav" aria-label="Seções">
+                <a class="header-app-link active" href="#inicio" aria-label="Início">
+                    <span class="header-app-icon"><i class="fas fa-house"></i></span>
+                    <span>Início</span>
+                </a>
+                <a class="header-app-link" href="HTML/apps.html" aria-label="Apps">
+                    <span class="header-app-icon"><i class="fas fa-grip"></i><span class="app-drawer-count">0</span></span>
+                    <span>Apps</span>
+                </a>
+                <a class="header-app-link" href="HTML/feed.html" aria-label="Feed">
+                    <span class="header-app-icon"><i class="fas fa-stream"></i></span>
+                    <span>Feed</span>
+                </a>
+                <a class="header-app-link" href="HTML/conta.html" aria-label="Conta">
+                    <span class="header-app-icon"><i class="fas fa-user"></i></span>
+                    <span>Conta</span>
+                </a>
+            </nav>
 
             <!-- Carrinho -->
             <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
@@ -43,12 +63,9 @@
                     <i class="fas fa-map-marker-alt"></i> Entrega em <strong>Magé e região</strong>
                 </span>
                 <nav class="header-links" aria-label="Navegação principal">
-                    <a href="#produtos"   class="nav-link">Ofertas do Dia</a>
-                    <a href="#categorias" class="nav-link">Categorias</a>
                     <a href="#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
                     <a href="HTML/servicos.html" class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a>
                     <a href="HTML/feed.html" class="nav-link">Feed</a>
-                    <a href="#contato"    class="nav-link">Contato</a>
                 </nav>
             </div>
         </div>
@@ -166,7 +183,7 @@
             <!-- Sobre -->
             <div class="footer-col footer-about">
                 <div class="footer-logo">
-                    <i class="fas fa-shopping-bag"></i> Magé Express
+                    <i class="fas fa-shopping-bag"></i> Mega Distrito
                 </div>
                 <p>Seu mercado digital local. Qualidade, preço justo e entrega na sua porta, sem complicação.</p>
                 <div class="social-links">
@@ -212,7 +229,7 @@
 
         </div>
         <div class="footer-bottom">
-            <p>© 2026 Magé Express. Todos os direitos reservados. Feito com <i class="fas fa-heart" style="color:#e53935;"></i> em Magé - RJ.</p>
+            <p>© 2026 Mega Distrito. Todos os direitos reservados. Feito com <i class="fas fa-heart" style="color:#e53935;"></i> em Magé - RJ.</p>
         </div>
     </footer>
 
@@ -255,8 +272,8 @@
         </a>
         <a class="floating-nav-item" data-nav-item="apps" href="HTML/apps.html" aria-label="Abrir aba Apps">
             <span class="floating-nav-bubble">
-                <i class="fas fa-mobile-alt"></i>
-                <span class="app-drawer-count" id="app-drawer-count">0</span>
+                <i class="fas fa-grip"></i>
+                <span class="app-drawer-count">0</span>
             </span>
             <span class="floating-nav-label">Apps</span>
         </a>
@@ -264,7 +281,7 @@
             <span class="floating-nav-bubble"><i class="fas fa-stream"></i></span>
             <span class="floating-nav-label">Feed</span>
         </a>
-        <a class="floating-nav-item" data-nav-item="usuario" href="HTML/gerenciamento.html" aria-label="Gerenciamento">
+        <a class="floating-nav-item" data-nav-item="usuario" href="HTML/conta.html" aria-label="Conta">
             <span class="floating-nav-bubble"><i class="fas fa-user"></i></span>
             <span class="floating-nav-label">Conta</span>
         </a>
@@ -272,7 +289,7 @@
 
     <aside class="app-drawer" id="app-drawer" aria-label="Gaveta de aplicativos">
         <div class="app-drawer-header">
-            <h3><i class="fas fa-mobile-alt"></i> Gaveta de Apps</h3>
+            <h3><i class="fas fa-grip"></i> Gaveta de Apps</h3>
             <button id="close-app-drawer" aria-label="Fechar gaveta"><i class="fas fa-times"></i></button>
         </div>
 
@@ -282,12 +299,24 @@
     <!-- Notificação toast -->
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+    <!-- Página de detalhes do produto (tela cheia) -->
+    <div class="pd-modal" id="pd-modal" role="dialog" aria-modal="true" aria-label="Detalhes do produto">
+        <div class="pd-topbar">
+            <button class="pd-voltar" id="pd-close" type="button">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+        </div>
+        <div class="pd-content" id="pd-content"></div>
+    </div>
+
     <script src="JS/utils.js"></script>
+    <script src="JS/api.js"></script>
     <script src="JS/data/categorias.js"></script>
     <script src="JS/data/produtos.js"></script>
     <script src="JS/data/apps-catalogo.js"></script>
     <script src="JS/data/lojas.js"></script>
     <script src="JS/script.js"></script>
+    <script src="JS/produto-detalhe.js"></script>
     <script src="JS/apps.js"></script>
 </body>
 </html>

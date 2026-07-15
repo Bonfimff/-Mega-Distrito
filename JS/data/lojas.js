@@ -1,7 +1,7 @@
 'use strict';
 
 /* =========================================================
-   MAGÉ EXPRESS — REGISTRO DE LOJAS (ESTABELECIMENTOS)
+   MEGA DISTRITO — REGISTRO DE LOJAS (ESTABELECIMENTOS)
    ---------------------------------------------------------
    Cada estabelecimento que contrata uma página entra aqui.
    O schema espelha o modelo do painel de gerenciamento

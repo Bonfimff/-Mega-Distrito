@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serviços - Magé Express</title>
+    <title>Serviços - Mega Distrito</title>
     <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/apps.css">
     <link rel="stylesheet" href="../CSS/servicos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body>
+<body class="apps-layout">
 
     <!-- ========================================================
          HEADER
@@ -19,7 +20,7 @@
             <!-- Logo -->
             <a href="../index.html#inicio" class="logo">
                 <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
-                <span class="logo-text">Magé <strong>Express</strong></span>
+                <span class="logo-text">Mega <strong>Distrito</strong></span>
             </a>
 
             <!-- Busca -->
@@ -27,6 +28,26 @@
                 <input type="text" id="search-input" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off">
                 <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
             </div>
+
+            <!-- Navegação de seções (desktop) -->
+            <nav class="header-app-nav" aria-label="Seções">
+                <a class="header-app-link" href="../index.html#inicio" aria-label="Início">
+                    <span class="header-app-icon"><i class="fas fa-house"></i></span>
+                    <span>Início</span>
+                </a>
+                <a class="header-app-link" href="apps.html" aria-label="Apps">
+                    <span class="header-app-icon"><i class="fas fa-grip"></i></span>
+                    <span>Apps</span>
+                </a>
+                <a class="header-app-link" href="feed.html" aria-label="Feed">
+                    <span class="header-app-icon"><i class="fas fa-stream"></i></span>
+                    <span>Feed</span>
+                </a>
+                <a class="header-app-link" href="conta.html" aria-label="Conta">
+                    <span class="header-app-icon"><i class="fas fa-user"></i></span>
+                    <span>Conta</span>
+                </a>
+            </nav>
 
             <!-- Carrinho -->
             <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
@@ -38,15 +59,10 @@
 
         <div class="header-nav-row">
             <div class="header-nav-inner">
-                <span class="header-location">
-                    <i class="fas fa-map-marker-alt"></i> Entrega em <strong>Magé e região</strong>
-                </span>
                 <nav class="header-links" aria-label="Navegação principal">
-                    <a href="../index.html#produtos"   class="nav-link">Ofertas do Dia</a>
-                    <a href="../index.html#categorias" class="nav-link">Categorias</a>
-                    <a href="../index.html#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
-                    <a href="#servicos"                class="nav-link nav-servicos active"><i class="fas fa-hard-hat"></i> Serviços</a>
-                    <a href="feed.html"                class="nav-link">Feed</a>
+                    <a href="../index.html#bazar" class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
+                    <a href="#servicos" class="nav-link nav-servicos active"><i class="fas fa-hard-hat"></i> Serviços</a>
+                    <a href="feed.html" class="nav-link">Feed</a>
                 </nav>
             </div>
         </div>
@@ -65,7 +81,7 @@
                 <p>Serviços, vagas de emprego e currículos da sua cidade em um só lugar.</p>
             </div>
 
-            <!-- ?? SUB-ABAS PRINCIPAIS ?? -->
+            <!-- Sub-abas principais -->
             <div class="servicos-subtabs" id="servicos-subtabs" role="tablist">
                 <button class="subtab-btn active" data-subtab="profissionais" role="tab" aria-selected="true">
                     <i class="fas fa-tools"></i> Serviços
@@ -92,6 +108,15 @@
                     </button>
                 </div>
 
+                <!-- Destaques: mais bem avaliados / verificados -->
+                <section class="servicos-destaque" aria-label="Profissionais em destaque">
+                    <div class="servicos-destaque-head">
+                        <i class="fas fa-star"></i>
+                        <h4>Profissionais em destaque</h4>
+                    </div>
+                    <div class="servicos-destaque-rail" id="servicos-destaque-rail"></div>
+                </section>
+
                 <!-- Filtros de especialidade -->
                 <div class="filter-tabs" id="servicos-filter-tabs">
                     <button class="filter-btn filter-servicos active" data-servico-filter="todos">Todos</button>
@@ -114,9 +139,9 @@
                 </div>
             </div>
 
-            <!-- ??????????????????????????????
+            <!-- ========================================================
                  PAINEL 2 - VAGAS DE EMPREGO
-                 ?????????????????????????????? -->
+            ======================================================== -->
             <div class="subtab-panel" id="panel-vagas" role="tabpanel">
 
                 <!-- Banner publicar vaga -->
@@ -361,7 +386,7 @@
                             <i class="fas fa-print"></i> Imprimir / PDF
                         </button>
                         <button class="btn btn-servicos-hero" onclick="publicarCurriculo()">
-                            <i class="fas fa-share-alt"></i> Publicar no Magé Express
+                            <i class="fas fa-share-alt"></i> Publicar no Mega Distrito
                         </button>
                     </div>
                     <!-- Card do currículo gerado (preenchido pelo JS) -->
@@ -382,7 +407,7 @@
             <!-- Sobre -->
             <div class="footer-col footer-about">
                 <div class="footer-logo">
-                    <i class="fas fa-shopping-bag"></i> Magé Express
+                    <i class="fas fa-shopping-bag"></i> Mega Distrito
                 </div>
                 <p>Seu mercado digital local. Qualidade, preço justo e entrega na sua porta, sem complicação.</p>
                 <div class="social-links">
@@ -428,7 +453,7 @@
 
         </div>
         <div class="footer-bottom">
-            <p>© 2026 Magé Express. Todos os direitos reservados. Feito com <i class="fas fa-heart" style="color:#e53935;"></i> em Magé - RJ.</p>
+            <p>© 2026 Mega Distrito. Todos os direitos reservados. Feito com <i class="fas fa-heart" style="color:#e53935;"></i> em Magé - RJ.</p>
         </div>
     </footer>
 
@@ -464,23 +489,28 @@
     <!-- Notificação toast -->
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <!-- Navbar mobile estilo Android -->
-    <nav class="android-bottom-nav" id="android-bottom-nav" aria-label="Navegação inferior">
-        <a class="android-nav-item" data-nav-item="inicio" href="../index.html#inicio" aria-label="Início">
-            <span class="android-nav-bubble"><i class="fas fa-house"></i></span>
+    <!-- Navegação inferior flutuante -->
+    <nav class="floating-bottom-nav" id="floating-bottom-nav" aria-label="Navegação inferior flutuante">
+        <a class="floating-nav-item" data-nav-item="inicio" href="../index.html#inicio" aria-label="Início">
+            <span class="floating-nav-bubble"><i class="fas fa-house"></i></span>
+            <span class="floating-nav-label">Início</span>
         </a>
-        <button class="android-nav-item active" data-nav-item="gaveta" type="button" aria-label="Gaveta de Apps">
-            <span class="android-nav-bubble"><i class="fas fa-mobile-alt"></i></span>
-        </button>
-        <a class="android-nav-item" data-nav-item="feed" href="feed.html" aria-label="Feed">
-            <span class="android-nav-bubble"><i class="fas fa-stream"></i></span>
+        <a class="floating-nav-item" data-nav-item="apps" href="apps.html" aria-label="Apps">
+            <span class="floating-nav-bubble"><i class="fas fa-grip"></i></span>
+            <span class="floating-nav-label">Apps</span>
         </a>
-        <a class="android-nav-item" data-nav-item="usuario" href="gerenciamento.html" aria-label="Gerenciamento">
-            <span class="android-nav-bubble"><i class="fas fa-user"></i></span>
+        <a class="floating-nav-item" data-nav-item="feed" href="feed.html" aria-label="Feed">
+            <span class="floating-nav-bubble"><i class="fas fa-stream"></i></span>
+            <span class="floating-nav-label">Feed</span>
+        </a>
+        <a class="floating-nav-item" data-nav-item="usuario" href="conta.html" aria-label="Conta">
+            <span class="floating-nav-bubble"><i class="fas fa-user"></i></span>
+            <span class="floating-nav-label">Conta</span>
         </a>
     </nav>
 
     <script src="../JS/utils.js"></script>
+    <script src="../JS/api.js"></script>
     <script src="../JS/data/categorias.js"></script>
     <script src="../JS/data/produtos.js"></script>
     <script src="../JS/data/profissionais.js"></script>

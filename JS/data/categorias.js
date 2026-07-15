@@ -1,7 +1,7 @@
 'use strict';
 
 /* =========================================================
-   MAGÉ EXPRESS — DADOS: CATEGORIAS DE PRODUTOS
+   MEGA DISTRITO — DADOS: CATEGORIAS DE PRODUTOS
    ========================================================= */
 
 const CATEGORIAS = [

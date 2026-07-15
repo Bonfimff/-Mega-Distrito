@@ -1,7 +1,7 @@
 'use strict';
 
 /* =========================================================
-   MAGÉ EXPRESS - FEED DE VÍDEOS CURTOS
+   MEGA DISTRITO - FEED DE VÍDEOS CURTOS
    Estilo TikTok / Reels: scroll vertical com snap
    ========================================================= */
 
@@ -65,7 +65,7 @@ function _gerarItens() {
         precoAntigo: p.precoAntigo || null,
         emoji     : p.emoji,
         foto      : null,
-        vendedor  : 'Magé Express',
+        vendedor  : 'Mega Distrito',
         local     : 'Magé - RJ',
         avaliacao : p.avaliacao,
         avaliacoes: p.avaliacoes,
@@ -129,7 +129,7 @@ function _buildReelItem(item, idx) {
     }
     const curtido = !!reelCurtidas[item.fid];
     const n       = reelCurtidas[fidN];
-    const vendedor = item.vendedor || 'Magé Express';
+    const vendedor = item.vendedor || 'Mega Distrito';
     const local = typeof item.local === 'string' && item.local.trim() ? item.local : 'Magé';
     const titulo = item.titulo || 'Anúncio';
     const desc = item.desc || 'Confira mais detalhes no anúncio.';
@@ -361,7 +361,7 @@ function reelContatar(fid) {
     const item = REEL_ITENS.find(i => i.fid === fid);
     if (!item || !item.ref.telefone) return;
     const msg = encodeURIComponent(
-        `Olá! Vi seu perfil no Magé Express e gostaria de contratar: ${item.ref.ocupacao}.`
+        `Olá! Vi seu perfil no Mega Distrito e gostaria de contratar: ${item.ref.ocupacao}.`
     );
     window.open(`https://wa.me/55${item.ref.telefone}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
@@ -492,11 +492,18 @@ function _ajustarAlturaHeader() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+async function _carregarProfissionaisParaFeed() {
+    const profissionais = await fetchProfissionais();
+    if (profissionais) PROFISSIONAIS = profissionais.map(mapProfissional);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
     if (!document.getElementById('feed-reel-container')) return;
 
     _ajustarAlturaHeader();
     window.addEventListener('resize', _ajustarAlturaHeader);
+
+    await Promise.all([carregarVitrine(), _carregarProfissionaisParaFeed()]);
 
     REEL_ITENS = _gerarItens();
     renderReel();

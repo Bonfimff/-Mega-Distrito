@@ -1,7 +1,7 @@
 'use strict';
 
 /* =========================================================
-   MAGÉ EXPRESS — Script Principal
+   MEGA DISTRITO — Script Principal
    Funcionalidades: Produtos · Categorias · Carrinho · Busca
    ---------------------------------------------------------
    Dados (CATEGORIAS, PRODUTOS, PRODUTOS_USADOS, PROFISSIONAIS…)
@@ -15,9 +15,73 @@
 // =====================
 let carrinho = carregarCarrinho();
 
+/* ─────────────────────────────────────────────
+   CARREGAMENTO DA VITRINE (API)
+   PRODUTOS/PRODUTOS_USADOS começam vazios (JS/data/produtos.js)
+   e são populados aqui a partir do backend. Idempotente e
+   seguro de chamar mais de uma vez (ex: feed.js também usa).
+   ───────────────────────────────────────────── */
+const BADGE_CLASSE = {
+    'Novo': 'badge-novo',
+    'Top': 'badge-top',
+    'Destaque': 'badge-top',
+    'Oferta': 'sale',
+    'Promoção': 'sale',
+};
+const CONDICAO_LABEL = { otimo: 'Ótimo Estado', bom: 'Bom Estado', regular: 'Estado Regular' };
+
+function mapItemVitrine(item) {
+    return {
+        id: item.id,
+        nome: item.nome,
+        categoria: item.categoria,
+        preco: Number(item.preco),
+        precoAntigo: item.preco_antigo ? Number(item.preco_antigo) : null,
+        emoji: item.foto_url ? '' : '🛍️',
+        avaliacao: item.avaliacao ? Number(item.avaliacao) : 0,
+        avaliacoes: item.avaliacoes || 0,
+        badge: item.badge || null,
+        badgeCls: BADGE_CLASSE[item.badge] || '',
+    };
+}
+
+function mapItemBazar(item) {
+    return {
+        id: item.id,
+        nome: item.nome,
+        categoria: item.categoria,
+        emoji: '🛍️',
+        preco: Number(item.preco),
+        precoOrig: item.preco_antigo ? Number(item.preco_antigo) : Number(item.preco),
+        condicao: item.condicao,
+        condicaoLabel: CONDICAO_LABEL[item.condicao] || 'Bom Estado',
+        desc: item.descricao || '',
+        vendedor: item.vendedor_nome || 'Vendedor',
+        bairro: item.bairro || '',
+    };
+}
+
+let _vitrinePromise = null;
+
+function carregarVitrine() {
+    if (!_vitrinePromise) {
+        _vitrinePromise = (async () => {
+            const [novos, bazar] = await Promise.all([
+                fetchItens({ tipo: 'produto', bazar: '0' }),
+                fetchItens({ tipo: 'produto', bazar: '1' }),
+            ]);
+            if (novos) PRODUTOS = novos.map(mapItemVitrine);
+            if (bazar) PRODUTOS_USADOS = bazar.map(mapItemBazar);
+        })();
+    }
+    return _vitrinePromise;
+}
+
 // INICIALIZAÇÃO
 // =====================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await carregarVitrine();
+
     if (document.getElementById('categories-grid')) renderCategorias();
     if (document.getElementById('products-grid'))   renderProdutos(PRODUTOS);
     if (document.getElementById('bazar-grid'))      renderBazar(PRODUTOS_USADOS);
@@ -564,7 +628,7 @@ function demonstrarInteresse(id) {
     const item = PRODUTOS_USADOS.find(p => p.id === id);
     if (!item) return;
     const msg = encodeURIComponent(
-        `Olá! Vi o anúncio "${item.nome}" por ${brl(item.preco)} no Magé Express. Ainda está disponível?`
+        `Olá! Vi o anúncio "${item.nome}" por ${brl(item.preco)} no Mega Distrito. Ainda está disponível?`
     );
     // Abre WhatsApp do vendedor (número ficticio)
     window.open(`https://wa.me/5521999990000?text=${msg}`, '_blank', 'noopener,noreferrer');

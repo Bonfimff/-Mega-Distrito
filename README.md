@@ -1,4 +1,4 @@
-# Magé Express
+# Mega Distrito
 
 Plataforma local de vendas e serviços para a cidade de Magé (RJ).
 
@@ -34,6 +34,7 @@ JS/
   gerenciamento.js      Lógica do painel de gerenciamento
 expo-app/               Wrapper Expo/React Native que gera o APK (ver README-APK.md)
 android-compose-sample/ Exemplo isolado de navbar em Jetpack Compose (referência)
+database/               Schema MySQL (ver seção "Banco de dados" abaixo)
 ```
 
 ### Ordem de carregamento dos scripts
@@ -50,12 +51,38 @@ schema do painel de gerenciamento (`GM_DEFAULT` em `gerenciamento.js`): identida
 Para "vender uma página" hoje: adicionar uma entrada em `lojas.js`.
 A página `HTML/loja.html?id=<slug>` (próximo passo) renderiza a partir desses dados.
 
+## Banco de dados (`database/`)
+
+Schema MySQL 8+ que espelha as estruturas hoje hard-coded em `JS/data/*.js` e no
+estado em memória de `gerenciamento.js`/`conta.js` (lojas, itens, pedidos, mensagens,
+avaliações, endereços, loja de apps). Ainda não há backend consumindo este banco —
+é a base para quando ele existir, mantendo os mesmos nomes de campo para facilitar
+a migração.
+
+- `database/schema.sql` — cria o banco `mega_distrito` e todas as tabelas
+- `database/seed.sql` — popula com os mesmos dados de demonstração usados no front-end
+
+Para rodar localmente:
+
+```bash
+mysql -u root -p < database/schema.sql
+mysql -u root -p < database/seed.sql
+```
+
+## Identidade visual e comportamento
+
+[`DESIGN_GUIDE.md`](DESIGN_GUIDE.md) reúne leis de UX, vieses cognitivos, heurísticas
+de usabilidade e o sistema visual (cor, tipografia, espaçamento) usados como
+referência para decisões de design no projeto. Consultar antes de criar uma
+tela nova ou revisar um fluxo existente.
+
 ## Roadmap
 
 - [ ] `HTML/loja.html` — template que renderiza a página de qualquer loja a partir de `lojas.js`
 - [ ] Ligar o painel de gerenciamento ao registro de lojas (editar/salvar)
 - [ ] Cards de lojas na página principal e na gaveta de apps apontando para `loja.html`
-- [ ] Backend (cadastro/login de lojistas) — substituir `lojas.js` por API, mantendo o schema
+- [x] Schema do banco de dados (`database/schema.sql`) — ver seção "Banco de dados"
+- [ ] Backend (cadastro/login de lojistas) — substituir `lojas.js` por API sobre o banco criado
 - [ ] Programa de pontos de reciclagem (ideia registrada)
 
 ## Como rodar

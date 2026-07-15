@@ -3,32 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feed - Mega Distrito</title>
+    <title>Loja - Mega Distrito</title>
     <link rel="stylesheet" href="../CSS/style.css">
-    <link rel="stylesheet" href="../CSS/feed.css">
+    <link rel="stylesheet" href="../CSS/apps.css">
+    <link rel="stylesheet" href="../CSS/loja.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body class="feed-page">
+<body class="apps-layout">
 
     <!-- ========================================================
          HEADER
     ======================================================== -->
     <header id="header">
         <div class="header-container">
-
-            <!-- Logo -->
             <a href="../index.html#inicio" class="logo">
                 <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
                 <span class="logo-text">Mega <strong>Distrito</strong></span>
             </a>
 
-            <!-- Busca -->
             <div class="search-box">
-                <input type="text" id="search-input" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off">
-                <button id="search-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                <input type="text" id="search-input" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off" disabled>
+                <button id="search-btn" aria-label="Buscar" disabled><i class="fas fa-search"></i></button>
             </div>
 
-            <!-- Navegação de seções (desktop) -->
             <nav class="header-app-nav" aria-label="Seções">
                 <a class="header-app-link" href="../index.html#inicio" aria-label="Início">
                     <span class="header-app-icon"><i class="fas fa-house"></i></span>
@@ -38,7 +35,7 @@
                     <span class="header-app-icon"><i class="fas fa-grip"></i></span>
                     <span>Apps</span>
                 </a>
-                <a class="header-app-link active" href="feed.html" aria-label="Feed">
+                <a class="header-app-link" href="feed.html" aria-label="Feed">
                     <span class="header-app-icon"><i class="fas fa-stream"></i></span>
                     <span>Feed</span>
                 </a>
@@ -48,44 +45,59 @@
                 </a>
             </nav>
 
-            <!-- Carrinho -->
             <button class="cart-btn" id="cart-btn" aria-label="Abrir carrinho">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count" id="cart-count">0</span>
             </button>
-
-        </div>
-
-        <div class="header-nav-row">
-            <div class="header-nav-inner">
-                <nav class="header-links" aria-label="Navegação principal">
-                    <a href="../index.html#bazar" class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
-                    <a href="servicos.html"       class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a>
-                    <a href="feed.html"           class="nav-link active">Feed</a>
-                </nav>
-            </div>
         </div>
     </header>
 
     <!-- ========================================================
-         REEL - Barra de abas (Para Você / Produtos / Usados / Serviços)
+         ESTADO: CARREGANDO / NÃO ENCONTRADA
     ======================================================== -->
-    <div class="reel-tabbar" id="reel-tabbar" role="tablist">
-        <button class="active" data-feed-filtro="todos"   role="tab" aria-selected="true">Para Você</button>
-        <button data-feed-filtro="produto"                role="tab" aria-selected="false">Produtos</button>
-        <button data-feed-filtro="usado"                  role="tab" aria-selected="false">Usados</button>
-        <button data-feed-filtro="servico"                role="tab" aria-selected="false">Serviços</button>
+    <div class="loja-status" id="loja-carregando">
+        <i class="fas fa-spinner fa-spin"></i> Carregando loja...
+    </div>
+    <div class="loja-status" id="loja-nao-encontrada" hidden>
+        <i class="fas fa-store-slash"></i>
+        <p>Loja não encontrada.</p>
+        <a href="../index.html" class="btn btn-primary">Voltar para o início</a>
     </div>
 
     <!-- ========================================================
-         REEL - Container dos cards (preenchido pelo JS)
+         CONTEÚDO DA LOJA (preenchido pelo JS)
     ======================================================== -->
-    <div class="feed-reel-container" id="feed-reel-container" role="feed" aria-label="Feed de produtos e serviços">
-        <!-- Preenchido por feed.js -->
-    </div>
+    <main class="loja-page" id="loja-conteudo" hidden>
 
-    <!-- Contador de posição -->
-    <div class="reel-counter" id="reel-counter" aria-live="polite">1 / --</div>
+        <section class="loja-hero" id="loja-hero">
+            <div class="loja-hero-banner" id="loja-hero-banner"></div>
+            <div class="container loja-hero-info">
+                <div class="loja-hero-icon" id="loja-hero-icon"></div>
+                <div class="loja-hero-texto">
+                    <span class="loja-hero-categoria" id="loja-categoria"></span>
+                    <h1 id="loja-nome"></h1>
+                    <p id="loja-subtitulo"></p>
+                    <div class="loja-hero-meta">
+                        <span id="loja-status-aberto" class="loja-status-badge"></span>
+                        <span id="loja-endereco" class="loja-meta-item"></span>
+                        <span id="loja-horario" class="loja-meta-item"></span>
+                    </div>
+                </div>
+                <a id="loja-whatsapp" class="btn btn-whatsapp" target="_blank" rel="noopener noreferrer" hidden>
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </section>
+
+        <div class="container">
+            <div class="loja-filtros" id="loja-filtros"></div>
+
+            <div class="loja-itens-grid" id="loja-itens-grid"></div>
+            <div class="loja-empty" id="loja-itens-empty" style="display:none;">
+                Nenhum item cadastrado nesta loja ainda.
+            </div>
+        </div>
+    </main>
 
     <!-- ========================================================
          CARRINHO (SIDEBAR)
@@ -112,39 +124,31 @@
         </div>
     </aside>
 
-    <!-- Modal de anúncio do feed -->
-    <div class="feed-modal-overlay" id="feed-modal" role="dialog" aria-modal="true" aria-label="Detalhes do anúncio">
-        <div class="feed-modal-box" id="feed-modal-body">
-            <!-- Preenchido pelo JS -->
-        </div>
-    </div>
-
-    <!-- Notificação toast -->
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-    <!-- Barra inferior flutuante -->
-    <nav class="feed-bottom-nav" aria-label="Navegação inferior">
-        <a class="feed-bottom-item" href="../index.html#inicio" aria-label="Início">
-            <span class="feed-bottom-bubble"><i class="fas fa-house"></i></span>
+    <nav class="floating-bottom-nav" id="floating-bottom-nav" aria-label="Navegação inferior flutuante">
+        <a class="floating-nav-item" data-nav-item="inicio" href="../index.html#inicio" aria-label="Início">
+            <span class="floating-nav-bubble"><i class="fas fa-house"></i></span>
+            <span class="floating-nav-label">Início</span>
         </a>
-        <a class="feed-bottom-item" href="apps.html" aria-label="Apps">
-            <span class="feed-bottom-bubble"><i class="fas fa-grip"></i></span>
+        <a class="floating-nav-item" data-nav-item="apps" href="apps.html" aria-label="Apps">
+            <span class="floating-nav-bubble"><i class="fas fa-grip"></i></span>
+            <span class="floating-nav-label">Apps</span>
         </a>
-        <a class="feed-bottom-item active" href="feed.html" aria-label="Feed">
-            <span class="feed-bottom-bubble"><i class="fas fa-stream"></i></span>
+        <a class="floating-nav-item" data-nav-item="feed" href="feed.html" aria-label="Feed">
+            <span class="floating-nav-bubble"><i class="fas fa-stream"></i></span>
+            <span class="floating-nav-label">Feed</span>
         </a>
-        <a class="feed-bottom-item" href="conta.html" aria-label="Conta">
-            <span class="feed-bottom-bubble"><i class="fas fa-user"></i></span>
+        <a class="floating-nav-item" data-nav-item="usuario" href="conta.html" aria-label="Conta">
+            <span class="floating-nav-bubble"><i class="fas fa-user"></i></span>
+            <span class="floating-nav-label">Conta</span>
         </a>
     </nav>
 
-    <!-- utils + dados primeiro, depois script.js (carrinho) e feed.js -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <script src="../JS/utils.js"></script>
     <script src="../JS/api.js"></script>
-    <script src="../JS/data/categorias.js"></script>
     <script src="../JS/data/produtos.js"></script>
-    <script src="../JS/data/profissionais.js"></script>
     <script src="../JS/script.js"></script>
-    <script src="../JS/feed.js"></script>
+    <script src="../JS/loja.js"></script>
 </body>
 </html>

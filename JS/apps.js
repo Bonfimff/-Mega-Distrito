@@ -1,7 +1,7 @@
 'use strict';
 
 /* =========================================================
-   MAGÉ EXPRESS — Gaveta de Apps
+   MEGA DISTRITO — Gaveta de Apps
    Dados do catálogo em JS/data/apps-catalogo.js;
    helpers compartilhados em JS/utils.js (carregar antes).
    ========================================================= */
@@ -11,7 +11,11 @@ let appsBusca = '';
 let appsCategoria = 'todas';
 
 function isPaginaAppsSeparada() {
-    return window.location.pathname.toLowerCase().includes('/html/apps.html');
+    const segmentos = window.location.pathname.toLowerCase().split('/').filter(Boolean);
+    if (segmentos.length < 2) return false;
+    const pasta = segmentos[segmentos.length - 2];
+    const arquivo = segmentos[segmentos.length - 1].replace(/\.html$/, '');
+    return pasta === 'html' && arquivo === 'apps';
 }
 
 function notificar(msg) {
@@ -23,6 +27,22 @@ function resolverDestinoApp(destino) {
     if (destino.startsWith('#')) return `../index.html${destino}`;
     if (destino.startsWith('HTML/')) return `../${destino}`;
     return destino;
+}
+
+const ROTULOS_CATEGORIA = {
+    mercado: 'Mercado',
+    bazar: 'Bazar',
+    servicos: 'Serviços',
+    comunidade: 'Comunidade',
+    saude: 'Saúde',
+    beleza: 'Beleza',
+    moda: 'Moda',
+    pets: 'Pets',
+    lojista: 'Lojista',
+};
+
+function rotuloCategoria(categoria) {
+    return ROTULOS_CATEGORIA[categoria] || categoria;
 }
 
 function getAppsFiltrados() {
@@ -69,7 +89,9 @@ function renderApps(targetGridId = 'apps-grid', noResultsId = 'apps-no-results')
                     <div class="app-meta">
                         <h3>${app.nome}</h3>
                         <small>${app.loja}</small>
+                        <span class="app-cat-tag">${rotuloCategoria(app.categoria)}</span>
                     </div>
+                    ${app.selo ? `<span class="app-selo">${app.selo}</span>` : ''}
                 </div>
                 <p class="app-desc">${app.desc}</p>
                 <div class="app-card-actions">
@@ -83,6 +105,32 @@ function renderApps(targetGridId = 'apps-grid', noResultsId = 'apps-no-results')
             </article>
         `;
     }).join('');
+}
+
+function renderAppsDestaque(railId = 'apps-featured-rail', sectionId = 'apps-featured-section') {
+    const rail = document.getElementById(railId);
+    if (!rail) return;
+
+    const destaques = LOJA_APPS.filter(app => app.destaque);
+    const section = sectionId ? document.getElementById(sectionId) : null;
+
+    if (!destaques.length) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+    if (section) section.style.display = '';
+
+    rail.innerHTML = destaques.map(app => `
+        <article class="app-featured-card" data-app-id="${app.id}" style="background: linear-gradient(135deg, ${app.cor} 0%, rgba(0,0,0,.25) 100%);">
+            ${app.selo ? `<span class="app-selo app-selo-featured">${app.selo}</span>` : ''}
+            <div class="app-icon app-featured-icon"><i class="${app.icone}"></i></div>
+            <h4>${app.nome}</h4>
+            <small>${app.loja}</small>
+            <button class="btn-app-featured" data-action="abrir" data-app-id="${app.id}">
+                <i class="fas fa-arrow-right"></i> Abrir
+            </button>
+        </article>
+    `).join('');
 }
 
 function renderAppsFixados() {
@@ -118,6 +166,7 @@ function abrirLojaApps() {
     const painel = document.getElementById('apps-store-panel');
     if (!painel) return;
     painel.style.display = 'block';
+    document.querySelector('.apps-pinned-panel')?.style.setProperty('display', 'none');
     renderApps('apps-store-grid', 'apps-store-no-results');
     document.getElementById('apps-search-input')?.focus();
 }
@@ -126,6 +175,7 @@ function fecharLojaApps() {
     const painel = document.getElementById('apps-store-panel');
     if (!painel) return;
     painel.style.display = 'none';
+    document.querySelector('.apps-pinned-panel')?.style.removeProperty('display');
 }
 
 function abrirAppPorId(id) {
@@ -151,7 +201,10 @@ function abrirAppPorId(id) {
 }
 
 function alternarAtalho(id) {
-    if (atalhosApps.includes(id)) {
+    const usuario = typeof contaObterSessao === 'function' ? contaObterSessao() : null;
+    const removendo = atalhosApps.includes(id);
+
+    if (removendo) {
         atalhosApps = atalhosApps.filter(itemId => itemId !== id);
         notificar('Atalho removido da gaveta de apps.');
     } else {
@@ -164,6 +217,30 @@ function alternarAtalho(id) {
     renderApps();
     renderApps('apps-store-grid', 'apps-store-no-results');
     renderAppsFixados();
+
+    if (usuario && typeof fixarAtalho === 'function') {
+        if (removendo) {
+            removerAtalho(usuario.id, id);
+        } else {
+            fixarAtalho(usuario.id, id);
+        }
+    }
+}
+
+async function sincronizarAtalhosComServidor() {
+    const usuario = typeof contaObterSessao === 'function' ? contaObterSessao() : null;
+    if (!usuario || typeof fetchAtalhos !== 'function') return;
+
+    const atalhosServidor = await fetchAtalhos(usuario.id);
+    if (!atalhosServidor) return; // backend indisponível — mantém o que veio do localStorage
+
+    atalhosApps = atalhosServidor.map(app => app.id);
+    salvarAtalhosApps();
+    atualizarContadorAtalhos();
+    renderApps();
+    renderApps('apps-store-grid', 'apps-store-no-results');
+    renderAppsFixados();
+    renderGavetaApps();
 }
 
 function renderGavetaApps() {
@@ -173,7 +250,7 @@ function renderGavetaApps() {
     if (atalhosApps.length === 0) {
         container.innerHTML = `
             <div class="app-drawer-empty">
-                <i class="fas fa-mobile-alt"></i>
+                <i class="fas fa-grip"></i>
                 <p>Sua gaveta esta vazia.</p>
                 <small>Adicione atalhos na secao Apps das Lojas.</small>
             </div>
@@ -205,9 +282,10 @@ function renderGavetaApps() {
 }
 
 function atualizarContadorAtalhos() {
-    const el = document.getElementById('app-drawer-count');
-    if (!el) return;
-    el.textContent = atalhosApps.length;
+    // Pode existir mais de um badge (barra inferior + nav do topo)
+    document.querySelectorAll('.app-drawer-count').forEach(el => {
+        el.textContent = atalhosApps.length;
+    });
 }
 
 function abrirGavetaApps() {
@@ -255,6 +333,8 @@ function bindApps() {
     const grid = document.getElementById('apps-grid');
     const gridFixados = document.getElementById('apps-pinned-grid');
     const gridLoja = document.getElementById('apps-store-grid');
+    const railDestaque = document.getElementById('apps-featured-rail');
+    const railBanner = document.getElementById('apps-home-banner-rail');
     const btnGaveta = document.getElementById('app-drawer-btn');
     const btnFecharGaveta = document.getElementById('close-app-drawer');
     const overlayApps = document.getElementById('app-overlay');
@@ -262,18 +342,26 @@ function bindApps() {
     const openStoreBtn = document.getElementById('open-app-store-btn');
     const closeStoreBtn = document.getElementById('close-app-store-btn');
 
-    if (grid) {
-        grid.addEventListener('click', e => {
-            const btn = e.target.closest('button[data-action]');
-            if (!btn) return;
+    const bindAppGrid = (el) => {
+        if (!el) return;
+        el.addEventListener('click', e => {
+            const btnAtalho = e.target.closest('button[data-action="atalho"]');
+            if (btnAtalho) {
+                const id = Number(btnAtalho.dataset.appId);
+                if (id) alternarAtalho(id);
+                return;
+            }
 
-            const id = Number(btn.dataset.appId);
-            if (!id) return;
-
-            if (btn.dataset.action === 'abrir') abrirAppPorId(id);
-            if (btn.dataset.action === 'atalho') alternarAtalho(id);
+            const card = e.target.closest('.app-card[data-app-id]');
+            if (card) {
+                const id = Number(card.dataset.appId);
+                if (id) abrirAppPorId(id);
+            }
         });
-    }
+    };
+
+    bindAppGrid(grid);
+    bindAppGrid(gridLoja);
 
     if (gridFixados) {
         gridFixados.addEventListener('click', e => {
@@ -283,34 +371,36 @@ function bindApps() {
                 return;
             }
 
+            const btnAtalho = e.target.closest('button[data-action="atalho"]');
+            if (btnAtalho) {
+                const id = Number(btnAtalho.dataset.appId);
+                if (id) alternarAtalho(id);
+                return;
+            }
+
             const tile = e.target.closest('.app-card[data-app-id]');
             if (tile) {
                 const id = Number(tile.dataset.appId);
                 if (id) abrirAppPorId(id);
-                return;
             }
-
-            const btn = e.target.closest('button[data-action]');
-            if (!btn) return;
-
-            const id = Number(btn.dataset.appId);
-            if (!id) return;
-
-            if (btn.dataset.action === 'abrir') abrirAppPorId(id);
-            if (btn.dataset.action === 'atalho') alternarAtalho(id);
         });
     }
 
-    if (gridLoja) {
-        gridLoja.addEventListener('click', e => {
-            const btn = e.target.closest('button[data-action]');
-            if (!btn) return;
+    if (railDestaque) {
+        railDestaque.addEventListener('click', e => {
+            const card = e.target.closest('[data-app-id]');
+            if (!card) return;
+            const id = Number(card.dataset.appId);
+            if (id) abrirAppPorId(id);
+        });
+    }
 
-            const id = Number(btn.dataset.appId);
-            if (!id) return;
-
-            if (btn.dataset.action === 'abrir') abrirAppPorId(id);
-            if (btn.dataset.action === 'atalho') alternarAtalho(id);
+    if (railBanner) {
+        railBanner.addEventListener('click', e => {
+            const card = e.target.closest('[data-app-id]');
+            if (!card) return;
+            const id = Number(card.dataset.appId);
+            if (id) abrirAppPorId(id);
         });
     }
 
@@ -413,9 +503,12 @@ function bindFloatingBottomNav() {
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('apps-grid')) renderApps();
     if (document.getElementById('apps-pinned-grid')) renderAppsFixados();
+    renderAppsDestaque();
+    renderAppsDestaque('apps-home-banner-rail', 'apps-home-banner');
     atualizarContadorAtalhos();
     renderGavetaApps();
     bindApps();
     bindBuscaApps();
     bindFloatingBottomNav();
+    sincronizarAtalhosComServidor();
 });

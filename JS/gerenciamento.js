@@ -71,6 +71,93 @@ const GM_DEFAULT = {
 	]
 };
 
+/* =========================================================
+   ATIVIDADE — compras, contratações e mensagens de clientes
+   Dados de demonstração (sem backend ainda). Ver DESIGN_GUIDE.md
+   §3.3 — nenhum número aqui deve ser exibido como prova social
+   pública; esta aba é o painel interno do próprio lojista.
+   ========================================================= */
+/* Etapas do trabalho após o pedido — cada tipo tem seu próprio fluxo,
+   já que um serviço não tem etiqueta de envio. `acao` é o rótulo do
+   botão que avança para a próxima etapa (vazio na etapa final). */
+const GM_ETAPAS_PRODUTO = [
+	{ label: 'Pedido recebido', acao: 'Gerar etiqueta de envio' },
+	{ label: 'Etiqueta gerada', acao: 'Marcar como postado' },
+	{ label: 'Postado', acao: 'Marcar como entregue' },
+	{ label: 'Entregue', acao: '' },
+];
+
+const GM_ETAPAS_SERVICO = [
+	{ label: 'Solicitação recebida', acao: 'Confirmar agendamento' },
+	{ label: 'Confirmado', acao: 'Marcar como realizado' },
+	{ label: 'Serviço realizado', acao: '' },
+];
+
+function getEtapasPedido(tipo) {
+	return tipo === 'servico' ? GM_ETAPAS_SERVICO : GM_ETAPAS_PRODUTO;
+}
+
+const GM_PEDIDOS = [
+	{
+		id: 1,
+		tipo: 'produto',
+		cliente: 'Fernanda Souza',
+		item: 'Combo da Casa',
+		valor: '39,90',
+		quando: 'Há 12 minutos',
+		etapaIndex: 0,
+	},
+	{
+		id: 2,
+		tipo: 'servico',
+		cliente: 'Carlos Eduardo',
+		item: 'Instalação Residencial',
+		valor: '120,00',
+		quando: 'Há 2 horas',
+		etapaIndex: 1,
+	},
+	{
+		id: 3,
+		tipo: 'produto',
+		cliente: 'Marcos Lima',
+		item: 'Combo da Casa',
+		valor: '39,90',
+		quando: 'Ontem',
+		etapaIndex: 3,
+	},
+];
+
+let gmPedidos = [];
+
+/* Indicadores de demonstração (sem backend) para a aba Painel. */
+const GM_DASHBOARD = {
+	carrinhoUsuarios: 47,
+	produtosMaisCurtidos: [
+		{ nome: 'Combo da Casa', valor: 86 },
+		{ nome: 'Instalação Residencial', valor: 34 },
+		{ nome: 'Combo Família', valor: 21 },
+	],
+	produtosMaisComprados: [
+		{ nome: 'Combo da Casa', valor: 52 },
+		{ nome: 'Instalação Residencial', valor: 19 },
+		{ nome: 'Combo Família', valor: 11 },
+	],
+};
+
+let gmLojaId = null;
+let gmMensagens = [];
+let gmMensagemAbertaId = -1;
+let gmComposerAnexos = [];
+let gmComposerTexto = '';
+let gmComposerMenuAberto = false;
+let gmMensagensFiltro = 'compra';
+
+const GM_TIPO_ANEXO_ICON = {
+	foto: 'fa-image',
+	video: 'fa-video',
+	documento: 'fa-file-alt',
+};
+
 const GM_SUBCATEGORY_MAP = {
 	'alimentacao': ['Bebida', 'Lanche', 'Combo', 'Sobremesa', 'Marmita'],
 	'eletronicos': ['Celular', 'Acessórios', 'TV', 'Som', 'Games'],
@@ -867,6 +954,25 @@ function bindTabs() {
 	});
 }
 
+function abrirMensagensDrawer() {
+	document.getElementById('gm-messages-drawer')?.classList.add('open');
+	document.getElementById('gm-messages-overlay')?.classList.add('active');
+}
+
+function fecharMensagensDrawer() {
+	document.getElementById('gm-messages-drawer')?.classList.remove('open');
+	document.getElementById('gm-messages-overlay')?.classList.remove('active');
+	gmMensagemAbertaId = -1;
+	gmComposerAnexos = [];
+	renderMensagens();
+}
+
+function bindMessagesBubble() {
+	document.getElementById('gm-messages-bubble')?.addEventListener('click', abrirMensagensDrawer);
+	document.getElementById('gm-messages-close')?.addEventListener('click', fecharMensagensDrawer);
+	document.getElementById('gm-messages-overlay')?.addEventListener('click', fecharMensagensDrawer);
+}
+
 function bindStepAccordion(form) {
 	const steps = Array.from(form.querySelectorAll('details.gm-step'));
 	if (!steps.length) return;
@@ -910,6 +1016,523 @@ function bindStepAccordion(form) {
 	});
 }
 
+function rotuloTipoPedido(tipo) {
+	return tipo === 'servico' ? 'Contratação de serviço' : 'Compra de produto';
+}
+
+function buildPedidoSteps(pedido) {
+	const etapas = getEtapasPedido(pedido.tipo);
+	const steps = createEl('div', 'gm-pedido-steps');
+
+	etapas.forEach((etapa, index) => {
+		const isDone = index < pedido.etapaIndex;
+		const isCurrent = index === pedido.etapaIndex;
+		const stepEl = createEl('div', 'gm-pedido-step');
+		if (isDone) stepEl.classList.add('is-done');
+		if (isCurrent) stepEl.classList.add('is-current');
+
+		const dot = createEl('span', 'gm-pedido-step-dot');
+		if (isDone) {
+			const icon = document.createElement('i');
+			icon.className = 'fas fa-check';
+			dot.appendChild(icon);
+		} else {
+			dot.textContent = String(index + 1);
+		}
+
+		stepEl.appendChild(dot);
+		stepEl.appendChild(createEl('span', 'gm-pedido-step-label', etapa.label));
+		steps.appendChild(stepEl);
+	});
+
+	return steps;
+}
+
+function buildPedidoActions(pedido) {
+	const etapas = getEtapasPedido(pedido.tipo);
+	const etapaAtual = etapas[pedido.etapaIndex];
+	const actions = createEl('div', 'gm-pedido-actions');
+
+	if (pedido.tipo === 'produto' && pedido.etapaIndex >= 1) {
+		const verBtn = createEl('button', 'btn btn-outline', 'Ver etiqueta');
+		verBtn.type = 'button';
+		verBtn.dataset.action = 'ver-etiqueta';
+		verBtn.dataset.pedidoId = String(pedido.id);
+		const tagIcon = document.createElement('i');
+		tagIcon.className = 'fas fa-tag';
+		verBtn.prepend(tagIcon);
+		actions.appendChild(verBtn);
+	}
+
+	if (etapaAtual.acao) {
+		const avancarBtn = createEl('button', 'btn btn-primary', etapaAtual.acao);
+		avancarBtn.type = 'button';
+		avancarBtn.dataset.action = 'avancar-etapa';
+		avancarBtn.dataset.pedidoId = String(pedido.id);
+		const arrowIcon = document.createElement('i');
+		arrowIcon.className = 'fas fa-arrow-right';
+		avancarBtn.prepend(arrowIcon);
+		actions.appendChild(avancarBtn);
+	} else {
+		actions.appendChild(createEl('span', 'gm-pedido-done-tag', 'Concluído'));
+	}
+
+	return actions;
+}
+
+function renderPedidos() {
+	const list = document.getElementById('gm-pedidos-list');
+	if (!list) return;
+
+	list.innerHTML = '';
+	if (!gmPedidos.length) {
+		list.appendChild(createEl('div', 'gm-admin-empty', 'Nenhuma compra ou contratação ainda.'));
+		return;
+	}
+
+	gmPedidos.forEach(pedido => {
+		const etapas = getEtapasPedido(pedido.tipo);
+		const isFinal = pedido.etapaIndex === etapas.length - 1;
+
+		const card = createEl('article', `gm-pedido-item gm-pedido-item--${pedido.tipo}`);
+
+		const head = createEl('div', 'gm-pedido-item-head');
+		head.appendChild(createEl('span', `gm-pedido-badge gm-pedido-badge--${pedido.tipo}`, rotuloTipoPedido(pedido.tipo)));
+		head.appendChild(createEl('span', `gm-pedido-status gm-pedido-status--${isFinal ? 'concluido' : 'andamento'}`, isFinal ? 'Concluído' : 'Em andamento'));
+		card.appendChild(head);
+
+		card.appendChild(createEl('h6', 'gm-pedido-item-title', pedido.item));
+		card.appendChild(createEl('p', 'gm-pedido-item-meta', `${pedido.cliente} · ${formatPriceLabel(pedido.valor)} · ${pedido.quando}`));
+		card.appendChild(buildPedidoSteps(pedido));
+		card.appendChild(buildPedidoActions(pedido));
+
+		list.appendChild(card);
+	});
+}
+
+function avancarEtapaPedido(id) {
+	const pedido = gmPedidos.find(p => p.id === id);
+	if (!pedido) return;
+
+	const etapas = getEtapasPedido(pedido.tipo);
+	if (pedido.etapaIndex >= etapas.length - 1) return;
+
+	pedido.etapaIndex += 1;
+	const novaEtapa = etapas[pedido.etapaIndex];
+
+	renderPedidos();
+	renderPainel();
+	atualizarBadgeAtividade();
+	gmToast(`Cliente notificado: "${novaEtapa.label}" — ${pedido.item}.`);
+}
+
+function verEtiquetaPedido(id) {
+	const pedido = gmPedidos.find(p => p.id === id);
+	if (!pedido) return;
+	gmToast(`Abrindo etiqueta de envio de "${pedido.item}" (simulação).`);
+}
+
+function iniciaisNome(nome) {
+	return (nome || '')
+		.split(' ')
+		.filter(Boolean)
+		.slice(0, 2)
+		.map(parte => parte[0].toUpperCase())
+		.join('');
+}
+
+function truncar(texto, max) {
+	if (!texto || texto.length <= max) return texto || '';
+	return `${texto.slice(0, max).trim()}…`;
+}
+
+function buildMensagemRow(msg) {
+	const row = createEl('button', `gm-mensagem-row${msg.lida ? '' : ' is-unread'}`);
+	row.type = 'button';
+	row.dataset.action = 'abrir-mensagem';
+	row.dataset.mensagemId = String(msg.id);
+
+	row.appendChild(createEl('div', 'gm-mensagem-avatar', iniciaisNome(msg.cliente)));
+
+	const body = createEl('div', 'gm-mensagem-row-body');
+	const head = createEl('div', 'gm-mensagem-head');
+	head.appendChild(createEl('strong', 'gm-mensagem-nome', msg.cliente));
+	head.appendChild(createEl('span', 'gm-mensagem-quando', msg.quando));
+	body.appendChild(head);
+	body.appendChild(createEl('p', 'gm-mensagem-row-preview', truncar(msg.mensagem, 56)));
+	body.appendChild(createEl('span', 'gm-mensagem-item-ref', `Sobre: ${msg.item}`));
+	row.appendChild(body);
+
+	if (!msg.lida) row.appendChild(createEl('span', 'gm-mensagem-row-dot'));
+
+	return row;
+}
+
+function buildMensagensGrupo(titulo, mensagens) {
+	const section = createEl('section', 'gm-mensagens-grupo');
+	if (titulo) section.appendChild(createEl('h4', 'gm-mensagens-grupo-titulo', titulo));
+	const rows = createEl('div', 'gm-mensagens-grupo-rows');
+	if (!mensagens.length) {
+		rows.appendChild(createEl('div', 'gm-admin-empty', 'Nada por aqui ainda.'));
+	} else {
+		mensagens.forEach(msg => rows.appendChild(buildMensagemRow(msg)));
+	}
+	section.appendChild(rows);
+	return section;
+}
+
+function buildMensagensFiltro() {
+	const wrap = createEl('div', 'gm-mensagens-filtro');
+	[
+		{ valor: 'compra', label: 'Compras e contratações' },
+		{ valor: 'interacao', label: 'Interações' },
+	].forEach(({ valor, label }) => {
+		const btn = createEl('button', `gm-mensagens-filtro-btn${gmMensagensFiltro === valor ? ' active' : ''}`, label);
+		btn.type = 'button';
+		btn.dataset.action = 'filtrar-mensagens';
+		btn.dataset.filtro = valor;
+		wrap.appendChild(btn);
+	});
+	return wrap;
+}
+
+function buildAnexoChip(anexo, removivel) {
+	const chip = createEl('span', 'gm-anexo-chip');
+	const icon = document.createElement('i');
+	icon.className = `fas ${GM_TIPO_ANEXO_ICON[anexo.tipo] || 'fa-paperclip'}`;
+	chip.appendChild(icon);
+	chip.appendChild(document.createTextNode(anexo.nome));
+	if (removivel) {
+		const remove = createEl('button', 'gm-anexo-chip-remove', '×');
+		remove.type = 'button';
+		remove.dataset.action = 'remover-anexo-composer';
+		remove.dataset.anexoNome = anexo.nome;
+		chip.appendChild(remove);
+	}
+	return chip;
+}
+
+function buildChatBubble(texto, anexos, quando, direcao) {
+	const bubble = createEl('div', `gm-chat-bubble gm-chat-bubble--${direcao}`);
+	if (texto) bubble.appendChild(createEl('p', 'gm-chat-bubble-texto', texto));
+	if (anexos?.length) {
+		const anexosWrap = createEl('div', 'gm-mensagem-anexos');
+		anexos.forEach(anexo => anexosWrap.appendChild(buildAnexoChip(anexo, false)));
+		bubble.appendChild(anexosWrap);
+	}
+	if (quando) bubble.appendChild(createEl('span', 'gm-chat-bubble-hora', quando));
+	return bubble;
+}
+
+function buildMensagemDetalhe(msg) {
+	const wrap = createEl('div', 'gm-mensagem-detalhe');
+
+	const back = createEl('button', 'gm-mensagem-detalhe-back', 'Voltar');
+	back.type = 'button';
+	back.dataset.action = 'fechar-mensagem';
+	const backIcon = document.createElement('i');
+	backIcon.className = 'fas fa-arrow-left';
+	back.prepend(backIcon);
+	wrap.appendChild(back);
+
+	const head = createEl('div', 'gm-mensagem-detalhe-head');
+	head.appendChild(createEl('div', 'gm-mensagem-avatar gm-mensagem-avatar--lg', iniciaisNome(msg.cliente)));
+	const headInfo = createEl('div');
+	headInfo.appendChild(createEl('strong', 'gm-mensagem-nome', msg.cliente));
+	headInfo.appendChild(createEl('span', 'gm-mensagem-item-ref', `Sobre: ${msg.item}`));
+	head.appendChild(headInfo);
+	head.appendChild(createEl('span', `gm-mensagem-tipo-tag gm-mensagem-tipo-tag--${msg.tipo}`, msg.tipo === 'compra' ? 'Compra/contratação' : 'Interação'));
+	wrap.appendChild(head);
+
+	const chat = createEl('div', 'gm-chat');
+	chat.appendChild(buildChatBubble(msg.mensagem, msg.anexosCliente, msg.quando, 'in'));
+	(msg.respostas || []).forEach(resp => {
+		chat.appendChild(buildChatBubble(resp.texto, resp.anexos, resp.quando, 'out'));
+	});
+	wrap.appendChild(chat);
+
+	const form = createEl('div', 'gm-chat-composer');
+
+	if (gmComposerAnexos.length) {
+		const anexosWrap = createEl('div', 'gm-mensagem-anexos gm-mensagem-anexos--composer');
+		gmComposerAnexos.forEach(anexo => anexosWrap.appendChild(buildAnexoChip(anexo, true)));
+		form.appendChild(anexosWrap);
+	}
+
+	const inputRow = createEl('div', 'gm-chat-composer-row');
+
+	const attachWrap = createEl('div', 'gm-composer-attach-wrap');
+	const clipBtn = createEl('button', 'gm-composer-clip-btn');
+	clipBtn.type = 'button';
+	clipBtn.dataset.action = 'toggle-anexo-menu';
+	const clipIcon = document.createElement('i');
+	clipIcon.className = 'fas fa-paperclip';
+	clipBtn.appendChild(clipIcon);
+	attachWrap.appendChild(clipBtn);
+
+	if (gmComposerMenuAberto) {
+		const menu = createEl('div', 'gm-composer-attach-menu');
+		[
+			{ tipo: 'foto', icon: 'fa-image', label: 'Foto', accept: 'image/*' },
+			{ tipo: 'video', icon: 'fa-video', label: 'Vídeo', accept: 'video/*' },
+			{ tipo: 'documento', icon: 'fa-file-alt', label: 'Documento', accept: '.pdf,.doc,.docx,.txt' },
+		].forEach(({ tipo, icon, label, accept }) => {
+			const btn = createEl('button', 'gm-composer-attach-btn');
+			btn.type = 'button';
+			const btnIcon = document.createElement('i');
+			btnIcon.className = `fas ${icon}`;
+			btn.appendChild(btnIcon);
+			btn.appendChild(document.createTextNode(` ${label}`));
+
+			const input = document.createElement('input');
+			input.type = 'file';
+			input.accept = accept;
+			input.hidden = true;
+			input.dataset.anexoTipo = tipo;
+			input.addEventListener('change', () => {
+				if (input.files?.[0]) {
+					gmComposerAnexos.push({ nome: input.files[0].name, tipo });
+					gmComposerMenuAberto = false;
+					renderMensagens();
+				}
+			});
+
+			btn.addEventListener('click', () => input.click());
+			menu.appendChild(btn);
+			menu.appendChild(input);
+		});
+		attachWrap.appendChild(menu);
+	}
+
+	inputRow.appendChild(attachWrap);
+
+	const textarea = document.createElement('textarea');
+	textarea.rows = 1;
+	textarea.className = 'gm-chat-composer-input';
+	textarea.placeholder = 'Digite uma mensagem...';
+	textarea.dataset.replyId = String(msg.id);
+	textarea.value = gmComposerTexto;
+	textarea.addEventListener('input', () => { gmComposerTexto = textarea.value; });
+	textarea.addEventListener('keydown', (event) => {
+		if (event.key === 'Enter' && !event.shiftKey) {
+			event.preventDefault();
+			enviarRespostaMensagem(msg.id);
+		}
+	});
+	inputRow.appendChild(textarea);
+
+	const enviarBtn = createEl('button', 'gm-chat-send-btn');
+	enviarBtn.type = 'button';
+	enviarBtn.dataset.action = 'enviar-resposta';
+	enviarBtn.dataset.mensagemId = String(msg.id);
+	const sendIcon = document.createElement('i');
+	sendIcon.className = 'fas fa-paper-plane';
+	enviarBtn.appendChild(sendIcon);
+	inputRow.appendChild(enviarBtn);
+
+	form.appendChild(inputRow);
+	wrap.appendChild(form);
+
+	return wrap;
+}
+
+function renderMensagens() {
+	const list = document.getElementById('gm-mensagens-list');
+	if (!list) return;
+
+	list.innerHTML = '';
+
+	if (gmMensagemAbertaId >= 0) {
+		const msg = gmMensagens.find(m => m.id === gmMensagemAbertaId);
+		if (msg) {
+			list.appendChild(buildMensagemDetalhe(msg));
+			list.querySelector('textarea')?.focus();
+			return;
+		}
+		gmMensagemAbertaId = -1;
+	}
+
+	list.appendChild(buildMensagensFiltro());
+
+	if (!gmMensagens.length) {
+		list.appendChild(createEl('div', 'gm-admin-empty', 'Nenhuma mensagem ainda.'));
+		return;
+	}
+
+	const filtradas = gmMensagens.filter(m => m.tipo === gmMensagensFiltro);
+	list.appendChild(buildMensagensGrupo('', filtradas));
+}
+
+function mapMensagemApi(m) {
+	return {
+		id: m.id,
+		tipo: m.tipo,
+		cliente: m.cliente_nome || 'Cliente',
+		mensagem: m.texto,
+		item: m.item_nome || '—',
+		quando: tempoRelativo(m.criado_em),
+		lida: Boolean(m.lida),
+		anexosCliente: (m.anexos || []).map(a => ({ nome: a.nome_arquivo, tipo: a.tipo })),
+		respostas: (m.respostas || []).map(r => ({ texto: r.texto, anexos: [], quando: tempoRelativo(r.criado_em) })),
+	};
+}
+
+async function carregarMensagens() {
+	if (!gmLojaId) return;
+	const dados = await fetchMensagensLoja(gmLojaId);
+	if (!Array.isArray(dados)) return;
+	gmMensagens = dados.map(mapMensagemApi);
+	renderMensagens();
+	atualizarBadgeAtividade();
+}
+
+async function inicializarLojaGerenciamento() {
+	const loja = await fetchLojaPorSlug('loja-central');
+	if (!loja || loja.erro) return;
+	gmLojaId = loja.id;
+	await carregarMensagens();
+}
+
+function filtrarMensagens(valor) {
+	gmMensagensFiltro = valor;
+	renderMensagens();
+}
+
+function abrirMensagem(id) {
+	gmMensagemAbertaId = id;
+	gmComposerAnexos = [];
+	gmComposerTexto = '';
+	gmComposerMenuAberto = false;
+
+	const msg = gmMensagens.find(m => m.id === id);
+	if (msg && !msg.lida) {
+		msg.lida = true;
+		marcarMensagemLida(id);
+	}
+
+	renderMensagens();
+	atualizarBadgeAtividade();
+}
+
+function fecharMensagemDetalhe() {
+	gmMensagemAbertaId = -1;
+	gmComposerAnexos = [];
+	gmComposerTexto = '';
+	gmComposerMenuAberto = false;
+	renderMensagens();
+}
+
+function toggleAnexoMenu() {
+	gmComposerMenuAberto = !gmComposerMenuAberto;
+	renderMensagens();
+}
+
+function removerAnexoComposer(nome) {
+	gmComposerAnexos = gmComposerAnexos.filter(a => a.nome !== nome);
+	renderMensagens();
+}
+
+async function enviarRespostaMensagem(id) {
+	const texto = gmComposerTexto.trim();
+	if (!texto && !gmComposerAnexos.length) {
+		gmToast('Escreva uma resposta ou anexe um arquivo antes de enviar.');
+		return;
+	}
+
+	const msg = gmMensagens.find(m => m.id === id);
+	if (!msg) return;
+
+	const resultado = await responderMensagem(id, texto);
+	if (!resultado) {
+		gmToast('Não foi possível enviar a resposta. Tente novamente.');
+		return;
+	}
+
+	msg.respostas = msg.respostas || [];
+	msg.respostas.push({ texto, anexos: gmComposerAnexos, quando: 'agora' });
+	msg.lida = true;
+	gmComposerAnexos = [];
+	gmComposerTexto = '';
+	gmComposerMenuAberto = false;
+
+	renderMensagens();
+	atualizarBadgeAtividade();
+}
+
+function buildStatCard(icon, valor, label) {
+	const card = createEl('article', 'gm-stat-card');
+	card.appendChild(createEl('span', 'gm-stat-icon'));
+	card.querySelector('.gm-stat-icon').innerHTML = `<i class="fas ${icon}"></i>`;
+	card.appendChild(createEl('strong', 'gm-stat-valor', String(valor)));
+	card.appendChild(createEl('span', 'gm-stat-label', label));
+	return card;
+}
+
+function buildRankingList(itens) {
+	const list = createEl('div', 'gm-ranking-rows');
+	if (!itens.length) {
+		list.appendChild(createEl('div', 'gm-admin-empty', 'Sem dados ainda.'));
+		return list;
+	}
+	const maior = Math.max(...itens.map(i => i.valor));
+	itens.forEach((item, index) => {
+		const row = createEl('div', 'gm-ranking-row');
+		row.appendChild(createEl('span', 'gm-ranking-pos', `#${index + 1}`));
+		const info = createEl('div', 'gm-ranking-info');
+		info.appendChild(createEl('span', 'gm-ranking-nome', item.nome));
+		const barTrack = createEl('div', 'gm-ranking-bar-track');
+		const bar = createEl('div', 'gm-ranking-bar');
+		bar.style.width = `${Math.round((item.valor / maior) * 100)}%`;
+		barTrack.appendChild(bar);
+		info.appendChild(barTrack);
+		row.appendChild(info);
+		row.appendChild(createEl('strong', 'gm-ranking-valor', String(item.valor)));
+		list.appendChild(row);
+	});
+	return list;
+}
+
+function renderPainel() {
+	const statsEl = document.getElementById('gm-dashboard-stats');
+	if (statsEl) {
+		const vendasConcluidas = gmPedidos.filter(p => p.etapaIndex >= getEtapasPedido(p.tipo).length - 1).length;
+		const vendasPendentes = gmPedidos.filter(p => p.etapaIndex < getEtapasPedido(p.tipo).length - 1).length;
+
+		statsEl.innerHTML = '';
+		statsEl.appendChild(buildStatCard('fa-bag-shopping', gmPedidos.length, 'Vendas totais'));
+		statsEl.appendChild(buildStatCard('fa-check-circle', vendasConcluidas, 'Vendas concluídas'));
+		statsEl.appendChild(buildStatCard('fa-hourglass-half', vendasPendentes, 'Vendas pendentes'));
+		statsEl.appendChild(buildStatCard('fa-cart-plus', GM_DASHBOARD.carrinhoUsuarios, 'Usuários com item no carrinho'));
+	}
+
+	const curtidosEl = document.getElementById('gm-ranking-curtidos');
+	if (curtidosEl) {
+		curtidosEl.innerHTML = '';
+		curtidosEl.appendChild(buildRankingList(GM_DASHBOARD.produtosMaisCurtidos));
+	}
+
+	const compradosEl = document.getElementById('gm-ranking-comprados');
+	if (compradosEl) {
+		compradosEl.innerHTML = '';
+		compradosEl.appendChild(buildRankingList(GM_DASHBOARD.produtosMaisComprados));
+	}
+}
+
+function atualizarBadgeAtividade() {
+	const naoLidas = gmMensagens.filter(m => !m.lida).length;
+	const pendentes = gmPedidos.filter(p => p.etapaIndex < getEtapasPedido(p.tipo).length - 1).length;
+
+	const setBadge = (id, valor) => {
+		const el = document.getElementById(id);
+		if (!el) return;
+		el.textContent = String(valor);
+		el.hidden = valor === 0;
+	};
+
+	setBadge('gm-atividade-badge', pendentes);
+	setBadge('gm-messages-bubble-badge', naoLidas);
+}
+
 function bindGerenciamento() {
 	const form = document.getElementById('gm-form');
 	if (!form) return;
@@ -917,10 +1540,44 @@ function bindGerenciamento() {
 	gmItems = cloneDefaultItems();
 	gmFilters = [...GM_DEFAULT.filters];
 	gmClosedDates = [...GM_DEFAULT.closedDates];
+	gmPedidos = GM_PEDIDOS.map(pedido => ({ ...pedido }));
 	renderAdminItems();
 	renderFilterList();
 	renderClosedDates();
+	renderPedidos();
+	renderMensagens();
+	renderPainel();
+	atualizarBadgeAtividade();
 	refreshSubcategoryOptions(GM_DEFAULT.itemCategory, GM_DEFAULT.itemSubcategory);
+	inicializarLojaGerenciamento();
+
+	document.getElementById('gm-pedidos-list')?.addEventListener('click', event => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+		const btn = target.closest('button[data-action]');
+		if (!btn) return;
+		const id = Number(btn.dataset.pedidoId);
+		if (!id) return;
+		if (btn.dataset.action === 'avancar-etapa') avancarEtapaPedido(id);
+		if (btn.dataset.action === 'ver-etiqueta') verEtiquetaPedido(id);
+	});
+
+	document.getElementById('gm-mensagens-list')?.addEventListener('click', event => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+		const btn = target.closest('button[data-action], [role="button"][data-action]');
+		if (!btn) return;
+		const action = btn.dataset.action;
+		const id = Number(btn.dataset.mensagemId);
+		if (action === 'abrir-mensagem' && id) abrirMensagem(id);
+		if (action === 'fechar-mensagem') fecharMensagemDetalhe();
+		if (action === 'enviar-resposta' && id) enviarRespostaMensagem(id);
+		if (action === 'remover-anexo-composer') removerAnexoComposer(btn.dataset.anexoNome);
+		if (action === 'toggle-anexo-menu') toggleAnexoMenu();
+		if (action === 'filtrar-mensagens') filtrarMensagens(btn.dataset.filtro);
+	});
+
+	bindMessagesBubble();
 
 	form.querySelectorAll('input, textarea, select').forEach(field => {
 		field.addEventListener('input', aplicarPreview);
@@ -1020,12 +1677,12 @@ function bindGerenciamento() {
 
 	document.getElementById('gm-generate')?.addEventListener('click', () => {
 		aplicarPreview();
-		gmToast('App criado com sucesso. Previa atualizada.');
+		gmToast('Loja salva. Prévia atualizada.');
 	});
 
 	document.getElementById('gm-generate-preview')?.addEventListener('click', () => {
 		aplicarPreview();
-		gmToast('App criado com sucesso. Previa atualizada.');
+		gmToast('Loja salva. Prévia atualizada.');
 	});
 
 	document.getElementById('gm-open-preview-tab')?.addEventListener('click', () => {

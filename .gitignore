@@ -4,3 +4,8 @@ dist/
 *.log
 Thumbs.db
 desktop.ini
+
+# Segredos e infraestrutura de backend (não fazem parte do site estático)
+credencial.env
+Python/credencial.env
+.claude/

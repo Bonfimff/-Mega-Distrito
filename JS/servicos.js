@@ -450,9 +450,24 @@ function publicarCurriculo() {
 }
 
 /* =========================================================
+   CARREGAMENTO (API)
+   ========================================================= */
+async function carregarProfissionais() {
+    const profissionais = await fetchProfissionais();
+    if (profissionais) PROFISSIONAIS = profissionais.map(mapProfissional);
+}
+
+async function carregarVagas() {
+    const vagas = await fetchVagas();
+    if (vagas) VAGAS = vagas.map(mapVaga);
+}
+
+/* =========================================================
    INICIALIZAÇÃO
    ========================================================= */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await Promise.all([carregarProfissionais(), carregarVagas()]);
+
     if (document.getElementById('servicos-grid')) renderServicos(PROFISSIONAIS);
     if (document.getElementById('vagas-grid'))    renderVagas(VAGAS);
     renderDestaqueProfissionais();

@@ -492,11 +492,18 @@ function _ajustarAlturaHeader() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+async function _carregarProfissionaisParaFeed() {
+    const profissionais = await fetchProfissionais();
+    if (profissionais) PROFISSIONAIS = profissionais.map(mapProfissional);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
     if (!document.getElementById('feed-reel-container')) return;
 
     _ajustarAlturaHeader();
     window.addEventListener('resize', _ajustarAlturaHeader);
+
+    await Promise.all([carregarVitrine(), _carregarProfissionaisParaFeed()]);
 
     REEL_ITENS = _gerarItens();
     renderReel();

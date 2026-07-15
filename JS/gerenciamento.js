@@ -1716,4 +1716,3 @@ document.addEventListener('DOMContentLoaded', () => {
 	bindTabs();
 	bindGerenciamento();
 	bindHamburgerGerenciamento();
-});

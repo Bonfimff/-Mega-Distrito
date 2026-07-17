@@ -187,7 +187,9 @@ function gerarGaleria(p) {
 function buildGaleriaHTML(p, slides) {
     return slides.map(s => `
         <div class="pd-gallery-slide" style="background:${s.bg};">
-            <span class="pd-gallery-emoji">${p.emoji}</span>
+            <div class="pd-gallery-media">
+                <span class="pd-gallery-emoji">${p.emoji}</span>
+            </div>
             <span class="pd-gallery-count">Foto ${s.indice} de ${s.total}</span>
         </div>
     `).join('');

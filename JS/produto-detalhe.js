@@ -247,7 +247,9 @@ function buildProdutoDetalheHTML(p) {
         <div class="pd-layout">
             <div class="pd-gallery">
                 ${descontoHTML}
-                <div class="pd-gallery-track">${galeriaHTML}</div>
+                <div class="pd-gallery-square">
+                    <div class="pd-gallery-track">${galeriaHTML}</div>
+                </div>
             </div>
 
             <!-- Bloco 2: informações de compra (nome, preço, frete, adicionar ao carrinho) — fica fixo (sticky) ao rolar -->

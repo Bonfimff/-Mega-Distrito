@@ -1602,12 +1602,20 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     padding: var(--space-5) var(--space-6);
 }
 
+/* .pd-gallery é um bloco comum (sem aspect-ratio direto): o grid do
+   Mercado Livre erra a altura automática da linha quando o próprio
+   item do grid usa aspect-ratio, então o quadrado fica numa div
+   filha (.pd-gallery-square) e a altura sobe por fluxo normal. */
 .pd-gallery {
     grid-area: galeria;
     position: relative;
     align-self: start;
     width: 100%;
     max-width: 480px;
+}
+
+.pd-gallery-square {
+    width: 100%;
     aspect-ratio: 1 / 1;
     background: var(--white);
     border: 1px solid var(--gray-200);
@@ -1887,9 +1895,8 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     }
     .pd-content { height: auto; overflow-y: auto; }
 
-    .pd-gallery {
-        max-width: none;
-        height: auto;
+    .pd-gallery { max-width: none; }
+    .pd-gallery-square {
         aspect-ratio: auto;
         border-left: none;
         border-right: none;

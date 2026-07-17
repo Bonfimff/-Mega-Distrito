@@ -1581,28 +1581,37 @@ footer { background: #1a1a1a; color: #bdbdbd; }
 }
 .pd-voltar:hover { color: var(--green-dark); }
 
-.pd-content { flex: 1; min-height: 0; }
+.pd-content { flex: 1; min-height: 0; background: var(--gray-100); }
 
+/* Layout de referência Mercado Livre: conteúdo centralizado com
+   largura máxima (nunca esticado em telas grandes), galeria+descrição
+   numa coluna e a caixa de compra fixa (sticky) ao lado. */
 .pd-layout {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-5);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    grid-template-areas:
+        "galeria compra"
+        "info    compra";
+    column-gap: var(--space-6);
+    row-gap: var(--space-5);
+    max-width: 1280px;
+    margin: 0 auto;
     height: 100%;
     overflow-y: auto;
-}
-
-.pd-top {
-    display: grid;
-    grid-template-columns: minmax(320px, 440px) 1fr;
-    flex-shrink: 0;
+    align-items: start;
+    padding: var(--space-5) var(--space-6);
 }
 
 .pd-gallery {
+    grid-area: galeria;
     position: relative;
     align-self: start;
+    width: 100%;
+    max-width: 480px;
     aspect-ratio: 1 / 1;
-    background: var(--gray-50);
-    border-right: 1px solid var(--gray-200);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
     overflow: hidden;
 }
 
@@ -1659,23 +1668,27 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     z-index: 2;
 }
 
-/* Bloco 2 (compra) e Bloco 3 (demais informações) — separados visualmente */
+/* Bloco 2 (compra) e Bloco 3 (demais informações) — cards brancos
+   separados sobre o fundo cinza da página, estilo Mercado Livre. */
 .pd-bloco {
+    background: var(--white);
     border: 1px solid var(--gray-200);
     border-radius: var(--radius);
     padding: var(--space-4) var(--space-5);
 }
 
 .pd-bloco-compra {
+    grid-area: compra;
     display: flex;
     flex-direction: column;
-    align-self: start;
     gap: 6px;
-    margin: var(--space-5) var(--space-6) var(--space-5) var(--space-6);
+    align-self: start;
+    position: sticky;
+    top: var(--space-5);
 }
 
 .pd-bloco-info {
-    margin: 0 var(--space-6) var(--space-5) var(--space-6);
+    grid-area: info;
 }
 
 .pd-categoria {
@@ -1857,14 +1870,25 @@ footer { background: #1a1a1a; color: #bdbdbd; }
    a galeria vira um carrossel horizontal fixo no topo e o resto
    da página (incluindo a galeria) rola em um único fluxo. */
 @media (max-width: 860px) {
-    .pd-layout { height: auto; overflow-y: visible; }
-    .pd-top { grid-template-columns: 1fr; }
+    .pd-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "galeria"
+            "compra"
+            "info";
+        height: auto;
+        overflow-y: visible;
+        padding: 0 0 var(--space-5);
+    }
     .pd-content { height: auto; overflow-y: auto; }
 
     .pd-gallery {
+        max-width: none;
         height: auto;
         aspect-ratio: auto;
+        border-left: none;
         border-right: none;
+        border-radius: 0;
         border-bottom: 1px solid var(--gray-200);
     }
     .pd-gallery-track {
@@ -1882,6 +1906,12 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     }
     .pd-gallery-emoji { font-size: 4.5rem; }
 
+    .pd-bloco-compra {
+        position: static;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
     .pd-bloco-compra, .pd-bloco-info { margin-left: var(--space-4); margin-right: var(--space-4); }
 }
 

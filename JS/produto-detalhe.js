@@ -245,31 +245,29 @@ function buildProdutoDetalheHTML(p) {
 
     return `
         <div class="pd-layout">
-            <div class="pd-top">
-                <div class="pd-gallery">
-                    ${descontoHTML}
-                    <div class="pd-gallery-track">${galeriaHTML}</div>
-                </div>
+            <div class="pd-gallery">
+                ${descontoHTML}
+                <div class="pd-gallery-track">${galeriaHTML}</div>
+            </div>
 
-                <!-- Bloco 2: informações de compra (nome, preço, frete, adicionar ao carrinho) -->
-                <div class="pd-bloco pd-bloco-compra">
-                    <span class="pd-categoria">${nomeDaCategoria(p.categoria)}</span>
-                    <h2 class="pd-nome">${p.nome}</h2>
-                    <div class="pd-rating">
-                        <span class="pd-rating-stars">${buildEstrelas(p.avaliacao)}</span>
-                        <span class="pd-rating-valor">${p.avaliacao.toFixed(1)}</span>
-                        <span class="pd-rating-count">(${p.avaliacoes} avaliações)</span>
-                    </div>
-                    <div class="pd-precos">
-                        ${precoAntigoHTML}
-                        <div class="pd-preco-atual">${brl(p.preco)}</div>
-                        <div class="pd-parcela">em ${parcelas}x ${vlrParcela} sem juros</div>
-                        ${freteHTML}
-                    </div>
-                    <button class="btn btn-primary btn-block" type="button" data-action="adicionar" data-id="${p.id}">
-                        <i class="fas fa-cart-plus"></i> Adicionar ao carrinho
-                    </button>
+            <!-- Bloco 2: informações de compra (nome, preço, frete, adicionar ao carrinho) — fica fixo (sticky) ao rolar -->
+            <div class="pd-bloco pd-bloco-compra">
+                <span class="pd-categoria">${nomeDaCategoria(p.categoria)}</span>
+                <h2 class="pd-nome">${p.nome}</h2>
+                <div class="pd-rating">
+                    <span class="pd-rating-stars">${buildEstrelas(p.avaliacao)}</span>
+                    <span class="pd-rating-valor">${p.avaliacao.toFixed(1)}</span>
+                    <span class="pd-rating-count">(${p.avaliacoes} avaliações)</span>
                 </div>
+                <div class="pd-precos">
+                    ${precoAntigoHTML}
+                    <div class="pd-preco-atual">${brl(p.preco)}</div>
+                    <div class="pd-parcela">em ${parcelas}x ${vlrParcela} sem juros</div>
+                    ${freteHTML}
+                </div>
+                <button class="btn btn-primary btn-block" type="button" data-action="adicionar" data-id="${p.id}">
+                    <i class="fas fa-cart-plus"></i> Adicionar ao carrinho
+                </button>
             </div>
 
             <!-- Bloco 3: demais informações (descrição, especificações, avaliações, histórico, outras lojas, similares) -->

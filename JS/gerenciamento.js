@@ -169,12 +169,14 @@ const GM_SUBCATEGORY_MAP = {
 };
 
 let gmItems = [];
+let gmItemsOriginalIds = [];
 let gmEditingIndex = -1;
 let gmFilters = [];
 let gmActiveFilterIndex = -1;
 let gmEditingFilterIndex = -1;
 let gmClosedDates = [];
 let gmPreviewVisible = false;
+let gmSalvandoLoja = false;
 
 function gmToast(msg) {
 	const el = document.getElementById('toast');
@@ -195,6 +197,68 @@ function setBgFromUrl(el, url, fallbackGradient) {
 
 function cloneDefaultItems() {
 	return GM_DEFAULT.items.map(item => ({ ...item }));
+}
+
+function parsePrecoParaNumero(precoTexto) {
+	const numero = Number(String(precoTexto || '0').replace(',', '.'));
+	return Number.isFinite(numero) ? numero : 0;
+}
+
+function formatarPrecoParaExibicao(precoDecimal) {
+	const numero = Number(precoDecimal || 0);
+	return numero.toFixed(2).replace('.', ',');
+}
+
+function formatarHoraParaInput(horaSql) {
+	return (horaSql || '').slice(0, 5);
+}
+
+function mapItemApiParaLocal(item) {
+	return {
+		id: item.id,
+		type: item.tipo || 'produto',
+		name: item.nome || '',
+		description: item.descricao || '',
+		price: formatarPrecoParaExibicao(item.preco),
+		photo: item.foto_url || '',
+		video: item.video_url || '',
+		category: item.categoria || '',
+		subcategory: item.subcategoria || '',
+		brand: item.marca || '',
+		qty: item.quantidade != null ? String(item.quantidade) : '',
+		color: item.cor || '',
+		voltage: item.voltagem || '',
+		delivery: Boolean(item.entrega),
+		pickup: Boolean(item.retirada),
+	};
+}
+
+function mapItemLocalParaApi(item, lojaId) {
+	return {
+		loja_id: lojaId,
+		tipo: item.type,
+		nome: item.name,
+		descricao: item.description,
+		preco: parsePrecoParaNumero(item.price),
+		foto_url: item.photo || null,
+		video_url: item.video || null,
+		categoria: item.category || null,
+		subcategoria: item.subcategory || null,
+		marca: item.brand || null,
+		quantidade: item.qty ? Number(item.qty) : null,
+		cor: item.color || null,
+		voltagem: item.voltage || null,
+		entrega: Boolean(item.delivery),
+		retirada: Boolean(item.pickup),
+	};
+}
+
+function mapFiltroApiParaLocal(filtro) {
+	return {
+		name: filtro.nome || '',
+		value: filtro.valor || '',
+		manualItems: (filtro.itens_manuais || []).map(i => i.item_nome || i),
+	};
 }
 
 function normalizePrice(value) {
@@ -887,6 +951,7 @@ function addItem() {
 	if (!item) return;
 
 	if (gmEditingIndex >= 0) {
+		item.id = gmItems[gmEditingIndex]?.id;
 		gmItems[gmEditingIndex] = item;
 		gmToast('Item atualizado com sucesso.');
 	} else {
@@ -1386,11 +1451,109 @@ async function carregarMensagens() {
 	atualizarBadgeAtividade();
 }
 
+function preencherFormularioLoja(loja) {
+	const setValue = (id, value) => {
+		const el = document.getElementById(id);
+		if (el) el.value = value ?? '';
+	};
+
+	setValue('gm-app-name', loja.nome);
+	setValue('gm-store-category', loja.categoria);
+	setValue('gm-app-subtitle', loja.subtitulo);
+	setValue('gm-address', loja.endereco);
+	setValue('gm-address-url', loja.endereco_url);
+	setValue('gm-primary-color', loja.cor_primaria);
+	setValue('gm-accent-color', loja.cor_destaque);
+	setValue('gm-banner-url', loja.banner_url);
+	setValue('gm-card-url', loja.card_url);
+	setValue('gm-app-icon-url', loja.icone_url);
+	setValue('gm-preview-card-mode', loja.modo_card);
+	setValue('gm-open-time', formatarHoraParaInput(loja.horario_abre));
+	setValue('gm-close-time', formatarHoraParaInput(loja.horario_fecha));
+}
+
 async function inicializarLojaGerenciamento() {
 	const loja = await fetchLojaPorSlug('loja-central');
 	if (!loja || loja.erro) return;
 	gmLojaId = loja.id;
+
+	preencherFormularioLoja(loja);
+
+	gmItems = (loja.itens || []).map(mapItemApiParaLocal);
+	gmItemsOriginalIds = gmItems.map(item => item.id);
+	gmFilters = (loja.filtros || []).map(mapFiltroApiParaLocal);
+	gmClosedDates = (loja.dias_fechados || []).map(d => (d.data || '').slice(0, 10));
+
+	renderAdminItems();
+	renderFilterList();
+	renderClosedDates();
+	aplicarPreview();
+
 	await carregarMensagens();
+}
+
+async function salvarLojaCompleta() {
+	if (!gmLojaId) {
+		gmToast('Loja ainda não carregada. Tente novamente em instantes.');
+		return;
+	}
+	if (gmSalvandoLoja) return;
+	gmSalvandoLoja = true;
+
+	try {
+		const openTime = document.getElementById('gm-open-time')?.value || GM_DEFAULT.openTime;
+		const closeTime = document.getElementById('gm-close-time')?.value || GM_DEFAULT.closeTime;
+
+		const dadosLoja = {
+			nome: document.getElementById('gm-app-name')?.value?.trim() || GM_DEFAULT.name,
+			categoria: document.getElementById('gm-store-category')?.value || '',
+			subtitulo: document.getElementById('gm-app-subtitle')?.value?.trim() || '',
+			endereco: document.getElementById('gm-address')?.value?.trim() || '',
+			endereco_url: document.getElementById('gm-address-url')?.value?.trim() || '',
+			cor_primaria: document.getElementById('gm-primary-color')?.value || GM_DEFAULT.primary,
+			cor_destaque: document.getElementById('gm-accent-color')?.value || GM_DEFAULT.accent,
+			banner_url: document.getElementById('gm-banner-url')?.value?.trim() || '',
+			card_url: document.getElementById('gm-card-url')?.value?.trim() || '',
+			icone_url: document.getElementById('gm-app-icon-url')?.value?.trim() || '',
+			horario_abre: `${openTime}:00`,
+			horario_fecha: `${closeTime}:00`,
+			modo_card: document.getElementById('gm-preview-card-mode')?.value || 'portrait',
+			filtros: gmFilters.map(f => ({ name: f.name, value: f.value, manualItems: f.manualItems || [] })),
+			dias_fechados: [...gmClosedDates],
+		};
+
+		const resultadoLoja = await atualizarLoja(gmLojaId, dadosLoja);
+		if (!resultadoLoja || resultadoLoja.erro) {
+			gmToast('Não foi possível salvar a loja. Verifique sua conexão.');
+			return;
+		}
+
+		const idsAtuais = new Set();
+		for (const item of gmItems) {
+			const payload = mapItemLocalParaApi(item, gmLojaId);
+			if (item.id) {
+				await atualizarItem(item.id, payload);
+				idsAtuais.add(item.id);
+			} else {
+				const criado = await criarItem(payload);
+				if (criado?.id) {
+					item.id = criado.id;
+					idsAtuais.add(criado.id);
+				}
+			}
+		}
+
+		const removidos = gmItemsOriginalIds.filter(id => !idsAtuais.has(id));
+		for (const id of removidos) {
+			await removerItemApi(id);
+		}
+		gmItemsOriginalIds = [...idsAtuais];
+
+		aplicarPreview();
+		gmToast('Loja salva e publicada com sucesso.');
+	} finally {
+		gmSalvandoLoja = false;
+	}
 }
 
 function filtrarMensagens(valor) {
@@ -1677,12 +1840,12 @@ function bindGerenciamento() {
 
 	document.getElementById('gm-generate')?.addEventListener('click', () => {
 		aplicarPreview();
-		gmToast('Loja salva. Prévia atualizada.');
+		salvarLojaCompleta();
 	});
 
 	document.getElementById('gm-generate-preview')?.addEventListener('click', () => {
 		aplicarPreview();
-		gmToast('Loja salva. Prévia atualizada.');
+		salvarLojaCompleta();
 	});
 
 	document.getElementById('gm-open-preview-tab')?.addEventListener('click', () => {

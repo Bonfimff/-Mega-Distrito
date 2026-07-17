@@ -45,6 +45,10 @@ const fetchItens = (params = {}) => {
 };
 const fetchLojas = () => apiGet('/lojas');
 const fetchLojaPorSlug = slug => apiGet(`/lojas/${encodeURIComponent(slug)}`);
+const atualizarLoja = (lojaId, dados) => apiPatch(`/lojas/${lojaId}`, dados);
+const criarItem = dados => apiPost('/itens', dados);
+const atualizarItem = (itemId, dados) => apiPatch(`/itens/${itemId}`, dados);
+const removerItemApi = itemId => apiDelete(`/itens/${itemId}`);
 const fetchApps = () => apiGet('/apps');
 const fetchProfissionais = (params = {}) => {
     const query = new URLSearchParams(params).toString();

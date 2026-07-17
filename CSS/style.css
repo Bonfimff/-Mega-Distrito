@@ -1584,9 +1584,17 @@ footer { background: #1a1a1a; color: #bdbdbd; }
 .pd-content { flex: 1; min-height: 0; }
 
 .pd-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    height: 100%;
+    overflow-y: auto;
+}
+
+.pd-top {
     display: grid;
     grid-template-columns: minmax(320px, 440px) 1fr;
-    height: 100%;
+    flex-shrink: 0;
 }
 
 .pd-gallery {
@@ -1634,16 +1642,6 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     z-index: 2;
 }
 
-.pd-details {
-    height: 100%;
-    overflow-y: auto;
-    max-width: 760px;
-    padding: var(--space-5) var(--space-6);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-5);
-}
-
 /* Bloco 2 (compra) e Bloco 3 (demais informações) — separados visualmente */
 .pd-bloco {
     border: 1px solid var(--gray-200);
@@ -1651,7 +1649,17 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     padding: var(--space-4) var(--space-5);
 }
 
-.pd-bloco-compra { display: flex; flex-direction: column; gap: 6px; }
+.pd-bloco-compra {
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+    gap: 6px;
+    margin: var(--space-5) var(--space-6) var(--space-5) var(--space-6);
+}
+
+.pd-bloco-info {
+    margin: 0 var(--space-6) var(--space-5) var(--space-6);
+}
 
 .pd-categoria {
     color: var(--gray-500);
@@ -1832,7 +1840,8 @@ footer { background: #1a1a1a; color: #bdbdbd; }
    a galeria vira um carrossel horizontal fixo no topo e o resto
    da página (incluindo a galeria) rola em um único fluxo. */
 @media (max-width: 860px) {
-    .pd-layout { grid-template-columns: 1fr; height: auto; }
+    .pd-layout { height: auto; overflow-y: visible; }
+    .pd-top { grid-template-columns: 1fr; }
     .pd-content { height: auto; overflow-y: auto; }
 
     .pd-gallery {
@@ -1855,6 +1864,6 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     }
     .pd-gallery-emoji { font-size: 4.5rem; }
 
-    .pd-details { height: auto; overflow-y: visible; padding: var(--space-4); }
+    .pd-bloco-compra, .pd-bloco-info { margin-left: var(--space-4); margin-right: var(--space-4); }
 }
 

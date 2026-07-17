@@ -243,12 +243,12 @@ function buildProdutoDetalheHTML(p) {
 
     return `
         <div class="pd-layout">
-            <div class="pd-gallery">
-                ${descontoHTML}
-                <div class="pd-gallery-track">${galeriaHTML}</div>
-            </div>
+            <div class="pd-top">
+                <div class="pd-gallery">
+                    ${descontoHTML}
+                    <div class="pd-gallery-track">${galeriaHTML}</div>
+                </div>
 
-            <div class="pd-details">
                 <!-- Bloco 2: informações de compra (nome, preço, frete, adicionar ao carrinho) -->
                 <div class="pd-bloco pd-bloco-compra">
                     <span class="pd-categoria">${nomeDaCategoria(p.categoria)}</span>
@@ -268,50 +268,50 @@ function buildProdutoDetalheHTML(p) {
                         <i class="fas fa-cart-plus"></i> Adicionar ao carrinho
                     </button>
                 </div>
+            </div>
 
-                <!-- Bloco 3: demais informações (descrição, especificações, avaliações, histórico, outras lojas, similares) -->
-                <div class="pd-bloco pd-bloco-info">
-                    <div class="pd-tabs" role="tablist">
-                        <button class="pd-tab active" type="button" role="tab" aria-selected="true" data-pd-tab="descricao">Descrição</button>
-                        <button class="pd-tab" type="button" role="tab" aria-selected="false" data-pd-tab="especificacoes">Especificações</button>
-                        <button class="pd-tab" type="button" role="tab" aria-selected="false" data-pd-tab="avaliacoes">Avaliações</button>
-                        <button class="pd-tab" type="button" role="tab" aria-selected="false" data-pd-tab="historico">Histórico de Preço</button>
-                    </div>
-
-                    <div class="pd-tab-panel active" data-pd-panel="descricao">
-                        <p class="pd-descricao">${p.descricao || gerarDescricaoPadrao(p)}</p>
-                    </div>
-
-                    <div class="pd-tab-panel" data-pd-panel="especificacoes">
-                        <div class="pd-specs">${especsHTML}</div>
-                    </div>
-
-                    <div class="pd-tab-panel" data-pd-panel="avaliacoes">
-                        <div class="pd-reviews">${reviewsHTML}</div>
-                    </div>
-
-                    <div class="pd-tab-panel" data-pd-panel="historico">
-                        <div class="pd-chart-wrap">${buildPriceChartSVG(historico)}</div>
-                        <p class="pd-chart-caption">Menor preço dos últimos 6 meses: <strong>${brl(Math.min(...historico.map(h => h.preco)))}</strong></p>
-                    </div>
-
-                    <div class="pd-secao">
-                        <h4><i class="fas fa-store"></i> Este produto em outras lojas</h4>
-                        <div class="pd-ofertas">
-                            <div class="pd-oferta-row pd-oferta-atual">
-                                <span class="pd-oferta-loja">Mercado Express <span class="pd-oferta-selo">Melhor preço</span></span>
-                                <span class="pd-oferta-preco">${brl(p.preco)}</span>
-                            </div>
-                            ${ofertasHTML}
-                        </div>
-                    </div>
-
-                    ${similares.length ? `
-                    <div class="pd-secao">
-                        <h4><i class="fas fa-layer-group"></i> Produtos similares</h4>
-                        <div class="pd-similares">${similaresHTML}</div>
-                    </div>` : ''}
+            <!-- Bloco 3: demais informações (descrição, especificações, avaliações, histórico, outras lojas, similares) -->
+            <div class="pd-bloco pd-bloco-info">
+                <div class="pd-tabs" role="tablist">
+                    <button class="pd-tab active" type="button" role="tab" aria-selected="true" data-pd-tab="descricao">Descrição</button>
+                    <button class="pd-tab" type="button" role="tab" aria-selected="false" data-pd-tab="especificacoes">Especificações</button>
+                    <button class="pd-tab" type="button" role="tab" aria-selected="false" data-pd-tab="avaliacoes">Avaliações</button>
+                    <button class="pd-tab" type="button" role="tab" aria-selected="false" data-pd-tab="historico">Histórico de Preço</button>
                 </div>
+
+                <div class="pd-tab-panel active" data-pd-panel="descricao">
+                    <p class="pd-descricao">${p.descricao || gerarDescricaoPadrao(p)}</p>
+                </div>
+
+                <div class="pd-tab-panel" data-pd-panel="especificacoes">
+                    <div class="pd-specs">${especsHTML}</div>
+                </div>
+
+                <div class="pd-tab-panel" data-pd-panel="avaliacoes">
+                    <div class="pd-reviews">${reviewsHTML}</div>
+                </div>
+
+                <div class="pd-tab-panel" data-pd-panel="historico">
+                    <div class="pd-chart-wrap">${buildPriceChartSVG(historico)}</div>
+                    <p class="pd-chart-caption">Menor preço dos últimos 6 meses: <strong>${brl(Math.min(...historico.map(h => h.preco)))}</strong></p>
+                </div>
+
+                <div class="pd-secao">
+                    <h4><i class="fas fa-store"></i> Este produto em outras lojas</h4>
+                    <div class="pd-ofertas">
+                        <div class="pd-oferta-row pd-oferta-atual">
+                            <span class="pd-oferta-loja">Mercado Express <span class="pd-oferta-selo">Melhor preço</span></span>
+                            <span class="pd-oferta-preco">${brl(p.preco)}</span>
+                        </div>
+                        ${ofertasHTML}
+                    </div>
+                </div>
+
+                ${similares.length ? `
+                <div class="pd-secao">
+                    <h4><i class="fas fa-layer-group"></i> Produtos similares</h4>
+                    <div class="pd-similares">${similaresHTML}</div>
+                </div>` : ''}
             </div>
         </div>
     `;
@@ -330,7 +330,7 @@ function abrirDetalheProduto(id) {
 
     document.getElementById('pd-modal').scrollTo(0, 0);
     document.querySelector('.pd-gallery-track')?.scrollTo(0, 0);
-    document.querySelector('.pd-details')?.scrollTo(0, 0);
+    document.querySelector('.pd-layout')?.scrollTo(0, 0);
 }
 
 function fecharDetalheProduto() {

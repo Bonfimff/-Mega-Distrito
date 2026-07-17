@@ -10,6 +10,34 @@ let atalhosApps = carregarAtalhosApps();
 let appsBusca = '';
 let appsCategoria = 'todas';
 
+let _appsPromise = null;
+
+function carregarApps() {
+    if (!_appsPromise) {
+        _appsPromise = (async () => {
+            const [apps, lojas] = await Promise.all([fetchApps(), fetchLojas()]);
+            if (!apps) return;
+
+            const lojasPorId = {};
+            (lojas || []).forEach(loja => { lojasPorId[loja.id] = loja.nome; });
+
+            LOJA_APPS = apps.map(app => ({
+                id: app.id,
+                nome: app.nome,
+                loja: lojasPorId[app.loja_id] || 'Mega Distrito',
+                desc: app.descricao || '',
+                icone: app.icone_classe,
+                cor: app.cor,
+                categoria: app.categoria,
+                url: app.url,
+                destaque: Boolean(app.destaque),
+                selo: app.selo || '',
+            }));
+        })();
+    }
+    return _appsPromise;
+}
+
 function isPaginaAppsSeparada() {
     const segmentos = window.location.pathname.toLowerCase().split('/').filter(Boolean);
     if (segmentos.length < 2) return false;
@@ -500,7 +528,9 @@ function bindFloatingBottomNav() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await carregarApps();
+
     if (document.getElementById('apps-grid')) renderApps();
     if (document.getElementById('apps-pinned-grid')) renderAppsFixados();
     renderAppsDestaque();

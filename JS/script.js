@@ -80,7 +80,9 @@ function carregarVitrine() {
 // INICIALIZAÇÃO
 // =====================
 document.addEventListener('DOMContentLoaded', async () => {
-    await carregarVitrine();
+    const carregamentos = [carregarVitrine()];
+    if (typeof carregarApps === 'function') carregamentos.push(carregarApps());
+    await Promise.all(carregamentos);
 
     if (document.getElementById('categories-grid')) renderCategorias();
     if (document.getElementById('products-grid'))   renderProdutos(PRODUTOS);

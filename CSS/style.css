@@ -1545,8 +1545,8 @@ footer { background: #1a1a1a; color: #bdbdbd; }
 
 /* =========================================================
    DETALHES DO PRODUTO (página cheia estilo Mercado Livre)
-   Duas colunas: galeria com rolagem própria à esquerda,
-   informações com rolagem própria à direita.
+   Galeria (carrossel horizontal) + descrição numa coluna;
+   caixa de compra fixa (sticky) na coluna ao lado.
    ========================================================= */
 .pd-modal {
     position: fixed;
@@ -1615,17 +1615,22 @@ footer { background: #1a1a1a; color: #bdbdbd; }
     overflow: hidden;
 }
 
-/* Elemento que de fato rola (o badge de desconto fica fora dele, sempre visível) */
+/* Div que de fato rola — carrossel horizontal (o badge de desconto
+   fica fora dela, sempre visível). */
 .pd-gallery-track {
     height: 100%;
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
     scrollbar-width: thin;
 }
 
 .pd-gallery-slide {
     scroll-snap-align: start;
     height: 100%;
+    min-width: 100%;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1891,18 +1896,9 @@ footer { background: #1a1a1a; color: #bdbdbd; }
         border-radius: 0;
         border-bottom: 1px solid var(--gray-200);
     }
-    .pd-gallery-track {
-        height: auto;
-        overflow-y: hidden;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        display: flex;
-    }
     .pd-gallery-slide {
         min-height: 240px;
         height: 240px;
-        min-width: 100%;
-        flex-shrink: 0;
     }
     .pd-gallery-emoji { font-size: 4.5rem; }
 

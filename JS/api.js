@@ -49,6 +49,21 @@ const atualizarLoja = (lojaId, dados) => apiPatch(`/lojas/${lojaId}`, dados);
 const criarItem = dados => apiPost('/itens', dados);
 const atualizarItem = (itemId, dados) => apiPatch(`/itens/${itemId}`, dados);
 const removerItemApi = itemId => apiDelete(`/itens/${itemId}`);
+
+// Upload de arquivo (foto/vídeo) — multipart, não passa pelo apiRequest
+// porque este sempre envia Content-Type: application/json.
+async function uploadArquivo(file) {
+    try {
+        const formData = new FormData();
+        formData.append('arquivo', file);
+        const resp = await fetch(`${API_BASE_URL}/upload`, { method: 'POST', body: formData });
+        const dados = await resp.json().catch(() => null);
+        return resp.ok ? dados : null;
+    } catch (erro) {
+        console.warn('[api] Falha ao enviar arquivo:', erro.message);
+        return null;
+    }
+}
 const fetchApps = () => apiGet('/apps');
 const fetchProfissionais = (params = {}) => {
     const query = new URLSearchParams(params).toString();

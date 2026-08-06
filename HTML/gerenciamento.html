@@ -63,9 +63,14 @@
 		</div>
 	</header>
 
+	<!-- Botão de salvar: flutuante e sempre visível, independente da aba aberta -->
+	<button id="gm-save-btn" type="button" class="gm-save-fab" title="Salvar todas as alterações da loja">
+		<i class="fas fa-check"></i> <span>Salvar loja</span>
+	</button>
+
 	<main class="section gm-page" style="padding-top: 96px;">
 		<div class="container">
-			
+
 
 			<div class="gm-layout gm-layout--preview-hidden">
 				<section class="gm-editor" aria-label="Editor da loja">
@@ -176,16 +181,28 @@
 									</div>
 
 									<div class="gm-group">
-										<label for="gm-banner-url">Imagem do Banner (URL)</label>
-										<input id="gm-banner-url" type="url" placeholder="https://..." value="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80">
+										<label for="gm-banner-url">Imagem do Banner</label>
+										<div class="gm-image-field">
+											<input id="gm-banner-url" type="url" placeholder="Cole um link ou envie um arquivo" value="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80">
+											<label class="gm-upload-btn" for="gm-banner-file"><i class="fas fa-upload"></i> Enviar</label>
+											<input id="gm-banner-file" type="file" accept="image/*" class="gm-visually-hidden">
+										</div>
 									</div>
 									<div class="gm-group">
-										<label for="gm-card-url">Imagem da Vitrine (URL)</label>
-										<input id="gm-card-url" type="url" placeholder="https://..." value="https://images.unsplash.com/photo-1468495244123-6c6f332b7a90?auto=format&fit=crop&w=900&q=80">
+										<label for="gm-card-url">Imagem da Vitrine</label>
+										<div class="gm-image-field">
+											<input id="gm-card-url" type="url" placeholder="Cole um link ou envie um arquivo" value="https://images.unsplash.com/photo-1468495244123-6c6f332b7a90?auto=format&fit=crop&w=900&q=80">
+											<label class="gm-upload-btn" for="gm-card-file"><i class="fas fa-upload"></i> Enviar</label>
+											<input id="gm-card-file" type="file" accept="image/*" class="gm-visually-hidden">
+										</div>
 									</div>
 									<div class="gm-group">
-										<label for="gm-app-icon-url">Ícone da Loja (URL)</label>
-										<input id="gm-app-icon-url" type="url" placeholder="https://..." value="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=200&q=80">
+										<label for="gm-app-icon-url">Ícone da Loja</label>
+										<div class="gm-image-field">
+											<input id="gm-app-icon-url" type="url" placeholder="Cole um link ou envie um arquivo" value="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=200&q=80">
+											<label class="gm-upload-btn" for="gm-icon-file"><i class="fas fa-upload"></i> Enviar</label>
+											<input id="gm-icon-file" type="file" accept="image/*" class="gm-visually-hidden">
+										</div>
 									</div>
 									<div class="gm-group">
 										<label for="gm-preview-card-mode">Exibição dos itens</label>
@@ -280,129 +297,228 @@
 						<section class="gm-builder-block gm-builder-block--flat" aria-label="Cadastro de itens do catálogo">
 							<div class="gm-builder-head">
 								<h4><i class="fas fa-plus-circle"></i> Novo Item</h4>
-								<p>Adicione produtos e serviços com descrição, preço, foto e vídeo.</p>
+								<p>Preencha as etapas abaixo — todas as informações do produto exibidas na sua página podem ser editadas aqui.</p>
 							</div>
 
-							<div class="gm-field-group">
-								<span class="gm-field-group-label">Identificação</span>
-								<div class="gm-row-2">
-									<div class="gm-group">
-										<label for="gm-item-type">Tipo</label>
-										<select id="gm-item-type">
-											<option value="produto" selected>Produto</option>
-											<option value="servico">Serviço</option>
-										</select>
-									</div>
-									<div class="gm-group">
-										<label for="gm-item-name">Nome</label>
-										<input id="gm-item-name" type="text" placeholder="Ex.: Pizza Família">
-									</div>
-								</div>
-								<div class="gm-group">
-									<label for="gm-item-description">Descrição</label>
-									<textarea id="gm-item-description" rows="3" placeholder="Descrição completa do item"></textarea>
-								</div>
-							</div>
+							<form id="gm-item-form" class="gm-form" onsubmit="return false;">
+								<nav class="gm-stepper gm-stepper--7" aria-label="Etapas de cadastro do item">
+									<a class="gm-step-link" href="#gm-item-step-1"><span>1</span> Info</a>
+									<a class="gm-step-link" href="#gm-item-step-2"><span>2</span> Fotos</a>
+									<a class="gm-step-link" href="#gm-item-step-3"><span>3</span> Preço</a>
+									<a class="gm-step-link" href="#gm-item-step-4"><span>4</span> Categoria</a>
+									<a class="gm-step-link" href="#gm-item-step-5"><span>5</span> Variações</a>
+									<a class="gm-step-link" href="#gm-item-step-6"><span>6</span> Detalhes</a>
+									<a class="gm-step-link" href="#gm-item-step-7"><span>7</span> Entrega</a>
+								</nav>
 
-							<div class="gm-field-group">
-								<span class="gm-field-group-label">Preço e mídia</span>
-								<div class="gm-row-2">
-									<div class="gm-group">
-										<label for="gm-item-price">Preço / Valor</label>
-										<input id="gm-item-price" type="text" placeholder="Ex.: 49,90">
-									</div>
-									<div class="gm-group">
-										<label for="gm-item-photo">Foto (URL)</label>
-										<input id="gm-item-photo" type="url" placeholder="https://...">
-									</div>
-								</div>
-								<div class="gm-group">
-									<label for="gm-item-video">Vídeo do item (URL)</label>
-									<input id="gm-item-video" type="url" placeholder="https://...mp4">
-								</div>
-							</div>
+								<details id="gm-item-step-1" class="gm-step" open>
+									<summary class="gm-step-summary">
+										<span class="gm-step-number">Etapa 1</span>
+										<strong>Identificação</strong>
+									</summary>
+									<section class="gm-form-section" aria-label="Identificação do item">
+										<div class="gm-row-2">
+											<div class="gm-group">
+												<label for="gm-item-type">Tipo</label>
+												<select id="gm-item-type">
+													<option value="produto" selected>Produto</option>
+													<option value="servico">Serviço</option>
+												</select>
+											</div>
+											<div class="gm-group">
+												<label for="gm-item-name">Nome</label>
+												<input id="gm-item-name" type="text" placeholder="Ex.: Pizza Família">
+											</div>
+										</div>
+										<div class="gm-group">
+											<label for="gm-item-description">Descrição</label>
+											<textarea id="gm-item-description" rows="3" placeholder="Descrição completa do item"></textarea>
+										</div>
+									</section>
+								</details>
 
-							<div class="gm-field-group">
-								<span class="gm-field-group-label">Categorização</span>
-								<div class="gm-row-2">
-									<div class="gm-group">
-										<label for="gm-item-category">Categoria</label>
-										<select id="gm-item-category">
-											<option value="">Selecione...</option>
-											<option value="Alimentação">Alimentação</option>
-											<option value="Eletrônicos">Eletrônicos</option>
-											<option value="Moda e Vestuário">Moda e Vestuário</option>
-											<option value="Casa e Decoração">Casa e Decoração</option>
-											<option value="Beleza e Saúde">Beleza e Saúde</option>
-											<option value="Serviços Gerais">Serviços Gerais</option>
-											<option value="Mercado / Mercearia">Mercado / Mercearia</option>
-											<option value="Outro">Outro</option>
-										</select>
-									</div>
-									<div class="gm-group">
-										<label for="gm-item-subcategory">Subcategoria</label>
-										<select id="gm-item-subcategory">
-											<option value="">Selecione...</option>
-											<option value="Personalizada">Personalizada</option>
-										</select>
-									</div>
-								</div>
-								<div class="gm-group gm-hidden" id="gm-item-subcategory-custom-wrap">
-									<label for="gm-item-subcategory-custom">Subcategoria personalizada</label>
-									<input id="gm-item-subcategory-custom" type="text" placeholder="Ex.: Combo Família">
-								</div>
-							</div>
+								<details id="gm-item-step-2" class="gm-step">
+									<summary class="gm-step-summary">
+										<span class="gm-step-number">Etapa 2</span>
+										<strong>Fotos e vídeo</strong>
+									</summary>
+									<section class="gm-form-section" aria-label="Fotos e vídeo do item">
+										<div class="gm-group">
+											<label>Fotos do produto</label>
+											<small>A primeira foto é usada como capa nos cards. Envie quantas quiser.</small>
+											<div class="gm-gallery-grid" id="gm-item-photos-grid"></div>
+											<label class="gm-gallery-add" for="gm-item-photo-file">
+												<i class="fas fa-camera"></i> Adicionar fotos
+											</label>
+											<input id="gm-item-photo-file" type="file" accept="image/*" multiple class="gm-visually-hidden">
+										</div>
+										<div class="gm-group">
+											<label>Vídeo do item (opcional)</label>
+											<div class="gm-video-field" id="gm-item-video-field">
+												<label class="gm-upload-btn" for="gm-item-video-file"><i class="fas fa-video"></i> Enviar vídeo</label>
+												<input id="gm-item-video-file" type="file" accept="video/*" class="gm-visually-hidden">
+												<span class="gm-video-filename" id="gm-item-video-name"></span>
+												<button type="button" id="gm-item-video-remove" class="gm-admin-remove gm-hidden">Remover</button>
+											</div>
+										</div>
+									</section>
+								</details>
 
-							<div class="gm-field-group">
-								<span class="gm-field-group-label">Detalhes técnicos</span>
-								<div class="gm-row-2">
-									<div class="gm-group">
-										<label for="gm-item-brand">Marca</label>
-										<input id="gm-item-brand" type="text" placeholder="Ex.: Samsung">
-									</div>
-									<div class="gm-group">
-										<label for="gm-item-qty">Quantidade disponível</label>
-										<input id="gm-item-qty" type="number" min="0" placeholder="Ex.: 10">
-									</div>
-								</div>
-								<div class="gm-row-2">
-									<div class="gm-group">
-										<label for="gm-item-color">Cor</label>
-										<input id="gm-item-color" type="text" placeholder="Ex.: Preto, Branco">
-									</div>
-									<div class="gm-group">
-										<label for="gm-item-voltage">Voltagem</label>
-										<select id="gm-item-voltage">
-											<option value="">Não se aplica</option>
-											<option value="110V">110V</option>
-											<option value="220V">220V</option>
-											<option value="Bivolt">Bivolt</option>
-											<option value="USB">USB</option>
-										</select>
-									</div>
-								</div>
-							</div>
+								<details id="gm-item-step-3" class="gm-step">
+									<summary class="gm-step-summary">
+										<span class="gm-step-number">Etapa 3</span>
+										<strong>Preço</strong>
+									</summary>
+									<section class="gm-form-section" aria-label="Preço do item">
+										<div class="gm-row-2">
+											<div class="gm-group">
+												<label for="gm-item-price">Preço de venda</label>
+												<input id="gm-item-price" type="text" placeholder="Ex.: 49,90">
+											</div>
+											<div class="gm-group">
+												<label for="gm-item-price-old">Preço antes do desconto <span class="gm-optional-tag">opcional</span></label>
+												<input id="gm-item-price-old" type="text" placeholder="Ex.: 69,90">
+											</div>
+										</div>
+										<p class="gm-discount-hint" id="gm-item-discount-hint" hidden></p>
+									</section>
+								</details>
 
-							<div class="gm-field-group">
-								<span class="gm-field-group-label">Modalidades</span>
-								<div class="gm-inline-options gm-inline-options--sm" role="group">
-									<label class="gm-check-option" for="gm-item-delivery">
-										<input id="gm-item-delivery" type="checkbox" checked>
-										<span><i class="fas fa-truck"></i> Entrega</span>
-									</label>
-									<label class="gm-check-option" for="gm-item-pickup">
-										<input id="gm-item-pickup" type="checkbox" checked>
-										<span><i class="fas fa-store"></i> Retirada</span>
-									</label>
-								</div>
-							</div>
+								<details id="gm-item-step-4" class="gm-step">
+									<summary class="gm-step-summary">
+										<span class="gm-step-number">Etapa 4</span>
+										<strong>Categorização</strong>
+									</summary>
+									<section class="gm-form-section" aria-label="Categorização do item">
+										<div class="gm-row-2">
+											<div class="gm-group">
+												<label for="gm-item-category">Categoria</label>
+												<select id="gm-item-category">
+													<option value="">Selecione...</option>
+													<option value="Alimentação">Alimentação</option>
+													<option value="Eletrônicos">Eletrônicos</option>
+													<option value="Moda e Vestuário">Moda e Vestuário</option>
+													<option value="Casa e Decoração">Casa e Decoração</option>
+													<option value="Beleza e Saúde">Beleza e Saúde</option>
+													<option value="Serviços Gerais">Serviços Gerais</option>
+													<option value="Mercado / Mercearia">Mercado / Mercearia</option>
+													<option value="Outro">Outro</option>
+												</select>
+											</div>
+											<div class="gm-group">
+												<label for="gm-item-subcategory">Subcategoria</label>
+												<select id="gm-item-subcategory">
+													<option value="">Selecione...</option>
+													<option value="Personalizada">Personalizada</option>
+												</select>
+											</div>
+										</div>
+										<div class="gm-group gm-hidden" id="gm-item-subcategory-custom-wrap">
+											<label for="gm-item-subcategory-custom">Subcategoria personalizada</label>
+											<input id="gm-item-subcategory-custom" type="text" placeholder="Ex.: Combo Família">
+										</div>
+									</section>
+								</details>
 
-							<div class="gm-actions gm-actions-duo">
-								<button id="gm-add-item" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar item</button>
-								<button id="gm-clear-item-fields" type="button" class="btn btn-outline">Limpar campos</button>
-							</div>
+								<details id="gm-item-step-5" class="gm-step">
+									<summary class="gm-step-summary">
+										<span class="gm-step-number">Etapa 5</span>
+										<strong>Variações e estoque</strong>
+									</summary>
+									<section class="gm-form-section" aria-label="Variações do item">
+										<p class="gm-step-help">Use variações quando o item tiver opções como tamanho ou cor, cada uma com seu próprio estoque. Deixe em branco se o item não tiver variações.</p>
+										<div class="gm-row-3">
+											<div class="gm-group">
+												<label for="gm-variation-type">Tipo</label>
+												<select id="gm-variation-type">
+													<option value="Tamanho">Tamanho</option>
+													<option value="Cor">Cor</option>
+													<option value="Outro">Outro</option>
+												</select>
+											</div>
+											<div class="gm-group">
+												<label for="gm-variation-value">Valor</label>
+												<input id="gm-variation-value" type="text" placeholder="Ex.: P, Azul">
+											</div>
+											<div class="gm-group">
+												<label for="gm-variation-stock">Estoque</label>
+												<input id="gm-variation-stock" type="number" min="0" placeholder="Ex.: 10">
+											</div>
+										</div>
+										<div class="gm-group">
+											<label for="gm-variation-price">Preço desta variação <span class="gm-optional-tag">opcional</span></label>
+											<input id="gm-variation-price" type="text" placeholder="Deixe em branco para usar o preço padrão">
+										</div>
+										<div class="gm-actions">
+											<button id="gm-add-variation" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar variação</button>
+										</div>
+										<div class="gm-variation-list" id="gm-variation-list" aria-live="polite"></div>
+										<div class="gm-group">
+											<label for="gm-item-qty">Estoque total (sem variações)</label>
+											<input id="gm-item-qty" type="number" min="0" placeholder="Ex.: 10">
+											<small>Só use este campo se o item NÃO tiver variações acima.</small>
+										</div>
+									</section>
+								</details>
+
+								<details id="gm-item-step-6" class="gm-step">
+									<summary class="gm-step-summary">
+										<span class="gm-step-number">Etapa 6</span>
+										<strong>Detalhes técnicos</strong>
+									</summary>
+									<section class="gm-form-section" aria-label="Detalhes técnicos do item">
+										<div class="gm-row-2">
+											<div class="gm-group">
+												<label for="gm-item-brand">Marca</label>
+												<input id="gm-item-brand" type="text" placeholder="Ex.: Samsung">
+											</div>
+											<div class="gm-group">
+												<label for="gm-item-color">Cor</label>
+												<input id="gm-item-color" type="text" placeholder="Ex.: Preto, Branco">
+											</div>
+										</div>
+										<div class="gm-group">
+											<label for="gm-item-voltage">Voltagem</label>
+											<select id="gm-item-voltage">
+												<option value="">Não se aplica</option>
+												<option value="110V">110V</option>
+												<option value="220V">220V</option>
+												<option value="Bivolt">Bivolt</option>
+												<option value="USB">USB</option>
+											</select>
+										</div>
+									</section>
+								</details>
+
+								<details id="gm-item-step-7" class="gm-step">
+									<summary class="gm-step-summary">
+										<span class="gm-step-number">Etapa 7</span>
+										<strong>Entrega</strong>
+									</summary>
+									<section class="gm-form-section" aria-label="Modalidades de entrega">
+										<div class="gm-inline-options gm-inline-options--sm" role="group">
+											<label class="gm-check-option" for="gm-item-delivery">
+												<input id="gm-item-delivery" type="checkbox" checked>
+												<span><i class="fas fa-truck"></i> Entrega</span>
+											</label>
+											<label class="gm-check-option" for="gm-item-pickup">
+												<input id="gm-item-pickup" type="checkbox" checked>
+												<span><i class="fas fa-store"></i> Retirada</span>
+											</label>
+										</div>
+									</section>
+								</details>
+
+								<div class="gm-actions gm-actions-duo gm-item-form-actions">
+									<button id="gm-add-item" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar item</button>
+									<button id="gm-clear-item-fields" type="button" class="btn btn-outline">Limpar campos</button>
+								</div>
+							</form>
 						</section>
 
+						<div class="gm-catalog-list-head">
+							<h4><i class="fas fa-boxes-stacked"></i> Itens cadastrados</h4>
+						</div>
 						<div class="gm-admin-list" id="gm-items-admin-list" aria-live="polite"></div>
 					</div>
 
@@ -423,7 +539,6 @@
 				<section class="gm-preview" aria-label="Prévia da loja">
 					<div class="gm-preview-head">
 						<h3><i class="fas fa-mobile-screen-button"></i> Prévia em tempo real</h3>
-						<button id="gm-generate-preview" type="button" class="btn btn-primary"><i class="fas fa-check"></i> Salvar Loja</button>
 					</div>
 
 					<article id="gm-phone" class="gm-phone" style="--gm-primary:#2e7d32;--gm-accent:#1565c0;">

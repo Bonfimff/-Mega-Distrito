@@ -41,7 +41,9 @@ const GM_DEFAULT = {
 			name: 'Combo da Casa',
 			description: 'Lanche artesanal com bebida e acompanhamento.',
 			price: '39,90',
+			priceOld: '',
 			photo: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=900&q=80',
+			fotos: ['https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=900&q=80'],
 			video: '',
 			category: 'Alimentação',
 			subcategory: 'Combo',
@@ -50,14 +52,17 @@ const GM_DEFAULT = {
 			color: '',
 			voltage: '',
 			delivery: true,
-			pickup: true
+			pickup: true,
+			variacoes: []
 		},
 		{
 			type: 'servico',
 			name: 'Instalacao Residencial',
 			description: 'Servico tecnico com atendimento no mesmo dia.',
 			price: '120,00',
+			priceOld: '',
 			photo: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=900&q=80',
+			fotos: ['https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=900&q=80'],
 			video: '',
 			category: 'Serviços Gerais',
 			subcategory: 'Instalação',
@@ -66,7 +71,8 @@ const GM_DEFAULT = {
 			color: '',
 			voltage: '',
 			delivery: false,
-			pickup: true
+			pickup: true,
+			variacoes: []
 		}
 	]
 };
@@ -178,6 +184,13 @@ let gmClosedDates = [];
 let gmPreviewVisible = false;
 let gmSalvandoLoja = false;
 
+// Rascunho do item em edição — fotos, vídeo e variações só entram em
+// gmItems quando "Adicionar item"/"Salvar item" é clicado.
+let gmItemPhotosDraft = [];
+let gmItemVideoDraft = '';
+let gmVariationsDraft = [];
+const gmPreviewSelectedFoto = {}; // índice da foto ativa na galeria da prévia, por itemIndex
+
 function gmToast(msg) {
 	const el = document.getElementById('toast');
 	if (!el) return;
@@ -196,7 +209,11 @@ function setBgFromUrl(el, url, fallbackGradient) {
 }
 
 function cloneDefaultItems() {
-	return GM_DEFAULT.items.map(item => ({ ...item }));
+	return GM_DEFAULT.items.map(item => ({
+		...item,
+		fotos: [...(item.fotos || [])],
+		variacoes: (item.variacoes || []).map(v => ({ ...v })),
+	}));
 }
 
 function parsePrecoParaNumero(precoTexto) {
@@ -214,13 +231,16 @@ function formatarHoraParaInput(horaSql) {
 }
 
 function mapItemApiParaLocal(item) {
+	const fotos = (item.fotos && item.fotos.length) ? item.fotos : (item.foto_url ? [item.foto_url] : []);
 	return {
 		id: item.id,
 		type: item.tipo || 'produto',
 		name: item.nome || '',
 		description: item.descricao || '',
 		price: formatarPrecoParaExibicao(item.preco),
-		photo: item.foto_url || '',
+		priceOld: item.preco_antigo ? formatarPrecoParaExibicao(item.preco_antigo) : '',
+		photo: fotos[0] || '',
+		fotos,
 		video: item.video_url || '',
 		category: item.categoria || '',
 		subcategory: item.subcategoria || '',
@@ -230,6 +250,12 @@ function mapItemApiParaLocal(item) {
 		voltage: item.voltagem || '',
 		delivery: Boolean(item.entrega),
 		pickup: Boolean(item.retirada),
+		variacoes: (item.variacoes || []).map(v => ({
+			tipo: v.tipo || 'Variação',
+			valor: v.valor || '',
+			estoque: v.estoque != null ? String(v.estoque) : '0',
+			preco: v.preco != null ? formatarPrecoParaExibicao(v.preco) : '',
+		})),
 	};
 }
 
@@ -240,7 +266,8 @@ function mapItemLocalParaApi(item, lojaId) {
 		nome: item.name,
 		descricao: item.description,
 		preco: parsePrecoParaNumero(item.price),
-		foto_url: item.photo || null,
+		preco_antigo: item.priceOld ? parsePrecoParaNumero(item.priceOld) : null,
+		foto_url: (item.fotos && item.fotos[0]) || item.photo || null,
 		video_url: item.video || null,
 		categoria: item.category || null,
 		subcategoria: item.subcategory || null,
@@ -250,6 +277,13 @@ function mapItemLocalParaApi(item, lojaId) {
 		voltagem: item.voltage || null,
 		entrega: Boolean(item.delivery),
 		retirada: Boolean(item.pickup),
+		fotos: item.fotos || [],
+		variacoes: (item.variacoes || []).map(v => ({
+			tipo: v.tipo,
+			valor: v.valor,
+			estoque: Number(v.estoque) || 0,
+			preco: v.preco ? parsePrecoParaNumero(v.preco) : null,
+		})),
 	};
 }
 
@@ -472,6 +506,187 @@ function removeFilter(index) {
 	gmToast('Filtro removido.');
 }
 
+/* =========================================================
+   GALERIA DE FOTOS DO ITEM (upload múltiplo)
+   ========================================================= */
+function renderItemPhotosGrid() {
+	const grid = document.getElementById('gm-item-photos-grid');
+	if (!grid) return;
+	grid.innerHTML = '';
+	gmItemPhotosDraft.forEach((url, index) => {
+		const thumb = createEl('div', 'gm-gallery-thumb');
+		thumb.style.backgroundImage = `url('${url}')`;
+		if (index === 0) thumb.appendChild(createEl('span', 'gm-gallery-thumb-cover', 'Capa'));
+		const removeBtn = createEl('button', 'gm-gallery-thumb-remove', '×');
+		removeBtn.type = 'button';
+		removeBtn.setAttribute('aria-label', 'Remover foto');
+		removeBtn.dataset.removePhotoIndex = String(index);
+		thumb.appendChild(removeBtn);
+		grid.appendChild(thumb);
+	});
+}
+
+function removeItemPhoto(index) {
+	if (index < 0 || index >= gmItemPhotosDraft.length) return;
+	gmItemPhotosDraft.splice(index, 1);
+	renderItemPhotosGrid();
+	aplicarPreview();
+}
+
+async function handleItemPhotoFiles(fileList) {
+	const files = Array.from(fileList || []);
+	if (!files.length) return;
+	gmToast(files.length > 1 ? 'Enviando fotos...' : 'Enviando foto...');
+	for (const file of files) {
+		const resultado = await uploadArquivo(file);
+		if (resultado?.url) {
+			gmItemPhotosDraft.push(resultado.url);
+		} else {
+			gmToast(`Não foi possível enviar "${file.name}".`);
+		}
+	}
+	renderItemPhotosGrid();
+	aplicarPreview();
+}
+
+/* =========================================================
+   VÍDEO DO ITEM (upload único)
+   ========================================================= */
+function renderItemVideoField() {
+	const nameEl = document.getElementById('gm-item-video-name');
+	const removeBtn = document.getElementById('gm-item-video-remove');
+	if (nameEl) nameEl.textContent = gmItemVideoDraft ? 'Vídeo anexado ✓' : '';
+	if (removeBtn) removeBtn.classList.toggle('gm-hidden', !gmItemVideoDraft);
+}
+
+async function handleItemVideoFile(file) {
+	if (!file) return;
+	gmToast('Enviando vídeo...');
+	const resultado = await uploadArquivo(file);
+	if (resultado?.url) {
+		gmItemVideoDraft = resultado.url;
+		gmToast('Vídeo anexado.');
+	} else {
+		gmToast('Não foi possível enviar o vídeo.');
+	}
+	renderItemVideoField();
+	aplicarPreview();
+}
+
+function removeItemVideo() {
+	gmItemVideoDraft = '';
+	renderItemVideoField();
+	aplicarPreview();
+}
+
+/* =========================================================
+   PREÇO PROMOCIONAL (de / por)
+   ========================================================= */
+function updateDiscountHint() {
+	const hint = document.getElementById('gm-item-discount-hint');
+	if (!hint) return;
+	const price = parsePrecoParaNumero(document.getElementById('gm-item-price')?.value || '');
+	const priceOld = parsePrecoParaNumero(document.getElementById('gm-item-price-old')?.value || '');
+
+	if (!priceOld) {
+		hint.hidden = true;
+		hint.classList.remove('is-invalid');
+		return;
+	}
+
+	hint.hidden = false;
+	if (priceOld <= price) {
+		hint.classList.add('is-invalid');
+		hint.textContent = 'O preço antes do desconto deve ser maior que o preço de venda.';
+		return;
+	}
+
+	hint.classList.remove('is-invalid');
+	const pct = Math.round((1 - price / priceOld) * 100);
+	hint.textContent = `${pct}% de desconto para o cliente`;
+}
+
+/* =========================================================
+   VARIAÇÕES DO ITEM (tamanho, cor, ... com estoque próprio)
+   ========================================================= */
+function renderVariationList() {
+	const list = document.getElementById('gm-variation-list');
+	if (!list) return;
+	list.innerHTML = '';
+	if (!gmVariationsDraft.length) return;
+
+	gmVariationsDraft.forEach((variacao, index) => {
+		const item = createEl('div', 'gm-variation-item');
+		const label = createEl('span', 'gm-variation-item-label', `${variacao.tipo}: ${variacao.valor}`);
+		const subParts = [`Estoque: ${variacao.estoque || 0}`];
+		if (variacao.preco) subParts.push(formatPriceLabel(variacao.preco));
+		label.appendChild(createEl('span', 'gm-variation-item-sub', subParts.join(' · ')));
+		item.appendChild(label);
+
+		const removeBtn = createEl('button', 'gm-admin-remove', 'Remover');
+		removeBtn.type = 'button';
+		removeBtn.dataset.removeVariationIndex = String(index);
+		item.appendChild(removeBtn);
+
+		list.appendChild(item);
+	});
+}
+
+function addVariation() {
+	const tipo = document.getElementById('gm-variation-type')?.value || 'Variação';
+	const valor = document.getElementById('gm-variation-value')?.value?.trim() || '';
+	const estoque = document.getElementById('gm-variation-stock')?.value?.trim() || '0';
+	const preco = normalizePrice(document.getElementById('gm-variation-price')?.value || '');
+
+	if (!valor) {
+		gmToast('Informe o valor da variação (ex.: P, Azul).');
+		return;
+	}
+
+	gmVariationsDraft.push({ tipo, valor, estoque, preco });
+	renderVariationList();
+	aplicarPreview();
+
+	const valueInput = document.getElementById('gm-variation-value');
+	const stockInput = document.getElementById('gm-variation-stock');
+	const priceInput = document.getElementById('gm-variation-price');
+	if (valueInput) valueInput.value = '';
+	if (stockInput) stockInput.value = '';
+	if (priceInput) priceInput.value = '';
+	gmToast('Variação adicionada.');
+}
+
+function removeVariation(index) {
+	if (index < 0 || index >= gmVariationsDraft.length) return;
+	gmVariationsDraft.splice(index, 1);
+	renderVariationList();
+	aplicarPreview();
+}
+
+/* =========================================================
+   UPLOAD GENÉRICO PARA CAMPOS DE IMAGEM (banner/vitrine/ícone)
+   ========================================================= */
+function bindImageUploadField(fileInputId, urlInputId) {
+	const fileInput = document.getElementById(fileInputId);
+	const urlInput = document.getElementById(urlInputId);
+	if (!fileInput || !urlInput) return;
+
+	fileInput.addEventListener('change', async () => {
+		const file = fileInput.files?.[0];
+		if (!file) return;
+		gmToast('Enviando imagem...');
+		const resultado = await uploadArquivo(file);
+		if (resultado?.url) {
+			urlInput.value = resultado.url;
+			urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+			gmToast('Imagem enviada.');
+		} else {
+			gmToast('Não foi possível enviar a imagem.');
+		}
+		fileInput.value = '';
+	});
+}
+
 function setSubcategoryCustomVisibility() {
 	const select = document.getElementById('gm-item-subcategory');
 	const wrap = document.getElementById('gm-item-subcategory-custom-wrap');
@@ -549,8 +764,7 @@ function clearItemFields() {
 		['gm-item-name', GM_DEFAULT.itemName],
 		['gm-item-description', GM_DEFAULT.itemDescription],
 		['gm-item-price', GM_DEFAULT.itemPrice],
-		['gm-item-photo', GM_DEFAULT.itemPhoto],
-		['gm-item-video', GM_DEFAULT.itemVideo],
+		['gm-item-price-old', ''],
 		['gm-item-category', GM_DEFAULT.itemCategory],
 		['gm-item-subcategory-custom', GM_DEFAULT.itemSubcategoryCustom],
 		['gm-item-brand', GM_DEFAULT.itemBrand],
@@ -571,6 +785,14 @@ function clearItemFields() {
 	if (deliveryEl) deliveryEl.checked = GM_DEFAULT.itemDelivery;
 	if (pickupEl) pickupEl.checked = GM_DEFAULT.itemPickup;
 
+	gmItemPhotosDraft = [];
+	gmItemVideoDraft = '';
+	gmVariationsDraft = [];
+	renderItemPhotosGrid();
+	renderItemVideoField();
+	renderVariationList();
+	updateDiscountHint();
+
 	refreshSubcategoryOptions(GM_DEFAULT.itemCategory, GM_DEFAULT.itemSubcategory);
 	clearFilterFields();
 }
@@ -586,8 +808,7 @@ function loadItemIntoForm(index) {
 		'gm-item-name': item.name,
 		'gm-item-description': item.description,
 		'gm-item-price': item.price,
-		'gm-item-photo': item.photo,
-		'gm-item-video': item.video,
+		'gm-item-price-old': item.priceOld,
 		'gm-item-category': item.category,
 		'gm-item-brand': item.brand,
 		'gm-item-qty': item.qty,
@@ -603,6 +824,14 @@ function loadItemIntoForm(index) {
 	refreshSubcategoryOptions(item.category, item.subcategory || '');
 	const customInput = document.getElementById('gm-item-subcategory-custom');
 	if (customInput) customInput.value = item.subcategory && item.subcategory !== document.getElementById('gm-item-subcategory')?.value ? item.subcategory : '';
+
+	gmItemPhotosDraft = [...(item.fotos && item.fotos.length ? item.fotos : (item.photo ? [item.photo] : []))];
+	gmItemVideoDraft = item.video || '';
+	gmVariationsDraft = (item.variacoes || []).map(v => ({ ...v }));
+	renderItemPhotosGrid();
+	renderItemVideoField();
+	renderVariationList();
+	updateDiscountHint();
 }
 
 function collectItemFromForm() {
@@ -610,8 +839,7 @@ function collectItemFromForm() {
 	const name = document.getElementById('gm-item-name')?.value?.trim() || '';
 	const description = document.getElementById('gm-item-description')?.value?.trim() || '';
 	const price = normalizePrice(document.getElementById('gm-item-price')?.value || '');
-	const photo = document.getElementById('gm-item-photo')?.value?.trim() || '';
-	const video = document.getElementById('gm-item-video')?.value?.trim() || '';
+	const priceOld = normalizePrice(document.getElementById('gm-item-price-old')?.value || '');
 	const category = document.getElementById('gm-item-category')?.value?.trim() || '';
 	const subcategory = getCurrentSubcategory();
 	const brand = document.getElementById('gm-item-brand')?.value?.trim() || '';
@@ -641,14 +869,19 @@ function collectItemFromForm() {
 		return null;
 	}
 
-	return { type, name, description, price, photo, video, category, subcategory, brand, qty, color, voltage, delivery, pickup };
-}
+	if (priceOld && parsePrecoParaNumero(priceOld) <= parsePrecoParaNumero(price)) {
+		gmToast('O preço antes do desconto deve ser maior que o preço de venda.');
+		return null;
+	}
 
-function createEl(tag, className, text) {
-	const el = document.createElement(tag);
-	if (className) el.className = className;
-	if (typeof text === 'string') el.textContent = text;
-	return el;
+	return {
+		type, name, description, price, priceOld,
+		photo: gmItemPhotosDraft[0] || '',
+		fotos: [...gmItemPhotosDraft],
+		video: gmItemVideoDraft,
+		category, subcategory, brand, qty, color, voltage, delivery, pickup,
+		variacoes: gmVariationsDraft.map(v => ({ ...v })),
+	};
 }
 
 function renderAdminItems() {
@@ -663,25 +896,33 @@ function renderAdminItems() {
 
 	gmItems.forEach((item, index) => {
 		const card = createEl('article', 'gm-admin-item');
-		const head = createEl('div', 'gm-admin-item-head');
-		const title = createEl('h6', 'gm-admin-item-title', item.name);
-		const badge = createEl('span', 'gm-item-badge', item.type === 'servico' ? 'Servico' : 'Produto');
-		const actions = createEl('div', 'gm-admin-item-actions');
-		const editBtn = createEl('button', 'gm-admin-edit', 'Editar');
-		editBtn.type = 'button';
-		editBtn.dataset.editIndex = String(index);
-		const removeBtn = createEl('button', 'gm-admin-remove', 'Remover');
-		removeBtn.type = 'button';
-		removeBtn.dataset.removeIndex = String(index);
 
-		actions.appendChild(editBtn);
-		actions.appendChild(removeBtn);
-		head.appendChild(title);
-		head.appendChild(badge);
-		head.appendChild(actions);
+		const cover = createEl('div', 'gm-admin-item-cover');
+		const capa = (item.fotos && item.fotos[0]) || item.photo;
+		if (capa) {
+			cover.style.backgroundImage = `url('${capa}')`;
+		} else {
+			cover.classList.add('gm-admin-item-cover-empty');
+			cover.innerHTML = '<i class="fas fa-image"></i>';
+		}
+		card.appendChild(cover);
+
+		const info = createEl('div', 'gm-admin-item-info');
+
+		const head = createEl('div', 'gm-admin-item-head');
+		head.appendChild(createEl('h6', 'gm-admin-item-title', item.name));
+		info.appendChild(head);
+
+		const badges = createEl('div', 'gm-admin-item-badges');
+		badges.appendChild(createEl('span', 'gm-item-badge', item.type === 'servico' ? 'Servico' : 'Produto'));
+		if (item.priceOld) badges.appendChild(createEl('span', 'gm-item-badge gm-item-badge--promo', 'Promoção'));
+		if (item.variacoes?.length) badges.appendChild(createEl('span', 'gm-item-badge gm-item-badge--variacoes', `${item.variacoes.length} variação(ões)`));
+		if (item.fotos?.length > 1) badges.appendChild(createEl('span', 'gm-item-badge', `${item.fotos.length} fotos`));
+		info.appendChild(badges);
 
 		const meta = createEl('p', 'gm-admin-item-meta',
 			`${formatPriceLabel(item.price)}` +
+			(item.priceOld ? ` (de ${formatPriceLabel(item.priceOld)})` : '') +
 			(item.category ? ` · ${item.category}` : '') +
 			(item.subcategory ? ` / ${item.subcategory}` : '') +
 			(item.brand ? ` · ${item.brand}` : '') +
@@ -691,19 +932,48 @@ function renderAdminItems() {
 			` · ${[item.delivery ? 'Entrega' : '', item.pickup ? 'Retirada' : ''].filter(Boolean).join(' + ') || 'Sem modalidade'}` +
 			` — ${item.description}`
 		);
-		card.appendChild(head);
-		card.appendChild(meta);
+		info.appendChild(meta);
+
+		const actions = createEl('div', 'gm-admin-item-actions');
+		const editBtn = createEl('button', 'gm-admin-edit', 'Editar');
+		editBtn.type = 'button';
+		editBtn.dataset.editIndex = String(index);
+		const removeBtn = createEl('button', 'gm-admin-remove', 'Remover');
+		removeBtn.type = 'button';
+		removeBtn.dataset.removeIndex = String(index);
+		actions.appendChild(editBtn);
+		actions.appendChild(removeBtn);
+		info.appendChild(actions);
+
+		card.appendChild(info);
 		listEl.appendChild(card);
 	});
 }
 
-function buildPreviewItem(item) {
+function buildPreviewItem(item, itemIndex) {
 	const card = createEl('article', 'gm-preview-item');
+	const fotos = (item.fotos && item.fotos.length) ? item.fotos : (item.photo ? [item.photo] : []);
 
-	if (item.photo) {
+	if (fotos.length) {
+		const wrap = createEl('div', 'gm-preview-item-photo-wrap');
+		const activeIndex = gmPreviewSelectedFoto[itemIndex] || 0;
 		const photo = createEl('div', 'gm-preview-item-photo');
-		photo.style.backgroundImage = `url('${item.photo}')`;
-		card.appendChild(photo);
+		photo.style.backgroundImage = `url('${fotos[Math.min(activeIndex, fotos.length - 1)]}')`;
+		wrap.appendChild(photo);
+
+		if (fotos.length > 1) {
+			const dots = createEl('div', 'gm-preview-item-dots');
+			fotos.forEach((_, fotoIndex) => {
+				const dot = createEl('button', `gm-preview-item-dot${fotoIndex === activeIndex ? ' active' : ''}`);
+				dot.type = 'button';
+				dot.setAttribute('aria-label', `Foto ${fotoIndex + 1}`);
+				dot.dataset.itemIndex = String(itemIndex);
+				dot.dataset.fotoIndex = String(fotoIndex);
+				dots.appendChild(dot);
+			});
+			wrap.appendChild(dots);
+		}
+		card.appendChild(wrap);
 	}
 
 	if (item.video) {
@@ -723,6 +993,32 @@ function buildPreviewItem(item) {
 	row.appendChild(badge);
 
 	const price = createEl('p', 'gm-preview-item-price', formatPriceLabel(item.price));
+	const precoNum = parsePrecoParaNumero(item.price);
+	const precoOldNum = parsePrecoParaNumero(item.priceOld);
+	if (precoOldNum > precoNum) {
+		price.appendChild(createEl('span', 'gm-preview-item-price-old', formatPriceLabel(item.priceOld)));
+		const pct = Math.round((1 - precoNum / precoOldNum) * 100);
+		price.appendChild(createEl('span', 'gm-preview-item-discount-badge', `-${pct}%`));
+	}
+
+	let variacoesRow = null;
+	if (item.variacoes?.length) {
+		variacoesRow = createEl('div', 'gm-preview-item-variacoes');
+		item.variacoes.forEach(variacao => {
+			const chip = createEl('button', 'gm-preview-variacao-chip', `${variacao.valor}`);
+			chip.type = 'button';
+			chip.title = `${variacao.tipo}: ${variacao.valor}`;
+			const semEstoque = Number(variacao.estoque) <= 0;
+			if (semEstoque) chip.disabled = true;
+			chip.addEventListener('click', (event) => {
+				event.stopPropagation();
+				if (semEstoque) return;
+				variacoesRow.querySelectorAll('.gm-preview-variacao-chip').forEach(c => c.classList.remove('active'));
+				chip.classList.add('active');
+			});
+			variacoesRow.appendChild(chip);
+		});
+	}
 
 	const qtyWrapper = createEl('div', 'gm-preview-item-qty-row');
 	const qtyLabel = createEl('span', 'gm-preview-item-qty-label', 'Qtd');
@@ -753,6 +1049,9 @@ function buildPreviewItem(item) {
 	actions.appendChild(qtyWrapper);
 	actions.appendChild(addButton);
 
+	body.appendChild(row);
+	body.appendChild(price);
+
 	if (item.category || item.subcategory || item.brand) {
 		const meta1 = createEl('p', 'gm-preview-item-description',
 			[
@@ -761,13 +1060,10 @@ function buildPreviewItem(item) {
 				item.brand
 			].filter(Boolean).join(' · ')
 		);
-		body.appendChild(row);
-		body.appendChild(price);
 		body.appendChild(meta1);
-	} else {
-		body.appendChild(row);
-		body.appendChild(price);
 	}
+
+	if (variacoesRow) body.appendChild(variacoesRow);
 
 	body.appendChild(actions);
 
@@ -813,14 +1109,15 @@ function renderPreviewItems() {
 	if (!previewList) return;
 
 	previewList.innerHTML = '';
-	const filtered = gmItems.map(item => {
+	const filtered = gmItems.map((item, originalIndex) => {
 		const matchedFilters = gmFilters
 			.map((filter, index) => ({ filter, index }))
 			.filter(({ filter }) => getFilterMatches(item, filter))
 			.map(({ filter }) => getFilterName(filter));
 		return {
 			...item,
-			matchedFilters
+			matchedFilters,
+			originalIndex
 		};
 	});
 
@@ -835,7 +1132,7 @@ function renderPreviewItems() {
 		return;
 	}
 
-	visible.forEach(item => previewList.appendChild(buildPreviewItem(item)));
+	visible.forEach(item => previewList.appendChild(buildPreviewItem(item, item.originalIndex)));
 }
 
 function aplicarPreview() {
@@ -881,10 +1178,11 @@ function aplicarPreview() {
 	const scheduleEl = document.getElementById('gm-preview-schedule');
 	if (scheduleEl) {
 		const daysText = openDays.length ? openDays.join(' • ') : 'Fechado';
+		const closedDatesText = gmClosedDates.map(formatClosedDate).join(', ');
 		scheduleEl.innerHTML = `
-			<p class="gm-preview-schedule-line"><strong>Horário:</strong> ${openTime} - ${closeTime}</p>
-			<p class="gm-preview-schedule-line"><strong>Dias abertos:</strong> ${daysText}</p>
-			${gmClosedDates.length ? `<p class="gm-preview-schedule-line gm-item-tags"><strong>Fechado em:</strong> ${gmClosedDates.map(formatClosedDate).join(', ')}</p>` : ''}
+			<p class="gm-preview-schedule-line"><strong>Horário:</strong> ${escapeHtml(openTime)} - ${escapeHtml(closeTime)}</p>
+			<p class="gm-preview-schedule-line"><strong>Dias abertos:</strong> ${escapeHtml(daysText)}</p>
+			${gmClosedDates.length ? `<p class="gm-preview-schedule-line gm-item-tags"><strong>Fechado em:</strong> ${escapeHtml(closedDatesText)}</p>` : ''}
 		`;
 	}
 
@@ -1473,6 +1771,14 @@ function preencherFormularioLoja(loja) {
 }
 
 async function inicializarLojaGerenciamento() {
+	const sessao = typeof contaObterSessao === 'function' ? contaObterSessao() : null;
+	if (!sessao) {
+		const layout = document.querySelector('.gm-layout');
+		if (layout) layout.style.display = 'none';
+		gmToast('Você precisa estar logado como lojista para acessar o painel de gerenciamento.');
+		return;
+	}
+
 	const loja = await fetchLojaPorSlug('loja-central');
 	if (!loja || loja.erro) return;
 	gmLojaId = loja.id;
@@ -1529,7 +1835,7 @@ async function salvarLojaCompleta() {
 		}
 
 		const idsAtuais = new Set();
-		for (const item of gmItems) {
+		await Promise.all(gmItems.map(async (item, i) => {
 			const payload = mapItemLocalParaApi(item, gmLojaId);
 			if (item.id) {
 				await atualizarItem(item.id, payload);
@@ -1537,11 +1843,11 @@ async function salvarLojaCompleta() {
 			} else {
 				const criado = await criarItem(payload);
 				if (criado?.id) {
-					item.id = criado.id;
+					gmItems[i].id = criado.id;
 					idsAtuais.add(criado.id);
 				}
 			}
-		}
+		}));
 
 		const removidos = gmItemsOriginalIds.filter(id => !idsAtuais.has(id));
 		for (const id of removidos) {
@@ -1805,7 +2111,18 @@ function bindGerenciamento() {
 	document.getElementById('gm-preview-items')?.addEventListener('click', (event) => {
 		const target = event.target;
 		if (!(target instanceof HTMLElement)) return;
-		const button = target.closest('.gm-preview-item-button');
+		const dot = target.closest('.gm-preview-item-dot');
+		if (dot) {
+			event.stopPropagation();
+			const itemIndex = Number(dot.dataset.itemIndex);
+			const fotoIndex = Number(dot.dataset.fotoIndex);
+			if (!Number.isNaN(itemIndex) && !Number.isNaN(fotoIndex)) {
+				gmPreviewSelectedFoto[itemIndex] = fotoIndex;
+				renderPreviewItems();
+			}
+			return;
+		}
+		const button = target.closest('.gm-preview-item-button, .gm-preview-variacao-chip');
 		if (button) return;
 		const itemCard = target.closest('.gm-preview-item');
 		if (!itemCard) return;
@@ -1836,23 +2153,61 @@ function bindGerenciamento() {
 		removeItem(index);
 	});
 
-	document.getElementById('gm-reset')?.addEventListener('click', resetForm);
-
-	document.getElementById('gm-generate')?.addEventListener('click', () => {
+	document.getElementById('gm-save-btn')?.addEventListener('click', async (event) => {
+		const btn = event.currentTarget;
 		aplicarPreview();
-		salvarLojaCompleta();
+		btn.disabled = true;
+		await salvarLojaCompleta();
+		btn.disabled = false;
 	});
 
-	document.getElementById('gm-generate-preview')?.addEventListener('click', () => {
-		aplicarPreview();
-		salvarLojaCompleta();
+	// ── Galeria de fotos do item ──
+	document.getElementById('gm-item-photo-file')?.addEventListener('change', (event) => {
+		handleItemPhotoFiles(event.target.files);
+		event.target.value = '';
+	});
+	document.getElementById('gm-item-photos-grid')?.addEventListener('click', (event) => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+		const removeBtn = target.closest('[data-remove-photo-index]');
+		if (!removeBtn) return;
+		const index = Number(removeBtn.getAttribute('data-remove-photo-index'));
+		if (Number.isNaN(index)) return;
+		removeItemPhoto(index);
 	});
 
-	document.getElementById('gm-open-preview-tab')?.addEventListener('click', () => {
-		document.getElementById('gm-tab-preview')?.click();
+	// ── Vídeo do item ──
+	document.getElementById('gm-item-video-file')?.addEventListener('change', (event) => {
+		handleItemVideoFile(event.target.files?.[0]);
+		event.target.value = '';
 	});
+	document.getElementById('gm-item-video-remove')?.addEventListener('click', removeItemVideo);
+
+	// ── Preço promocional ──
+	['gm-item-price', 'gm-item-price-old'].forEach(id => {
+		document.getElementById(id)?.addEventListener('input', updateDiscountHint);
+	});
+
+	// ── Variações ──
+	document.getElementById('gm-add-variation')?.addEventListener('click', addVariation);
+	document.getElementById('gm-variation-list')?.addEventListener('click', (event) => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+		const removeBtn = target.closest('[data-remove-variation-index]');
+		if (!removeBtn) return;
+		const index = Number(removeBtn.getAttribute('data-remove-variation-index'));
+		if (Number.isNaN(index)) return;
+		removeVariation(index);
+	});
+
+	// ── Upload de imagens da loja (banner/vitrine/ícone) ──
+	bindImageUploadField('gm-banner-file', 'gm-banner-url');
+	bindImageUploadField('gm-card-file', 'gm-card-url');
+	bindImageUploadField('gm-icon-file', 'gm-app-icon-url');
 
 	bindStepAccordion(form);
+	const itemForm = document.getElementById('gm-item-form');
+	if (itemForm) bindStepAccordion(itemForm);
 	bindPreviewControls();
 	aplicarPreview();
 }

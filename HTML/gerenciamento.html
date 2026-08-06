@@ -39,7 +39,7 @@
 			</nav>
 		</div>
 
-		<div class="header-nav-row">
+		<div class="header-nav-row header-nav-row--gm">
 			<div class="header-nav-inner">
 				<div class="gm-tabs" role="tablist" aria-label="Seções de gerenciamento">
 					<button class="gm-tab active" role="tab" type="button" aria-selected="true" aria-controls="panel-painel">
@@ -47,13 +47,13 @@
 					</button>
 					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-atividade">
 						<i class="fas fa-bell"></i> Atividade
-						<span class="gm-tab-badge" id="gm-atividade-badge" hidden>0</span>
+						<span class="gm-tab-badge js-atividade-badge" id="gm-atividade-badge" hidden>0</span>
 					</button>
 					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-loja">
 						<i class="fas fa-store"></i> Loja
 					</button>
 					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-catalogo">
-						<i class="fas fa-layer-group"></i> Catálogo
+						<i class="fas fa-layer-group"></i> <span class="js-tab-label-catalogo">Catálogo</span>
 					</button>
 					<button id="gm-tab-preview" class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-preview">
 						<i class="fas fa-mobile-screen"></i> Prévia
@@ -72,11 +72,75 @@
 		<div class="container">
 
 
+			<div class="gm-sidebar">
+				<div class="gm-sidebar-identity">
+					<div class="gm-sidebar-identity-icon" id="gm-sidebar-icon" aria-hidden="true"></div>
+					<div class="gm-sidebar-identity-text">
+						<strong id="gm-sidebar-loja-nome">Loja Central</strong>
+						<a href="../HTML/loja.html?id=loja-central" target="_blank" rel="noopener noreferrer">
+							Ver página pública <i class="fas fa-arrow-up-right-from-square"></i>
+						</a>
+					</div>
+				</div>
+
+				<nav class="gm-sidebar-tabs" role="tablist" aria-label="Seções de gerenciamento">
+					<button class="gm-tab active" role="tab" type="button" aria-selected="true" aria-controls="panel-painel">
+						<i class="fas fa-chart-line"></i> Painel
+					</button>
+					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-atividade">
+						<i class="fas fa-bell"></i> Atividade
+						<span class="gm-tab-badge js-atividade-badge" hidden>0</span>
+					</button>
+					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-loja">
+						<i class="fas fa-store"></i> Loja
+					</button>
+					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-catalogo">
+						<i class="fas fa-layer-group"></i> <span class="js-tab-label-catalogo">Catálogo</span>
+					</button>
+				</nav>
+			</div>
+
 			<div class="gm-layout gm-layout--preview-hidden">
+				<div class="gm-left-column">
+					<aside class="gm-store-rating-card" id="gm-store-rating-card" aria-label="Avaliações da loja"></aside>
+
+					<aside class="gm-messages-drawer" id="gm-messages-drawer" aria-label="Mensagens e interações">
+						<div class="gm-messages-drawer-header">
+							<h3><i class="fas fa-comments"></i> Mensagens e Interações</h3>
+							<button id="gm-messages-close" type="button" aria-label="Fechar mensagens"><i class="fas fa-times"></i></button>
+						</div>
+						<div class="gm-messages-drawer-content" id="gm-mensagens-list" aria-live="polite"></div>
+					</aside>
+				</div>
+
 				<section class="gm-editor" aria-label="Editor da loja">
 					<!-- Painel: Painel (indicadores) -->
 					<div id="panel-painel" class="gm-tab-panel">
 						<div class="gm-dashboard">
+							<div class="gm-dashboard-welcome">
+								<div class="gm-dashboard-welcome-text">
+									<h3>Bem-vindo de volta</h3>
+									<p>Aqui está um resumo da sua loja hoje.</p>
+								</div>
+								<div class="gm-dashboard-quick-actions">
+									<button type="button" class="btn btn-primary" data-quick-action="add-item"><i class="fas fa-plus"></i> Adicionar produto/serviço</button>
+									<button type="button" class="btn btn-outline" data-quick-action="ver-pedidos">
+										<i class="fas fa-bell"></i> Ver pedidos pendentes
+										<span class="gm-quick-action-badge" id="gm-pendentes-badge" hidden>0</span>
+									</button>
+								</div>
+							</div>
+
+							<div class="gm-dashboard-stats-head">
+								<h4>Indicadores</h4>
+								<div class="gm-dashboard-period-filter">
+									<label for="gm-stats-periodo-de">Período</label>
+									<input type="month" id="gm-stats-periodo-de" value="2026-01">
+									<span>até</span>
+									<input type="month" id="gm-stats-periodo-ate" value="2026-02">
+								</div>
+							</div>
+
 							<div class="gm-dashboard-stats" id="gm-dashboard-stats"></div>
 
 							<div class="gm-dashboard-columns">
@@ -96,6 +160,8 @@
 									<div class="gm-ranking-list" id="gm-ranking-comprados" aria-live="polite"></div>
 								</section>
 							</div>
+
+							<div class="gm-dashboard-checklist" id="gm-dashboard-checklist" aria-live="polite"></div>
 						</div>
 					</div>
 
@@ -117,6 +183,13 @@
 									<div class="gm-form-section-head">
 										<h4><i class="fas fa-store"></i> Informações da loja</h4>
 									</div>
+
+									<div class="gm-group">
+										<label id="gm-profile-label">Perfil da loja</label>
+										<p class="gm-step-help">Isso ajusta os campos do cadastro de produtos/serviços para o seu tipo de negócio. Você pode trocar depois.</p>
+										<div class="gm-profile-picker" id="gm-profile-picker" role="radiogroup" aria-labelledby="gm-profile-label"></div>
+									</div>
+
 									<div class="gm-row-2">
 										<div class="gm-group">
 											<label for="gm-app-name">Nome da Loja</label>
@@ -296,19 +369,29 @@
 
 						<section class="gm-builder-block gm-builder-block--flat" aria-label="Cadastro de itens do catálogo">
 							<div class="gm-builder-head">
-								<h4><i class="fas fa-plus-circle"></i> Novo Item</h4>
-								<p>Preencha as etapas abaixo — todas as informações do produto exibidas na sua página podem ser editadas aqui.</p>
+								<h4><i class="fas fa-plus-circle"></i> <span id="gm-catalogo-titulo">Novo Item</span></h4>
+								<p id="gm-catalogo-subtitulo">Preencha as etapas abaixo — todas as informações do produto exibidas na sua página podem ser editadas aqui.</p>
 							</div>
 
 							<form id="gm-item-form" class="gm-form" onsubmit="return false;">
+								<div class="gm-form-mode-toggle" role="radiogroup" aria-label="Nível de detalhe do formulário">
+									<button type="button" class="gm-mode-btn active" data-form-mode="simples">
+										<i class="fas fa-bolt"></i> Modo simples
+									</button>
+									<button type="button" class="gm-mode-btn" data-form-mode="avancado">
+										<i class="fas fa-sliders-h"></i> Modo avançado
+									</button>
+								</div>
+								<p class="gm-step-help" id="gm-form-mode-hint">Mostrando só o essencial: informações, fotos e preço. Ative o modo avançado para variações, estoque e detalhes extras.</p>
+
 								<nav class="gm-stepper gm-stepper--7" aria-label="Etapas de cadastro do item">
 									<a class="gm-step-link" href="#gm-item-step-1"><span>1</span> Info</a>
 									<a class="gm-step-link" href="#gm-item-step-2"><span>2</span> Fotos</a>
 									<a class="gm-step-link" href="#gm-item-step-3"><span>3</span> Preço</a>
 									<a class="gm-step-link" href="#gm-item-step-4"><span>4</span> Categoria</a>
-									<a class="gm-step-link" href="#gm-item-step-5"><span>5</span> Variações</a>
-									<a class="gm-step-link" href="#gm-item-step-6"><span>6</span> Detalhes</a>
-									<a class="gm-step-link" href="#gm-item-step-7"><span>7</span> Entrega</a>
+									<a class="gm-step-link gm-step-link--adv" href="#gm-item-step-5"><span>5</span> Variações</a>
+									<a class="gm-step-link gm-step-link--adv" href="#gm-item-step-6"><span>6</span> Detalhes</a>
+									<a class="gm-step-link gm-step-link--adv" href="#gm-item-step-7"><span>7</span> Entrega</a>
 								</nav>
 
 								<details id="gm-item-step-1" class="gm-step" open>
@@ -402,6 +485,7 @@
 													<option value="Beleza e Saúde">Beleza e Saúde</option>
 													<option value="Serviços Gerais">Serviços Gerais</option>
 													<option value="Mercado / Mercearia">Mercado / Mercearia</option>
+													<option value="Construção e Reforma">Construção e Reforma</option>
 													<option value="Outro">Outro</option>
 												</select>
 											</div>
@@ -426,37 +510,39 @@
 										<strong>Variações e estoque</strong>
 									</summary>
 									<section class="gm-form-section" aria-label="Variações do item">
-										<p class="gm-step-help">Use variações quando o item tiver opções como tamanho ou cor, cada uma com seu próprio estoque. Deixe em branco se o item não tiver variações.</p>
-										<div class="gm-row-3">
-											<div class="gm-group">
-												<label for="gm-variation-type">Tipo</label>
-												<select id="gm-variation-type">
-													<option value="Tamanho">Tamanho</option>
-													<option value="Cor">Cor</option>
-													<option value="Outro">Outro</option>
-												</select>
+										<div class="gm-group" id="gm-item-variations-group">
+											<p class="gm-step-help">Use variações quando o item tiver opções como tamanho ou cor, cada uma com seu próprio estoque. Deixe em branco se o item não tiver variações.</p>
+											<div class="gm-row-3">
+												<div class="gm-group">
+													<label for="gm-variation-type">Tipo</label>
+													<select id="gm-variation-type">
+														<option value="Tamanho">Tamanho</option>
+														<option value="Cor">Cor</option>
+														<option value="Outro">Outro</option>
+													</select>
+												</div>
+												<div class="gm-group">
+													<label for="gm-variation-value">Valor</label>
+													<input id="gm-variation-value" type="text" placeholder="Ex.: P, Azul">
+												</div>
+												<div class="gm-group">
+													<label for="gm-variation-stock">Estoque</label>
+													<input id="gm-variation-stock" type="number" min="0" placeholder="Ex.: 10">
+												</div>
 											</div>
 											<div class="gm-group">
-												<label for="gm-variation-value">Valor</label>
-												<input id="gm-variation-value" type="text" placeholder="Ex.: P, Azul">
+												<label for="gm-variation-price">Preço desta variação <span class="gm-optional-tag">opcional</span></label>
+												<input id="gm-variation-price" type="text" placeholder="Deixe em branco para usar o preço padrão">
 											</div>
-											<div class="gm-group">
-												<label for="gm-variation-stock">Estoque</label>
-												<input id="gm-variation-stock" type="number" min="0" placeholder="Ex.: 10">
+											<div class="gm-actions">
+												<button id="gm-add-variation" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar variação</button>
 											</div>
+											<div class="gm-variation-list" id="gm-variation-list" aria-live="polite"></div>
 										</div>
-										<div class="gm-group">
-											<label for="gm-variation-price">Preço desta variação <span class="gm-optional-tag">opcional</span></label>
-											<input id="gm-variation-price" type="text" placeholder="Deixe em branco para usar o preço padrão">
-										</div>
-										<div class="gm-actions">
-											<button id="gm-add-variation" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar variação</button>
-										</div>
-										<div class="gm-variation-list" id="gm-variation-list" aria-live="polite"></div>
-										<div class="gm-group">
-											<label for="gm-item-qty">Estoque total (sem variações)</label>
+										<div class="gm-group" id="gm-item-qty-group">
+											<label for="gm-item-qty" id="gm-item-qty-label">Estoque total (sem variações)</label>
 											<input id="gm-item-qty" type="number" min="0" placeholder="Ex.: 10">
-											<small>Só use este campo se o item NÃO tiver variações acima.</small>
+											<small id="gm-item-qty-hint">Só use este campo se o item NÃO tiver variações acima.</small>
 										</div>
 									</section>
 								</details>
@@ -464,28 +550,35 @@
 								<details id="gm-item-step-6" class="gm-step">
 									<summary class="gm-step-summary">
 										<span class="gm-step-number">Etapa 6</span>
-										<strong>Detalhes técnicos</strong>
+										<strong id="gm-item-step-6-title">Detalhes técnicos</strong>
 									</summary>
 									<section class="gm-form-section" aria-label="Detalhes técnicos do item">
-										<div class="gm-row-2">
-											<div class="gm-group">
-												<label for="gm-item-brand">Marca</label>
-												<input id="gm-item-brand" type="text" placeholder="Ex.: Samsung">
+										<div id="gm-item-technical-group">
+											<div class="gm-row-2">
+												<div class="gm-group">
+													<label for="gm-item-brand">Marca</label>
+													<input id="gm-item-brand" type="text" placeholder="Ex.: Samsung">
+												</div>
+												<div class="gm-group">
+													<label for="gm-item-color">Cor</label>
+													<input id="gm-item-color" type="text" placeholder="Ex.: Preto, Branco">
+												</div>
 											</div>
 											<div class="gm-group">
-												<label for="gm-item-color">Cor</label>
-												<input id="gm-item-color" type="text" placeholder="Ex.: Preto, Branco">
+												<label for="gm-item-voltage">Voltagem</label>
+												<select id="gm-item-voltage">
+													<option value="">Não se aplica</option>
+													<option value="110V">110V</option>
+													<option value="220V">220V</option>
+													<option value="Bivolt">Bivolt</option>
+													<option value="USB">USB</option>
+												</select>
 											</div>
 										</div>
-										<div class="gm-group">
-											<label for="gm-item-voltage">Voltagem</label>
-											<select id="gm-item-voltage">
-												<option value="">Não se aplica</option>
-												<option value="110V">110V</option>
-												<option value="220V">220V</option>
-												<option value="Bivolt">Bivolt</option>
-												<option value="USB">USB</option>
-											</select>
+										<div class="gm-group" id="gm-item-duration-group">
+											<label for="gm-item-duration">Duração estimada do atendimento (minutos)</label>
+											<input id="gm-item-duration" type="number" min="0" placeholder="Ex.: 30">
+											<small>Ajuda o cliente a saber quanto tempo o serviço costuma levar.</small>
 										</div>
 									</section>
 								</details>
@@ -517,7 +610,7 @@
 						</section>
 
 						<div class="gm-catalog-list-head">
-							<h4><i class="fas fa-boxes-stacked"></i> Itens cadastrados</h4>
+							<h4><i class="fas fa-boxes-stacked"></i> <span id="gm-items-list-titulo">Itens cadastrados</span></h4>
 						</div>
 						<div class="gm-admin-list" id="gm-items-admin-list" aria-live="polite"></div>
 					</div>
@@ -565,6 +658,14 @@
 						</div>
 					</article>
 				</section>
+
+				<aside class="gm-activity-panel" id="gm-activity-panel" aria-label="Atividade recente">
+					<div class="gm-activity-panel-header">
+						<h3><i class="fas fa-bolt"></i> Atividade recente</h3>
+						<button type="button" class="gm-activity-panel-see-all" data-quick-action="ver-pedidos">Ver tudo</button>
+					</div>
+					<div class="gm-activity-panel-content" id="gm-activity-panel-list" aria-live="polite"></div>
+				</aside>
 			</div>
 		</div>
 	</main>
@@ -596,19 +697,12 @@
 
 	<div class="gm-messages-overlay" id="gm-messages-overlay"></div>
 
-	<aside class="gm-messages-drawer" id="gm-messages-drawer" aria-label="Mensagens e interações">
-		<div class="gm-messages-drawer-header">
-			<h3><i class="fas fa-comments"></i> Mensagens e Interações</h3>
-			<button id="gm-messages-close" type="button" aria-label="Fechar mensagens"><i class="fas fa-times"></i></button>
-		</div>
-		<div class="gm-messages-drawer-content" id="gm-mensagens-list" aria-live="polite"></div>
-	</aside>
-
 	<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 	<script src="../JS/utils.js"></script>
 	<script src="../JS/api.js"></script>
 	<script src="../JS/data/lojas.js"></script>
+	<script src="../JS/data/perfis-loja.js"></script>
 	<script src="../JS/gerenciamento.js"></script>
 
 </body>

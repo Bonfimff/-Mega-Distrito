@@ -64,12 +64,7 @@ function contaToast(msg) {
 	toast(msg);
 }
 
-function createEl(tag, className, text) {
-	const el = document.createElement(tag);
-	if (className) el.className = className;
-	if (typeof text === 'string') el.textContent = text;
-	return el;
-}
+// createEl(tag, className, text) agora vem de utils.js (carregado antes deste arquivo).
 
 function formatPrecoConta(valor) {
 	const numero = typeof valor === 'number' ? valor : parseFloat(String(valor).replace('.', '').replace(',', '.'));
@@ -275,7 +270,7 @@ function contaSair() {
 
 /* ── Encomendas ── */
 
-function buildEstrelas(pedidoId) {
+function buildEstrelasAvaliacao(pedidoId) {
 	const wrap = createEl('div', 'avaliacao-estrelas');
 	for (let i = 1; i <= 5; i += 1) {
 		const estrela = createEl('button', `avaliacao-estrela${i <= contaAvaliacaoNota ? ' is-ativa' : ''}`);
@@ -294,7 +289,7 @@ function buildEstrelas(pedidoId) {
 function buildAvaliacaoForm(pedido) {
 	const form = createEl('div', 'avaliacao-form');
 	form.appendChild(createEl('span', 'avaliacao-form-label', 'Sua nota'));
-	form.appendChild(buildEstrelas(pedido.id));
+	form.appendChild(buildEstrelasAvaliacao(pedido.id));
 
 	const textarea = document.createElement('textarea');
 	textarea.rows = 2;
@@ -453,12 +448,13 @@ async function enviarAvaliacao(id) {
 	if (!pedido) return;
 	pedido.status = 'concluido';
 	const comentario = document.getElementById('avaliacao-comentario')?.value || '';
+	const notaEnviada = contaAvaliacaoNota;
+	if (contaUsandoApi) {
+		await criarAvaliacao(id, { usuario_id: contaUsuario.id, nota: notaEnviada, comentario });
+	}
 	contaAvaliacaoAbertaId = -1;
 	contaAvaliacaoNota = 0;
 	renderPedidos();
-	if (contaUsandoApi) {
-		await criarAvaliacao(id, { usuario_id: contaUsuario.id, nota: contaAvaliacaoNota, comentario });
-	}
 	contaToast('Avaliação enviada! Obrigado pelo feedback.');
 }
 

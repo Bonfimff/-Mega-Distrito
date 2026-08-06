@@ -3,6 +3,19 @@
    MEGA DISTRITO - SERVIÇOS
    Renderização de profissionais, vagas e currículo
    ========================================================= */
+/* OBS. (performance): renderServicos reconstrói o HTML da grade inteira a
+   cada chamada de filtrarServicos(cat). Diferente de script.js (onde a
+   reconstrução total é necessária por causa da busca por texto livre),
+   aqui o filtro é só por categoria fixa (p.especialidade === cat), então
+   em tese um toggle de visibilidade seria possível. Optamos por manter a
+   reconstrução total mesmo assim porque cada card tem um carrossel de
+   fotos com setInterval próprio (iniciarGalerias/_galeriaTimers) que
+   precisa ser recriado/limpo a cada troca de filtro — introduzir toggle
+   de visibilidade exigiria pausar/retomar esses timers por card oculto
+   (para não girar carrossel invisível) e manter os cards antigos + os
+   possivelmente novos (profissionais carregados via API) sincronizados,
+   o que aumenta bastante o risco de vazamento de timers/memória para um
+   ganho pequeno (a lista de profissionais não costuma ser grande). */
 function renderServicos(lista) {
     const grid     = document.getElementById('servicos-grid');
     const msgVazia = document.getElementById('servicos-no-results');
@@ -33,7 +46,14 @@ function renderServicos(lista) {
 
 function buildServicoCardHTML(p) {
     const cor          = SERVICO_CORES[p.especialidade] || '#607d8b';
-    const inicial      = p.nome.charAt(0).toUpperCase();
+    const nome         = escapeHtml(p.nome);
+    const inicial      = escapeHtml(p.nome.charAt(0).toUpperCase());
+    const ocupacao     = escapeHtml(p.ocupacao);
+    const desc         = escapeHtml(p.desc);
+    const bairro       = escapeHtml(p.bairro);
+    const atende       = escapeHtml(p.atende);
+    const horario      = escapeHtml(p.horario);
+    const unidade      = escapeHtml(p.unidade);
     const estrelas     = buildEstrelas(p.avaliacao);
     const dispCls      = p.disponivel ? 'disponivel-sim' : 'disponivel-nao';
     const dispTitle    = p.disponivel ? 'Disponível agora' : 'Indisponível no momento';
@@ -41,7 +61,7 @@ function buildServicoCardHTML(p) {
     // Galeria de fotos
     const fotos = p.fotos || FOTOS_ESPECIALIDADE[p.especialidade] || [];
     const slidesHTML = fotos.map(f =>
-        `<img class="galeria-slide" src="${f.src}" alt="${f.alt}" loading="lazy">`
+        `<img class="galeria-slide" src="${f.src}" alt="${escapeHtml(f.alt || '')}" loading="lazy">`
     ).join('');
     const dotsHTML = fotos.map((_, i) =>
         `<button class="galeria-dot${i === 0 ? ' active' : ''}" onclick="galeriaIrDot(this,${i})" aria-label="Foto ${i + 1}"></button>`
@@ -58,7 +78,7 @@ function buildServicoCardHTML(p) {
     const verificBadge = p.verificado
         ? `<span class="servico-verificado"><i class="fas fa-check-circle"></i> Verificado</span>`
         : '';
-    const tags = p.tags.map(t => `<span class="servico-tag">${t}</span>`).join('');
+    const tags = p.tags.map(t => `<span class="servico-tag">${escapeHtml(t)}</span>`).join('');
 
     return `
         <div class="servico-card" data-servico-id="${p.id}">
@@ -68,8 +88,8 @@ function buildServicoCardHTML(p) {
                 <div class="servico-perfil">
                     <div class="servico-avatar" style="background:${cor};">${inicial}</div>
                     <div class="servico-perfil-info">
-                        <div class="servico-nome">${p.nome}</div>
-                        <div class="servico-ocupacao">${p.ocupacao}</div>
+                        <div class="servico-nome">${nome}</div>
+                        <div class="servico-ocupacao">${ocupacao}</div>
                         <div class="servico-rating">
                             <span class="stars">${estrelas}</span>
                             <span class="count">${p.avaliacao.toFixed(1)} (${p.avaliacoes} avaliações)</span>
@@ -77,22 +97,22 @@ function buildServicoCardHTML(p) {
                     </div>
                 </div>
                 ${verificBadge}
-                <p class="servico-desc">${p.desc}</p>
+                <p class="servico-desc">${desc}</p>
                 <div class="servico-tags">${tags}</div>
                 <div class="servico-meta">
                     <div class="servico-meta-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span><strong>${p.bairro}</strong> · Atende: ${p.atende}</span>
+                        <span><strong>${bairro}</strong> · Atende: ${atende}</span>
                     </div>
                     <div class="servico-meta-item">
                         <i class="fas fa-clock"></i>
-                        <span>${p.horario}</span>
+                        <span>${horario}</span>
                     </div>
                 </div>
                 <div class="servico-preco">
                     <div class="servico-preco-label">A partir de</div>
                     <div class="servico-preco-valor">
-                        ${brl(p.preco)} <span>/ ${p.unidade}</span>
+                        ${brl(p.preco)} <span>/ ${unidade}</span>
                     </div>
                 </div>
                 <div class="servico-actions">
@@ -110,13 +130,15 @@ function buildServicoCardHTML(p) {
 
 function buildDestaqueCardHTML(p) {
     const cor     = SERVICO_CORES[p.especialidade] || '#607d8b';
-    const inicial = p.nome.charAt(0).toUpperCase();
+    const nome    = escapeHtml(p.nome);
+    const inicial = escapeHtml(p.nome.charAt(0).toUpperCase());
+    const ocupacao = escapeHtml(p.ocupacao);
     return `
         <article class="servico-destaque-card" data-servico-id="${p.id}">
             <div class="servico-destaque-avatar" style="background:${cor};">${inicial}</div>
             <div class="servico-destaque-info">
-                <strong>${p.nome}</strong>
-                <span>${p.ocupacao}</span>
+                <strong>${nome}</strong>
+                <span>${ocupacao}</span>
                 <span class="servico-destaque-rating"><i class="fas fa-star"></i> ${p.avaliacao.toFixed(1)} (${p.avaliacoes})</span>
             </div>
             <button class="servico-destaque-btn" onclick="verPerfilDestaque(${p.id})">Ver perfil</button>
@@ -251,6 +273,14 @@ function bindSubtabs() {
 // Armazena vagas adicionadas pelo usuário
 let vagasExtra = [];
 
+/* OBS. (performance): renderVagas também reconstrói a grade inteira a
+   cada filtrarVagas(area). Aqui o filtro também é só por atributo fixo
+   (v.area === area), mas mantemos a reconstrução total porque a lista de
+   vagas muda de tamanho em tempo real (enviarVaga() insere um novo item
+   em vagasExtra e re-renderiza), então um toggle simples nos cards já
+   existentes não daria conta de inserir o card da vaga recém-publicada
+   sem duplicar a lógica de renderização. Como a lista de vagas é
+   pequena, o custo do rebuild completo é desprezível. */
 function renderVagas(lista) {
     const grid     = document.getElementById('vagas-grid');
     const msgVazia = document.getElementById('vagas-no-results');
@@ -279,22 +309,29 @@ function renderVagas(lista) {
 
 function buildVagaCardHTML(v) {
     const salarioCls = v.salario.toLowerCase().includes('combinar') ? '' : 'salario';
+    const cargo    = escapeHtml(v.cargo);
+    const regime   = escapeHtml(v.regime);
+    const empresa  = escapeHtml(v.empresa);
+    const local    = escapeHtml(v.local);
+    const salario  = escapeHtml(v.salario);
+    const desc     = escapeHtml(v.desc);
+    const publicada = escapeHtml(v.publicada);
     return `
         <div class="vaga-card">
             <div class="vaga-card-header">
-                <h3>${v.cargo}</h3>
-                <span class="vaga-regime-badge">${v.regime}</span>
+                <h3>${cargo}</h3>
+                <span class="vaga-regime-badge">${regime}</span>
             </div>
             <div class="vaga-card-body">
                 <div class="vaga-empresa-row">
-                    <i class="fas fa-building"></i> ${v.empresa}
+                    <i class="fas fa-building"></i> ${empresa}
                 </div>
                 <div class="vaga-info-row">
-                    <span class="vaga-chip"><i class="fas fa-map-marker-alt"></i> ${v.local}</span>
-                    <span class="vaga-chip ${salarioCls}"><i class="fas fa-dollar-sign"></i> ${v.salario}</span>
+                    <span class="vaga-chip"><i class="fas fa-map-marker-alt"></i> ${local}</span>
+                    <span class="vaga-chip ${salarioCls}"><i class="fas fa-dollar-sign"></i> ${salario}</span>
                 </div>
-                <p class="vaga-desc">${v.desc}</p>
-                <div class="vaga-publicada"><i class="fas fa-clock"></i> Publicada: ${v.publicada}</div>
+                <p class="vaga-desc">${desc}</p>
+                <div class="vaga-publicada"><i class="fas fa-clock"></i> Publicada: ${publicada}</div>
                 <button class="btn-vaga-candidatar" onclick="candidatarVaga(${v.id})">
                     <i class="fab fa-whatsapp"></i> Candidatar-se
                 </button>
@@ -380,20 +417,35 @@ function gerarCurriculo(e) {
     const curso    = document.getElementById('cv-curso').value.trim();
     const habStr   = document.getElementById('cv-habilidades').value.trim();
 
-    const inicial  = nome.charAt(0).toUpperCase();
-    const emailHTML = email ? `<span class="cv-contato-item"><i class="fas fa-envelope"></i> ${email}</span>` : '';
+    // Campos de texto livre vindos do formulário — escapar antes de interpolar em innerHTML
+    const nomeSeguro    = escapeHtml(nome);
+    const profSeguro    = escapeHtml(prof);
+    const telSeguro     = escapeHtml(tel);
+    const emailSeguro   = escapeHtml(email);
+    const localSeguro   = escapeHtml(local);
+    const dispSeguro    = escapeHtml(disp);
+    const resumoSeguro  = escapeHtml(resumo);
+    const cargoSeguro   = escapeHtml(cargo);
+    const empresaSeguro = escapeHtml(empresa);
+    const periodoSeguro = escapeHtml(periodo);
+    const ativSeguro    = escapeHtml(ativ);
+    const escolSeguro   = escapeHtml(escol);
+    const cursoSeguro   = escapeHtml(curso);
+
+    const inicial  = escapeHtml(nome.charAt(0).toUpperCase());
+    const emailHTML = email ? `<span class="cv-contato-item"><i class="fas fa-envelope"></i> ${emailSeguro}</span>` : '';
     const resumoHTML = resumo
-        ? `<div class="cv-secao"><h4><i class="fas fa-user"></i> Sobre Mim</h4><p>${resumo}</p></div>`
+        ? `<div class="cv-secao"><h4><i class="fas fa-user"></i> Sobre Mim</h4><p>${resumoSeguro}</p></div>`
         : '';
 
     const expHTML = cargo
         ? `<div class="cv-secao">
             <h4><i class="fas fa-briefcase"></i> Experiência Profissional</h4>
             <div class="cv-exp-item">
-                <div class="cv-exp-cargo">${cargo}</div>
-                ${empresa ? `<div class="cv-exp-emp">${empresa}</div>` : ''}
-                ${periodo ? `<div class="cv-exp-per"><i class="fas fa-calendar-alt"></i> ${periodo}</div>` : ''}
-                ${ativ    ? `<div class="cv-exp-ativ">${ativ}</div>` : ''}
+                <div class="cv-exp-cargo">${cargoSeguro}</div>
+                ${empresa ? `<div class="cv-exp-emp">${empresaSeguro}</div>` : ''}
+                ${periodo ? `<div class="cv-exp-per"><i class="fas fa-calendar-alt"></i> ${periodoSeguro}</div>` : ''}
+                ${ativ    ? `<div class="cv-exp-ativ">${ativSeguro}</div>` : ''}
             </div>
            </div>`
         : '';
@@ -401,12 +453,12 @@ function gerarCurriculo(e) {
     const formacaoHTML = escol
         ? `<div class="cv-secao">
             <h4><i class="fas fa-graduation-cap"></i> Formação</h4>
-            <p><strong>${escol}</strong>${curso ? ` — ${curso}` : ''}</p>
+            <p><strong>${escolSeguro}</strong>${curso ? ` — ${cursoSeguro}` : ''}</p>
            </div>`
         : '';
 
     const tags = habStr
-        ? habStr.split(',').map(h => `<span class="cv-tag">${h.trim()}</span>`).join('')
+        ? habStr.split(',').map(h => `<span class="cv-tag">${escapeHtml(h.trim())}</span>`).join('')
         : '';
     const habHTML = tags
         ? `<div class="cv-secao"><h4><i class="fas fa-star"></i> Habilidades</h4><div class="cv-tags">${tags}</div></div>`
@@ -416,12 +468,12 @@ function gerarCurriculo(e) {
         <div class="cv-topo">
             <div class="cv-avatar-grande">${inicial}</div>
             <div class="cv-topo-info">
-                <h2>${nome}</h2>
-                <p>${prof}</p>
+                <h2>${nomeSeguro}</h2>
+                <p>${profSeguro}</p>
                 <div class="cv-topo-contatos">
-                    <span class="cv-contato-item"><i class="fas fa-phone-alt"></i> ${tel}</span>
+                    <span class="cv-contato-item"><i class="fas fa-phone-alt"></i> ${telSeguro}</span>
                     ${emailHTML}
-                    <span class="cv-contato-item"><i class="fas fa-map-marker-alt"></i> ${local}</span>
+                    <span class="cv-contato-item"><i class="fas fa-map-marker-alt"></i> ${localSeguro}</span>
                 </div>
             </div>
         </div>
@@ -432,7 +484,7 @@ function gerarCurriculo(e) {
             ${habHTML}
             <div class="cv-secao">
                 <h4><i class="fas fa-check-circle"></i> Disponibilidade</h4>
-                <span class="cv-disponivel"><i class="fas fa-calendar-check"></i> ${disp}</span>
+                <span class="cv-disponivel"><i class="fas fa-calendar-check"></i> ${dispSeguro}</span>
             </div>
         </div>`;
 

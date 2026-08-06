@@ -81,3 +81,28 @@ function toast(msg) {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
 }
+
+/* ─────────────────────────────────────────────
+   SEGURANÇA — escaping de HTML
+   Use sempre que interpolar texto vindo da API/usuário
+   dentro de innerHTML/template strings (evita XSS).
+   ───────────────────────────────────────────── */
+function escapeHtml(valor) {
+    return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/* ─────────────────────────────────────────────
+   DOM — helper compartilhado para criar elementos
+   (usado por conta.js, gerenciamento.js, etc.)
+   ───────────────────────────────────────────── */
+function createEl(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (typeof text === 'string') el.textContent = text;
+    return el;
+}

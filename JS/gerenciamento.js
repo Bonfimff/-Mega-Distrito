@@ -24,8 +24,10 @@ const GM_DEFAULT = {
 	itemQty: '',
 	itemColor: '',
 	itemVoltage: '',
+	itemDuration: '',
 	itemDelivery: true,
 	itemPickup: true,
+	storeProfile: PERFIL_LOJA_PADRAO,
 	openTime: '09:00',
 	closeTime: '18:00',
 	closedDates: [],
@@ -111,6 +113,7 @@ const GM_PEDIDOS = [
 		item: 'Combo da Casa',
 		valor: '39,90',
 		quando: 'Há 12 minutos',
+		data: '2026-02-18',
 		etapaIndex: 0,
 	},
 	{
@@ -120,6 +123,7 @@ const GM_PEDIDOS = [
 		item: 'Instalação Residencial',
 		valor: '120,00',
 		quando: 'Há 2 horas',
+		data: '2026-02-17',
 		etapaIndex: 1,
 	},
 	{
@@ -129,6 +133,7 @@ const GM_PEDIDOS = [
 		item: 'Combo da Casa',
 		valor: '39,90',
 		quando: 'Ontem',
+		data: '2026-01-22',
 		etapaIndex: 3,
 	},
 ];
@@ -147,6 +152,16 @@ const GM_DASHBOARD = {
 		{ nome: 'Combo da Casa', valor: 52 },
 		{ nome: 'Instalação Residencial', valor: 19 },
 		{ nome: 'Combo Família', valor: 11 },
+	],
+};
+
+/* Avaliações de demonstração (sem backend ainda) para o card acima
+   de "Mensagens e Interações". */
+const GM_AVALIACOES = {
+	distribuicao: { 5: 20, 4: 8, 3: 3, 2: 1, 1: 0 },
+	recentes: [
+		{ cliente: 'Fernanda Souza', nota: 5, comentario: 'Atendimento rápido e produto exatamente como anunciado.' },
+		{ cliente: 'Carlos Eduardo', nota: 4, comentario: 'Muito bom, só demorou um pouco mais que o combinado.' },
 	],
 };
 
@@ -174,6 +189,42 @@ const GM_SUBCATEGORY_MAP = {
 	'mercado / mercearia': ['Bebidas', 'Hortifruti', 'Padaria', 'Limpeza', 'Congelados']
 };
 
+const GM_CATEGORIA_MASTER_LIST = [
+	'Alimentação', 'Eletrônicos', 'Moda e Vestuário', 'Casa e Decoração',
+	'Beleza e Saúde', 'Serviços Gerais', 'Mercado / Mercearia',
+	'Construção e Reforma', 'Outro',
+];
+
+function refreshCategoryOptionsForProfile() {
+	const select = document.getElementById('gm-item-category');
+	if (!select) return;
+	const perfil = obterPerfilLoja(gmStoreProfile);
+	const sugeridas = (perfil.categoriasSugeridas || []).filter(cat => GM_CATEGORIA_MASTER_LIST.includes(cat));
+	const previous = select.value;
+
+	select.innerHTML = '';
+	select.appendChild(new Option('Selecione...', ''));
+
+	if (sugeridas.length) {
+		const grupoSugeridas = document.createElement('optgroup');
+		grupoSugeridas.label = 'Sugeridas para seu perfil';
+		sugeridas.forEach(cat => grupoSugeridas.appendChild(new Option(cat, cat)));
+		select.appendChild(grupoSugeridas);
+	}
+
+	const restantes = GM_CATEGORIA_MASTER_LIST.filter(cat => !sugeridas.includes(cat));
+	if (restantes.length) {
+		const grupoOutras = document.createElement('optgroup');
+		grupoOutras.label = sugeridas.length ? 'Outras categorias' : 'Categorias';
+		restantes.forEach(cat => grupoOutras.appendChild(new Option(cat, cat)));
+		select.appendChild(grupoOutras);
+	}
+
+	if (previous && Array.from(select.options).some(o => o.value === previous)) {
+		select.value = previous;
+	}
+}
+
 let gmItems = [];
 let gmItemsOriginalIds = [];
 let gmEditingIndex = -1;
@@ -183,6 +234,7 @@ let gmEditingFilterIndex = -1;
 let gmClosedDates = [];
 let gmPreviewVisible = false;
 let gmSalvandoLoja = false;
+let gmStoreProfile = PERFIL_LOJA_PADRAO;
 
 // Rascunho do item em edição — fotos, vídeo e variações só entram em
 // gmItems quando "Adicionar item"/"Salvar item" é clicado.
@@ -191,12 +243,28 @@ let gmItemVideoDraft = '';
 let gmVariationsDraft = [];
 const gmPreviewSelectedFoto = {}; // índice da foto ativa na galeria da prévia, por itemIndex
 
-function gmToast(msg) {
+let gmToastTimer = null;
+function gmToast(msg, actionLabel, actionFn) {
 	const el = document.getElementById('toast');
 	if (!el) return;
-	el.textContent = msg;
+	el.innerHTML = '';
+	el.appendChild(document.createTextNode(msg));
+
+	if (actionLabel && actionFn) {
+		const actionBtn = document.createElement('button');
+		actionBtn.type = 'button';
+		actionBtn.className = 'toast-action';
+		actionBtn.textContent = actionLabel;
+		actionBtn.addEventListener('click', () => {
+			actionFn();
+			el.classList.remove('show');
+		});
+		el.appendChild(actionBtn);
+	}
+
 	el.classList.add('show');
-	setTimeout(() => el.classList.remove('show'), 2300);
+	clearTimeout(gmToastTimer);
+	gmToastTimer = setTimeout(() => el.classList.remove('show'), actionLabel ? 4500 : 2300);
 }
 
 function setBgFromUrl(el, url, fallbackGradient) {
@@ -206,6 +274,148 @@ function setBgFromUrl(el, url, fallbackGradient) {
 		return;
 	}
 	el.style.backgroundImage = fallbackGradient;
+}
+
+/* =========================================================
+   PERFIL DA LOJA — adapta os campos do formulário de item
+   conforme o tipo de negócio (ver JS/data/perfis-loja.js)
+   ========================================================= */
+function renderProfilePicker() {
+	const wrap = document.getElementById('gm-profile-picker');
+	if (!wrap) return;
+	wrap.innerHTML = '';
+
+	PERFIS_LOJA.forEach(perfil => {
+		const label = createEl('label', 'gm-profile-card');
+		label.dataset.profileId = perfil.id;
+
+		const input = document.createElement('input');
+		input.type = 'radio';
+		input.name = 'gm-store-profile';
+		input.value = perfil.id;
+		input.className = 'gm-visually-hidden';
+		input.checked = perfil.id === gmStoreProfile;
+		label.appendChild(input);
+
+		const icon = createEl('span', 'gm-profile-card-icon');
+		icon.innerHTML = `<i class="${perfil.icone}"></i>`;
+		label.appendChild(icon);
+
+		const body = createEl('span', 'gm-profile-card-body');
+		body.appendChild(createEl('strong', 'gm-profile-card-name', perfil.nome));
+		body.appendChild(createEl('span', 'gm-profile-card-desc', perfil.descricao));
+		label.appendChild(body);
+
+		wrap.appendChild(label);
+	});
+
+	updateProfilePickerSelection();
+}
+
+function updateProfilePickerSelection() {
+	const wrap = document.getElementById('gm-profile-picker');
+	if (!wrap) return;
+	wrap.querySelectorAll('.gm-profile-card').forEach(card => {
+		const isActive = card.dataset.profileId === gmStoreProfile;
+		card.classList.toggle('active', isActive);
+		const input = card.querySelector('input[type="radio"]');
+		if (input) input.checked = isActive;
+	});
+}
+
+function setStoreProfile(perfilId) {
+	const perfil = obterPerfilLoja(perfilId);
+	gmStoreProfile = perfil.id;
+	updateProfilePickerSelection();
+	applyStoreProfileToItemForm();
+	aplicarPreview();
+}
+
+/* Um elemento pode ficar escondido por mais de um motivo (perfil da
+   loja E modo simples/avançado ao mesmo tempo) — cada motivo guarda
+   seu próprio estado em dataset, e o elemento só reaparece quando
+   NENHUM motivo pede para escondê-lo. */
+function setElementHideReason(el, motivo, esconder) {
+	if (!el) return;
+	el.dataset[`hide${motivo[0].toUpperCase()}${motivo.slice(1)}`] = esconder ? 'true' : 'false';
+	const escondidoPorProfile = el.dataset.hideProfile === 'true';
+	const escondidoPorMode = el.dataset.hideMode === 'true';
+	el.classList.toggle('gm-hidden', escondidoPorProfile || escondidoPorMode);
+}
+
+/* =========================================================
+   MODO SIMPLES / AVANÇADO — reduz a percepção de complexidade
+   do formulário de item para quem tem conhecimento básico.
+   Simples = Info, Fotos, Preço, Categoria (o suficiente para
+   publicar). Avançado libera Variações, Detalhes e Entrega.
+   ========================================================= */
+let gmFormMode = 'simples';
+
+function applyFormModeToItemForm() {
+	const isSimples = gmFormMode === 'simples';
+
+	document.querySelectorAll('#gm-item-step-5, #gm-item-step-7').forEach(step => {
+		setElementHideReason(step, 'mode', isSimples);
+	});
+	document.querySelectorAll('.gm-step-link--adv').forEach(link => {
+		setElementHideReason(link, 'mode', isSimples);
+	});
+	setElementHideReason(document.getElementById('gm-item-step-6'), 'mode', isSimples);
+
+	document.querySelectorAll('.gm-mode-btn').forEach(btn => {
+		btn.classList.toggle('active', btn.dataset.formMode === gmFormMode);
+	});
+
+	const hint = document.getElementById('gm-form-mode-hint');
+	if (hint) {
+		hint.textContent = isSimples
+			? 'Mostrando só o essencial: informações, fotos, preço e categoria. Ative o modo avançado para variações, estoque e detalhes extras.'
+			: 'Modo avançado: todas as etapas do cadastro estão disponíveis.';
+	}
+}
+
+function setFormMode(modo) {
+	gmFormMode = modo;
+	applyFormModeToItemForm();
+}
+
+function applyStoreProfileToItemForm() {
+	const perfil = obterPerfilLoja(gmStoreProfile);
+	const campos = perfil.campos;
+
+	document.getElementById('gm-item-variations-group')?.classList.toggle('gm-hidden', !campos.variacoes);
+	document.getElementById('gm-item-qty-group')?.classList.toggle('gm-hidden', !campos.quantidade);
+
+	const qtyLabel = document.getElementById('gm-item-qty-label');
+	if (qtyLabel && campos.quantidadeLabel) qtyLabel.textContent = campos.quantidadeLabel;
+	const qtyHint = document.getElementById('gm-item-qty-hint');
+	if (qtyHint) qtyHint.classList.toggle('gm-hidden', !campos.variacoes);
+
+	document.getElementById('gm-item-technical-group')?.classList.toggle('gm-hidden', !campos.detalhesTecnicos);
+	document.getElementById('gm-item-duration-group')?.classList.toggle('gm-hidden', !campos.duracao);
+
+	const step6 = document.getElementById('gm-item-step-6');
+	const step6Title = document.getElementById('gm-item-step-6-title');
+	const step6Link = document.querySelector('.gm-stepper--7 a[href="#gm-item-step-6"]');
+	const hideStep6ByProfile = !campos.detalhesTecnicos && !campos.duracao;
+	setElementHideReason(step6, 'profile', hideStep6ByProfile);
+	setElementHideReason(step6Link, 'profile', hideStep6ByProfile);
+	if (step6Title) step6Title.textContent = campos.duracao ? 'Duração do atendimento' : 'Detalhes técnicos';
+
+	const typeSelect = document.getElementById('gm-item-type');
+	if (typeSelect && gmEditingIndex < 0) typeSelect.value = perfil.tipoItemPadrao;
+
+	const textos = perfil.textos;
+	document.querySelectorAll('.js-tab-label-catalogo').forEach(el => { el.textContent = textos.tabCatalogo; });
+	const catalogoTitulo = document.getElementById('gm-catalogo-titulo');
+	if (catalogoTitulo) catalogoTitulo.textContent = textos.catalogoTitulo;
+	const catalogoSubtitulo = document.getElementById('gm-catalogo-subtitulo');
+	if (catalogoSubtitulo) catalogoSubtitulo.textContent = textos.catalogoSubtitulo;
+	const listaTitulo = document.getElementById('gm-items-list-titulo');
+	if (listaTitulo) listaTitulo.textContent = textos.listaTitulo;
+	setEditMode(gmEditingIndex >= 0);
+
+	refreshCategoryOptionsForProfile();
 }
 
 function cloneDefaultItems() {
@@ -248,6 +458,7 @@ function mapItemApiParaLocal(item) {
 		qty: item.quantidade != null ? String(item.quantidade) : '',
 		color: item.cor || '',
 		voltage: item.voltagem || '',
+		duration: item.duracao_min != null ? String(item.duracao_min) : '',
 		delivery: Boolean(item.entrega),
 		pickup: Boolean(item.retirada),
 		variacoes: (item.variacoes || []).map(v => ({
@@ -275,6 +486,7 @@ function mapItemLocalParaApi(item, lojaId) {
 		quantidade: item.qty ? Number(item.qty) : null,
 		cor: item.color || null,
 		voltagem: item.voltage || null,
+		duracao_min: item.duration ? Number(item.duration) : null,
 		entrega: Boolean(item.delivery),
 		retirada: Boolean(item.pickup),
 		fotos: item.fotos || [],
@@ -528,9 +740,14 @@ function renderItemPhotosGrid() {
 
 function removeItemPhoto(index) {
 	if (index < 0 || index >= gmItemPhotosDraft.length) return;
-	gmItemPhotosDraft.splice(index, 1);
+	const [urlRemovida] = gmItemPhotosDraft.splice(index, 1);
 	renderItemPhotosGrid();
 	aplicarPreview();
+	gmToast('Foto removida.', 'Desfazer', () => {
+		gmItemPhotosDraft.splice(index, 0, urlRemovida);
+		renderItemPhotosGrid();
+		aplicarPreview();
+	});
 }
 
 async function handleItemPhotoFiles(fileList) {
@@ -746,12 +963,13 @@ function getCurrentSubcategory() {
 function setEditMode(active) {
 	const addBtn = document.getElementById('gm-add-item');
 	if (addBtn) {
-		addBtn.textContent = active ? 'Salvar item' : 'Adicionar item';
+		const textos = obterPerfilLoja(gmStoreProfile).textos;
+		const label = active ? textos.botaoSalvar : textos.botaoAdicionar;
 		const icon = document.createElement('i');
 		icon.className = active ? 'fas fa-save' : 'fas fa-plus';
 		addBtn.innerHTML = '';
 		addBtn.appendChild(icon);
-		addBtn.appendChild(document.createTextNode(active ? ' Salvar item' : ' Adicionar item'));
+		addBtn.appendChild(document.createTextNode(` ${label}`));
 	}
 	gmEditingIndex = active ? gmEditingIndex : -1;
 }
@@ -771,6 +989,7 @@ function clearItemFields() {
 		['gm-item-qty', GM_DEFAULT.itemQty],
 		['gm-item-color', GM_DEFAULT.itemColor],
 		['gm-item-voltage', GM_DEFAULT.itemVoltage],
+		['gm-item-duration', GM_DEFAULT.itemDuration],
 		['gm-open-time', GM_DEFAULT.openTime],
 		['gm-close-time', GM_DEFAULT.closeTime],
 	];
@@ -795,6 +1014,7 @@ function clearItemFields() {
 
 	refreshSubcategoryOptions(GM_DEFAULT.itemCategory, GM_DEFAULT.itemSubcategory);
 	clearFilterFields();
+	applyStoreProfileToItemForm();
 }
 
 function loadItemIntoForm(index) {
@@ -813,7 +1033,8 @@ function loadItemIntoForm(index) {
 		'gm-item-brand': item.brand,
 		'gm-item-qty': item.qty,
 		'gm-item-color': item.color,
-		'gm-item-voltage': item.voltage
+		'gm-item-voltage': item.voltage,
+		'gm-item-duration': item.duration
 	};
 
 	Object.entries(fields).forEach(([id, value]) => {
@@ -832,6 +1053,9 @@ function loadItemIntoForm(index) {
 	renderItemVideoField();
 	renderVariationList();
 	updateDiscountHint();
+
+	const temDadosAvancados = gmVariationsDraft.length > 0 || item.brand || item.color || item.voltage || item.duration;
+	if (temDadosAvancados && gmFormMode !== 'avancado') setFormMode('avancado');
 }
 
 function collectItemFromForm() {
@@ -846,6 +1070,7 @@ function collectItemFromForm() {
 	const qty = document.getElementById('gm-item-qty')?.value?.trim() || '';
 	const color = document.getElementById('gm-item-color')?.value?.trim() || '';
 	const voltage = document.getElementById('gm-item-voltage')?.value || '';
+	const duration = document.getElementById('gm-item-duration')?.value?.trim() || '';
 	const delivery = document.getElementById('gm-item-delivery')?.checked ?? true;
 	const pickup = document.getElementById('gm-item-pickup')?.checked ?? true;
 
@@ -879,7 +1104,7 @@ function collectItemFromForm() {
 		photo: gmItemPhotosDraft[0] || '',
 		fotos: [...gmItemPhotosDraft],
 		video: gmItemVideoDraft,
-		category, subcategory, brand, qty, color, voltage, delivery, pickup,
+		category, subcategory, brand, qty, color, voltage, duration, delivery, pickup,
 		variacoes: gmVariationsDraft.map(v => ({ ...v })),
 	};
 }
@@ -911,6 +1136,9 @@ function renderAdminItems() {
 
 		const head = createEl('div', 'gm-admin-item-head');
 		head.appendChild(createEl('h6', 'gm-admin-item-title', item.name));
+		const priceEl = createEl('span', 'gm-admin-item-price', formatPriceLabel(item.price));
+		if (item.priceOld) priceEl.appendChild(createEl('span', 'gm-admin-item-price-old', formatPriceLabel(item.priceOld)));
+		head.appendChild(priceEl);
 		info.appendChild(head);
 
 		const badges = createEl('div', 'gm-admin-item-badges');
@@ -920,27 +1148,28 @@ function renderAdminItems() {
 		if (item.fotos?.length > 1) badges.appendChild(createEl('span', 'gm-item-badge', `${item.fotos.length} fotos`));
 		info.appendChild(badges);
 
-		const meta = createEl('p', 'gm-admin-item-meta',
-			`${formatPriceLabel(item.price)}` +
-			(item.priceOld ? ` (de ${formatPriceLabel(item.priceOld)})` : '') +
-			(item.category ? ` · ${item.category}` : '') +
-			(item.subcategory ? ` / ${item.subcategory}` : '') +
-			(item.brand ? ` · ${item.brand}` : '') +
-			(item.qty ? ` · Qtd: ${item.qty}` : '') +
-			(item.color ? ` · Cor: ${item.color}` : '') +
-			(item.voltage ? ` · ${item.voltage}` : '') +
-			` · ${[item.delivery ? 'Entrega' : '', item.pickup ? 'Retirada' : ''].filter(Boolean).join(' + ') || 'Sem modalidade'}` +
-			` — ${item.description}`
-		);
-		info.appendChild(meta);
+		const metaParts = [
+			item.category,
+			item.subcategory,
+			item.brand,
+			item.qty ? `Qtd: ${item.qty}` : '',
+			item.color ? `Cor: ${item.color}` : '',
+			item.voltage,
+			item.duration ? `${item.duration} min` : '',
+		].filter(Boolean);
+		if (metaParts.length) info.appendChild(createEl('p', 'gm-admin-item-meta', metaParts.join(' · ')));
+
+		if (item.description) info.appendChild(createEl('p', 'gm-admin-item-desc', item.description));
 
 		const actions = createEl('div', 'gm-admin-item-actions');
-		const editBtn = createEl('button', 'gm-admin-edit', 'Editar');
+		const editBtn = createEl('button', 'gm-admin-edit');
 		editBtn.type = 'button';
 		editBtn.dataset.editIndex = String(index);
-		const removeBtn = createEl('button', 'gm-admin-remove', 'Remover');
+		editBtn.innerHTML = '<i class="fas fa-pen"></i> Editar';
+		const removeBtn = createEl('button', 'gm-admin-remove');
 		removeBtn.type = 'button';
 		removeBtn.dataset.removeIndex = String(index);
+		removeBtn.innerHTML = '<i class="fas fa-trash"></i> Remover';
 		actions.appendChild(editBtn);
 		actions.appendChild(removeBtn);
 		info.appendChild(actions);
@@ -1077,6 +1306,7 @@ function buildPreviewItem(item, itemIndex) {
 	if (item.qty) deliveryNotes.push(`Qtd: ${item.qty}`);
 	if (item.color) deliveryNotes.push(`Cor: ${item.color}`);
 	if (item.voltage) deliveryNotes.push(item.voltage);
+	if (item.duration) deliveryNotes.push(`Duração: ${item.duration} min`);
 	if (item.subcategory) deliveryNotes.push(`Subcategoria: ${item.subcategory}`);
 	if (item.brand) deliveryNotes.push(item.brand);
 
@@ -1164,6 +1394,14 @@ function aplicarPreview() {
 	const addressEl = document.getElementById('gm-preview-address');
 
 	if (titleEl) titleEl.textContent = name;
+
+	const sidebarNomeEl = document.getElementById('gm-sidebar-loja-nome');
+	if (sidebarNomeEl) sidebarNomeEl.textContent = name;
+	setBgFromUrl(
+		document.getElementById('gm-sidebar-icon'),
+		icon,
+		`linear-gradient(135deg, ${primary} 0%, ${accent} 100%)`
+	);
 	if (subtitleEl) {
 		subtitleEl.textContent = storeCategory
 			? `${subtitle} • ${storeCategory}`
@@ -1200,6 +1438,7 @@ function aplicarPreview() {
 
 	renderFilterChips();
 	renderPreviewItems();
+	renderDashboardChecklist();
 }
 
 function resetForm() {
@@ -1296,13 +1535,12 @@ function bindTabs() {
 			const targetId = tab.getAttribute('aria-controls');
 
 			tabs.forEach(t => {
-				t.classList.remove('active');
-				t.setAttribute('aria-selected', 'false');
+				const isMatch = t.getAttribute('aria-controls') === targetId;
+				t.classList.toggle('active', isMatch);
+				t.setAttribute('aria-selected', isMatch ? 'true' : 'false');
 			});
 			panels.forEach(p => p.classList.add('gm-tab-panel--hidden'));
 
-			tab.classList.add('active');
-			tab.setAttribute('aria-selected', 'true');
 			const target = document.getElementById(targetId);
 			if (target) target.classList.remove('gm-tab-panel--hidden');
 
@@ -1473,6 +1711,47 @@ function renderPedidos() {
 	});
 }
 
+/* =========================================================
+   ATIVIDADE RECENTE (coluna direita, telas grandes) — substitui
+   a prévia do celular por algo útil em qualquer aba: os pedidos
+   e contratações mais recentes, com atalho para a aba Atividade.
+   ========================================================= */
+function renderActivityPanel() {
+	const list = document.getElementById('gm-activity-panel-list');
+	if (!list) return;
+
+	list.innerHTML = '';
+	if (!gmPedidos.length) {
+		list.appendChild(createEl('div', 'gm-admin-empty', 'Nenhuma atividade ainda.'));
+		return;
+	}
+
+	gmPedidos.slice(0, 6).forEach(pedido => {
+		const etapas = getEtapasPedido(pedido.tipo);
+		const isFinal = pedido.etapaIndex === etapas.length - 1;
+
+		const row = createEl('button', 'gm-activity-row');
+		row.type = 'button';
+		row.dataset.pedidoId = String(pedido.id);
+
+		const top = createEl('div', 'gm-activity-row-top');
+		const icon = createEl('span', `gm-activity-row-icon gm-activity-row-icon--${pedido.tipo}`);
+		icon.innerHTML = `<i class="fas ${pedido.tipo === 'servico' ? 'fa-calendar-check' : 'fa-box'}"></i>`;
+		top.appendChild(icon);
+		top.appendChild(createEl('strong', 'gm-activity-row-title', pedido.item));
+		row.appendChild(top);
+
+		row.appendChild(createEl('span', 'gm-activity-row-meta', `${pedido.cliente} · ${formatPriceLabel(pedido.valor)} · ${pedido.quando}`));
+		row.appendChild(createEl('span', `gm-activity-row-status gm-activity-row-status--${isFinal ? 'done' : 'pending'}`, isFinal ? 'Concluído' : 'Em andamento'));
+
+		row.addEventListener('click', () => {
+			document.querySelector('.gm-tab[aria-controls="panel-atividade"]')?.click();
+		});
+
+		list.appendChild(row);
+	});
+}
+
 function avancarEtapaPedido(id) {
 	const pedido = gmPedidos.find(p => p.id === id);
 	if (!pedido) return;
@@ -1484,6 +1763,7 @@ function avancarEtapaPedido(id) {
 	const novaEtapa = etapas[pedido.etapaIndex];
 
 	renderPedidos();
+	renderActivityPanel();
 	renderPainel();
 	atualizarBadgeAtividade();
 	gmToast(`Cliente notificado: "${novaEtapa.label}" — ${pedido.item}.`);
@@ -1547,13 +1827,14 @@ function buildMensagensGrupo(titulo, mensagens) {
 function buildMensagensFiltro() {
 	const wrap = createEl('div', 'gm-mensagens-filtro');
 	[
-		{ valor: 'compra', label: 'Compras e contratações' },
-		{ valor: 'interacao', label: 'Interações' },
-	].forEach(({ valor, label }) => {
-		const btn = createEl('button', `gm-mensagens-filtro-btn${gmMensagensFiltro === valor ? ' active' : ''}`, label);
+		{ valor: 'compra', label: 'Compras', icon: 'fa-bag-shopping' },
+		{ valor: 'interacao', label: 'Interações', icon: 'fa-comment-dots' },
+	].forEach(({ valor, label, icon }) => {
+		const btn = createEl('button', `gm-mensagens-filtro-btn${gmMensagensFiltro === valor ? ' active' : ''}`);
 		btn.type = 'button';
 		btn.dataset.action = 'filtrar-mensagens';
 		btn.dataset.filtro = valor;
+		btn.innerHTML = `<i class="fas ${icon}"></i> ${label}`;
 		wrap.appendChild(btn);
 	});
 	return wrap;
@@ -1768,6 +2049,10 @@ function preencherFormularioLoja(loja) {
 	setValue('gm-preview-card-mode', loja.modo_card);
 	setValue('gm-open-time', formatarHoraParaInput(loja.horario_abre));
 	setValue('gm-close-time', formatarHoraParaInput(loja.horario_fecha));
+
+	gmStoreProfile = obterPerfilLoja(loja.perfil).id;
+	renderProfilePicker();
+	applyStoreProfileToItemForm();
 }
 
 async function inicializarLojaGerenciamento() {
@@ -1813,6 +2098,7 @@ async function salvarLojaCompleta() {
 		const dadosLoja = {
 			nome: document.getElementById('gm-app-name')?.value?.trim() || GM_DEFAULT.name,
 			categoria: document.getElementById('gm-store-category')?.value || '',
+			perfil: gmStoreProfile,
 			subtitulo: document.getElementById('gm-app-subtitle')?.value?.trim() || '',
 			endereco: document.getElementById('gm-address')?.value?.trim() || '',
 			endereco_url: document.getElementById('gm-address-url')?.value?.trim() || '',
@@ -1855,6 +2141,7 @@ async function salvarLojaCompleta() {
 		}
 		gmItemsOriginalIds = [...idsAtuais];
 
+		gmLojaSalvaAoMenosUmaVez = true;
 		aplicarPreview();
 		gmToast('Loja salva e publicada com sucesso.');
 	} finally {
@@ -1928,13 +2215,86 @@ async function enviarRespostaMensagem(id) {
 	atualizarBadgeAtividade();
 }
 
-function buildStatCard(icon, valor, label) {
+function buildStatCard(icon, valor, label, cor = 'green') {
 	const card = createEl('article', 'gm-stat-card');
-	card.appendChild(createEl('span', 'gm-stat-icon'));
-	card.querySelector('.gm-stat-icon').innerHTML = `<i class="fas ${icon}"></i>`;
-	card.appendChild(createEl('strong', 'gm-stat-valor', String(valor)));
-	card.appendChild(createEl('span', 'gm-stat-label', label));
+	const iconEl = createEl('span', `gm-stat-icon gm-stat-icon--${cor}`);
+	iconEl.innerHTML = `<i class="fas ${icon}"></i>`;
+	card.appendChild(iconEl);
+	const body = createEl('span', 'gm-stat-body');
+	body.appendChild(createEl('strong', 'gm-stat-valor', String(valor)));
+	body.appendChild(createEl('span', 'gm-stat-label', label));
+	card.appendChild(body);
 	return card;
+}
+
+/* =========================================================
+   CHECKLIST "COMPLETE SUA LOJA" — efeito Zeigarnik: mostra o
+   que falta para a loja ficar pronta, com base no estado atual
+   do formulário (não depende de campos "obrigatórios" fixos).
+   ========================================================= */
+let gmLojaSalvaAoMenosUmaVez = false;
+
+function getDashboardChecklistItems() {
+	const banner = document.getElementById('gm-banner-url')?.value?.trim();
+	const icone = document.getElementById('gm-app-icon-url')?.value?.trim();
+	const primeiroItem = gmItems[0];
+
+	return [
+		{
+			label: 'Adicione o ícone e o banner da sua loja',
+			done: Boolean(banner && icone),
+			action: () => document.querySelector('.gm-tab[aria-controls="panel-loja"]')?.click(),
+		},
+		{
+			label: 'Cadastre seu primeiro produto ou serviço',
+			done: gmItems.length > 0,
+			action: () => document.querySelector('.gm-tab[aria-controls="panel-catalogo"]')?.click(),
+		},
+		{
+			label: 'Adicione ao menos uma foto ao seu primeiro item',
+			done: Boolean(primeiroItem && primeiroItem.fotos && primeiroItem.fotos.length > 0),
+			action: () => document.querySelector('.gm-tab[aria-controls="panel-catalogo"]')?.click(),
+		},
+		{
+			label: 'Salve as alterações para publicar sua loja',
+			done: gmLojaSalvaAoMenosUmaVez,
+			action: () => document.getElementById('gm-save-btn')?.click(),
+		},
+	];
+}
+
+function renderDashboardChecklist() {
+	const wrap = document.getElementById('gm-dashboard-checklist');
+	if (!wrap) return;
+
+	const itens = getDashboardChecklistItems();
+	const pendentes = itens.filter(i => !i.done);
+	wrap.innerHTML = '';
+
+	if (!pendentes.length) {
+		wrap.appendChild(createEl('div', 'gm-checklist-complete', '✓ Sua loja está com o básico completo!'));
+		return;
+	}
+
+	const card = createEl('article', 'gm-checklist-card');
+	const head = createEl('div', 'gm-checklist-head');
+	head.appendChild(createEl('h4', '', 'Complete sua loja'));
+	head.appendChild(createEl('span', 'gm-checklist-progress', `${itens.length - pendentes.length}/${itens.length}`));
+	card.appendChild(head);
+
+	const list = createEl('div', 'gm-checklist-list');
+	itens.forEach(item => {
+		const row = createEl('button', `gm-checklist-item${item.done ? ' is-done' : ''}`);
+		row.type = 'button';
+		const check = createEl('span', 'gm-checklist-item-check');
+		check.innerHTML = item.done ? '<i class="fas fa-check"></i>' : '';
+		row.appendChild(check);
+		row.appendChild(createEl('span', 'gm-checklist-item-label', item.label));
+		row.addEventListener('click', item.action);
+		list.appendChild(row);
+	});
+	card.appendChild(list);
+	wrap.appendChild(card);
 }
 
 function buildRankingList(itens) {
@@ -1961,17 +2321,108 @@ function buildRankingList(itens) {
 	return list;
 }
 
+/* =========================================================
+   AVALIAÇÕES DA LOJA (coluna esquerda, acima de Mensagens)
+   ========================================================= */
+function renderStoreRatingCard() {
+	const el = document.getElementById('gm-store-rating-card');
+	if (!el) return;
+
+	const dist = GM_AVALIACOES.distribuicao;
+	const total = Object.values(dist).reduce((a, b) => a + b, 0);
+	const soma = Object.entries(dist).reduce((acc, [nota, qtd]) => acc + Number(nota) * qtd, 0);
+	const media = total ? soma / total : 0;
+	const mediaLabel = media.toFixed(1).replace('.', ',');
+
+	el.innerHTML = '';
+
+	const head = createEl('div', 'gm-store-rating-head');
+
+	const score = createEl('div', 'gm-store-rating-score');
+	score.appendChild(createEl('strong', 'gm-store-rating-score-num', mediaLabel));
+	const starsWrap = createEl('div', 'gm-store-rating-stars');
+	starsWrap.setAttribute('aria-hidden', 'true');
+	for (let i = 1; i <= 5; i += 1) {
+		const icon = document.createElement('i');
+		icon.className = i <= Math.round(media) ? 'fas fa-star' : 'far fa-star';
+		starsWrap.appendChild(icon);
+	}
+	score.appendChild(starsWrap);
+	head.appendChild(score);
+
+	const headText = createEl('div', 'gm-store-rating-head-text');
+	headText.appendChild(createEl('strong', '', 'Avaliações da loja'));
+	headText.appendChild(createEl('span', '', `${total} avaliações de clientes`));
+	head.appendChild(headText);
+
+	el.appendChild(head);
+
+	const bars = createEl('div', 'gm-store-rating-bars');
+	[5, 4, 3, 2, 1].forEach(nota => {
+		const qtd = dist[nota] || 0;
+		const pct = total ? Math.round((qtd / total) * 100) : 0;
+		const row = createEl('div', 'gm-store-rating-bar-row');
+		row.appendChild(createEl('span', 'gm-store-rating-bar-label', `${nota} ★`));
+		const track = createEl('div', 'gm-store-rating-bar-track');
+		const fill = createEl('div', 'gm-store-rating-bar-fill');
+		fill.style.width = `${pct}%`;
+		track.appendChild(fill);
+		row.appendChild(track);
+		row.appendChild(createEl('span', 'gm-store-rating-bar-qtd', String(qtd)));
+		bars.appendChild(row);
+	});
+	el.appendChild(bars);
+
+	if (GM_AVALIACOES.recentes.length) {
+		const recentesWrap = createEl('div', 'gm-store-rating-recentes');
+		GM_AVALIACOES.recentes.slice(0, 2).forEach(rev => {
+			const item = createEl('div', 'gm-store-rating-review');
+			const reviewHead = createEl('div', 'gm-store-rating-review-head');
+			reviewHead.appendChild(createEl('strong', '', rev.cliente));
+			reviewHead.appendChild(createEl('span', 'gm-store-rating-review-stars', '★'.repeat(rev.nota) + '☆'.repeat(5 - rev.nota)));
+			item.appendChild(reviewHead);
+			item.appendChild(createEl('p', 'gm-store-rating-review-text', rev.comentario));
+			recentesWrap.appendChild(item);
+		});
+		el.appendChild(recentesWrap);
+	}
+}
+
+function getPedidosNoPeriodo() {
+	const de = document.getElementById('gm-stats-periodo-de')?.value || '';
+	const ate = document.getElementById('gm-stats-periodo-ate')?.value || '';
+	if (!de && !ate) return gmPedidos;
+
+	return gmPedidos.filter(pedido => {
+		const mesPedido = (pedido.data || '').slice(0, 7);
+		if (!mesPedido) return true;
+		if (de && mesPedido < de) return false;
+		if (ate && mesPedido > ate) return false;
+		return true;
+	});
+}
+
 function renderPainel() {
+	renderDashboardChecklist();
+
 	const statsEl = document.getElementById('gm-dashboard-stats');
 	if (statsEl) {
-		const vendasConcluidas = gmPedidos.filter(p => p.etapaIndex >= getEtapasPedido(p.tipo).length - 1).length;
-		const vendasPendentes = gmPedidos.filter(p => p.etapaIndex < getEtapasPedido(p.tipo).length - 1).length;
+		const pedidosPeriodo = getPedidosNoPeriodo();
+		const vendasConcluidas = pedidosPeriodo.filter(p => p.etapaIndex >= getEtapasPedido(p.tipo).length - 1).length;
+		const vendasPendentes = pedidosPeriodo.filter(p => p.etapaIndex < getEtapasPedido(p.tipo).length - 1).length;
 
 		statsEl.innerHTML = '';
-		statsEl.appendChild(buildStatCard('fa-bag-shopping', gmPedidos.length, 'Vendas totais'));
-		statsEl.appendChild(buildStatCard('fa-check-circle', vendasConcluidas, 'Vendas concluídas'));
-		statsEl.appendChild(buildStatCard('fa-hourglass-half', vendasPendentes, 'Vendas pendentes'));
-		statsEl.appendChild(buildStatCard('fa-cart-plus', GM_DASHBOARD.carrinhoUsuarios, 'Usuários com item no carrinho'));
+		statsEl.appendChild(buildStatCard('fa-bag-shopping', pedidosPeriodo.length, 'Vendas totais', 'blue'));
+		statsEl.appendChild(buildStatCard('fa-check-circle', vendasConcluidas, 'Vendas concluídas', 'green'));
+		statsEl.appendChild(buildStatCard('fa-hourglass-half', vendasPendentes, 'Vendas pendentes', 'amber'));
+		statsEl.appendChild(buildStatCard('fa-cart-plus', GM_DASHBOARD.carrinhoUsuarios, 'Usuários com item no carrinho', 'blue'));
+
+		const pendentesGeral = gmPedidos.filter(p => p.etapaIndex < getEtapasPedido(p.tipo).length - 1).length;
+		const pendentesBadge = document.getElementById('gm-pendentes-badge');
+		if (pendentesBadge) {
+			pendentesBadge.textContent = String(pendentesGeral);
+			pendentesBadge.hidden = pendentesGeral === 0;
+		}
 	}
 
 	const curtidosEl = document.getElementById('gm-ranking-curtidos');
@@ -1991,15 +2442,15 @@ function atualizarBadgeAtividade() {
 	const naoLidas = gmMensagens.filter(m => !m.lida).length;
 	const pendentes = gmPedidos.filter(p => p.etapaIndex < getEtapasPedido(p.tipo).length - 1).length;
 
-	const setBadge = (id, valor) => {
-		const el = document.getElementById(id);
-		if (!el) return;
-		el.textContent = String(valor);
-		el.hidden = valor === 0;
+	const setBadge = (selector, valor) => {
+		document.querySelectorAll(selector).forEach(el => {
+			el.textContent = String(valor);
+			el.hidden = valor === 0;
+		});
 	};
 
-	setBadge('gm-atividade-badge', pendentes);
-	setBadge('gm-messages-bubble-badge', naoLidas);
+	setBadge('.js-atividade-badge', pendentes);
+	setBadge('#gm-messages-bubble-badge', naoLidas);
 }
 
 function bindGerenciamento() {
@@ -2014,9 +2465,39 @@ function bindGerenciamento() {
 	renderFilterList();
 	renderClosedDates();
 	renderPedidos();
+	renderActivityPanel();
 	renderMensagens();
 	renderPainel();
+	renderStoreRatingCard();
 	atualizarBadgeAtividade();
+	renderProfilePicker();
+	applyStoreProfileToItemForm();
+	applyFormModeToItemForm();
+
+	document.getElementById('gm-profile-picker')?.addEventListener('change', (event) => {
+		const target = event.target;
+		if (!(target instanceof HTMLInputElement) || target.name !== 'gm-store-profile') return;
+		setStoreProfile(target.value);
+	});
+
+	document.querySelectorAll('.gm-mode-btn').forEach(btn => {
+		btn.addEventListener('click', () => setFormMode(btn.dataset.formMode));
+	});
+
+	document.querySelectorAll('[data-quick-action]').forEach(btn => {
+		btn.addEventListener('click', () => {
+			if (btn.dataset.quickAction === 'add-item') {
+				document.querySelector('.gm-tab[aria-controls="panel-catalogo"]')?.click();
+			} else if (btn.dataset.quickAction === 'ver-pedidos') {
+				document.querySelector('.gm-tab[aria-controls="panel-atividade"]')?.click();
+			}
+		});
+	});
+
+	['gm-stats-periodo-de', 'gm-stats-periodo-ate'].forEach(id => {
+		document.getElementById(id)?.addEventListener('change', renderPainel);
+	});
+
 	refreshSubcategoryOptions(GM_DEFAULT.itemCategory, GM_DEFAULT.itemSubcategory);
 	inicializarLojaGerenciamento();
 

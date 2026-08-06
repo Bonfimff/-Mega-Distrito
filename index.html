@@ -65,7 +65,6 @@
                 <nav class="header-links" aria-label="Navegação principal">
                     <a href="#bazar"      class="nav-link nav-bazar"><i class="fas fa-tags"></i> Bazar</a>
                     <a href="HTML/servicos.html" class="nav-link nav-servicos"><i class="fas fa-hard-hat"></i> Serviços</a>
-                    <a href="HTML/feed.html" class="nav-link">Feed</a>
                 </nav>
             </div>
         </div>
@@ -301,6 +300,40 @@
 
     <!-- Página de detalhes do produto (tela cheia) -->
     <div class="pd-modal" id="pd-modal" role="dialog" aria-modal="true" aria-label="Detalhes do produto">
+        <header id="header">
+            <div class="header-container">
+                <a href="#inicio" class="logo">
+                    <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+                    <span class="logo-text">Mega <strong>Distrito</strong></span>
+                </a>
+                <div class="search-box">
+                    <input type="text" placeholder="Buscar produtos, marcas e muito mais..." autocomplete="off">
+                    <button aria-label="Buscar"><i class="fas fa-search"></i></button>
+                </div>
+                <nav class="header-app-nav" aria-label="Seções">
+                    <a class="header-app-link" href="#inicio" aria-label="Início">
+                        <span class="header-app-icon"><i class="fas fa-house"></i></span>
+                        <span>Início</span>
+                    </a>
+                    <a class="header-app-link" href="HTML/apps.html" aria-label="Apps">
+                        <span class="header-app-icon"><i class="fas fa-grip"></i></span>
+                        <span>Apps</span>
+                    </a>
+                    <a class="header-app-link" href="HTML/feed.html" aria-label="Feed">
+                        <span class="header-app-icon"><i class="fas fa-stream"></i></span>
+                        <span>Feed</span>
+                    </a>
+                    <a class="header-app-link" href="HTML/conta.html" aria-label="Conta">
+                        <span class="header-app-icon"><i class="fas fa-user"></i></span>
+                        <span>Conta</span>
+                    </a>
+                </nav>
+                <button class="cart-btn" aria-label="Abrir carrinho">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </button>
+            </div>
+        </header>
         <div class="pd-topbar">
             <button class="pd-voltar" id="pd-close" type="button">
                 <i class="fas fa-arrow-left"></i> Voltar
@@ -317,6 +350,7 @@
     <script src="JS/data/lojas.js"></script>
     <script src="JS/script.js"></script>
     <script src="JS/produto-detalhe.js"></script>
+    <script src="JS/bazar-detalhe.js"></script>
     <script src="JS/apps.js"></script>
 </body>
 </html>

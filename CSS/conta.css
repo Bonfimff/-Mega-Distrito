@@ -223,6 +223,45 @@
 	font-size: var(--text-xs);
 }
 
+/* ── Login/cadastro: card + painel de benefícios (evita tela vazia) ── */
+.conta-auth-layout {
+	display: flex;
+	gap: var(--space-6);
+	align-items: center;
+	justify-content: center;
+}
+.conta-auth-benefits { flex: 1; max-width: 260px; }
+.conta-auth-benefits h3 {
+	margin: 0 0 var(--space-4);
+	font-size: var(--text-xl);
+	color: var(--color-heading);
+}
+.conta-auth-benefits ul { display: grid; gap: var(--space-4); }
+.conta-auth-benefits li {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	color: var(--color-text-muted);
+	font-size: var(--text-sm);
+}
+.conta-auth-benefits li i {
+	width: 40px;
+	height: 40px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background: var(--green-pale);
+	color: var(--green-dark);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--text-base);
+}
+.conta-auth-card { flex: 1; max-width: 380px; }
+@media (max-width: 720px) {
+	.conta-auth-layout { flex-direction: column; }
+	.conta-auth-benefits { display: none; }
+}
+
 /* ── Cartões genéricos (Meus Dados / Endereços) ── */
 .conta-card {
 	background: var(--white);

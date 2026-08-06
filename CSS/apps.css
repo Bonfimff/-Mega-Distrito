@@ -35,7 +35,7 @@ body.apps-drawer-page {
     justify-content: center;
     gap: var(--space-1);
     padding: var(--space-4) 20px;
-    background: linear-gradient(140deg, #111 0%, #222 45%, #101820 100%);
+    background: linear-gradient(180deg, var(--green-xdark) 0%, var(--green-dark) 100%);
     color: var(--white);
 }
 
@@ -72,7 +72,7 @@ body.apps-drawer-page {
 }
 
 .apps-drawer-top .logo-text strong {
-    color: #9be38e;
+    color: #a5d6a7;
 }
 
 .apps-back-link,
@@ -129,7 +129,7 @@ body.apps-drawer-page {
 .apps-store-btn {
     border: none;
     border-radius: 999px;
-    background: #0f1720;
+    background: var(--green-dark);
     color: var(--white);
     padding: var(--space-2) var(--space-3);
     display: inline-flex;
@@ -194,7 +194,7 @@ body.apps-drawer-page {
     width: 62px;
     height: 62px;
     border-radius: 50%;
-    background: #0f1720;
+    background: var(--green-dark);
     color: var(--white);
     display: inline-flex;
     align-items: center;
@@ -339,8 +339,8 @@ body.apps-drawer-page {
 
 .app-cat-chip.active,
 .app-cat-chip:hover {
-    background: #0f1720;
-    border-color: #0f1720;
+    background: var(--green-dark);
+    border-color: var(--green-dark);
     color: var(--white);
 }
 

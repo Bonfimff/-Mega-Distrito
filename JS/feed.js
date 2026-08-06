@@ -5,14 +5,14 @@
    Estilo TikTok / Reels: scroll vertical com snap
    ========================================================= */
 
-/* ?? Estado ?? */
+/* Estado */
 let reelFiltro   = 'todos';
 let reelCurtidas = _carregarCurtidas();
 let REEL_ITENS   = [];
 let reelObserver = null;
 let reelAtualIdx = 0;
 
-/* ?? Persistência de curtidas ?? */
+/* Persistência de curtidas */
 function _carregarCurtidas() {
     try { return JSON.parse(localStorage.getItem('mage-curtidas') || '{}'); }
     catch { return {}; }
@@ -21,7 +21,7 @@ function _salvarCurtidas() {
     localStorage.setItem('mage-curtidas', JSON.stringify(reelCurtidas));
 }
 
-/* ?? Gradientes por categoria/tipo ?? */
+/* Gradientes por categoria/tipo */
 const REEL_GRADIENTS = {
     eletronicos : 'linear-gradient(160deg,#0d1b4b 0%,#1565c0 55%,#1976d2 100%)',
     casa        : 'linear-gradient(160deg,#1b3a1e 0%,#2e7d32 55%,#388e3c 100%)',
@@ -50,9 +50,9 @@ function _avatarCor(item) {
     return '#2e7d32';
 }
 
-/* ?????????????????????????????????????????????
+/* ─────────────────────────────────────────────
    NORMALIZAÇÃO DOS DADOS
-????????????????????????????????????????????? */
+   ───────────────────────────────────────────── */
 function _gerarItens() {
     const itens = [];
 
@@ -118,9 +118,9 @@ function _gerarItens() {
     return itens;
 }
 
-/* ?????????????????????????????????????????????
+/* ─────────────────────────────────────────────
    CONSTRUÇÃO DO CARD REEL
-????????????????????????????????????????????? */
+   ───────────────────────────────────────────── */
 function _buildReelItem(item, idx) {
     // Garantir contador de curtidas persistido
     const fidN = item.fid + '_n';
@@ -129,16 +129,16 @@ function _buildReelItem(item, idx) {
     }
     const curtido = !!reelCurtidas[item.fid];
     const n       = reelCurtidas[fidN];
-    const vendedor = item.vendedor || 'Mega Distrito';
-    const local = typeof item.local === 'string' && item.local.trim() ? item.local : 'Magé';
-    const titulo = item.titulo || 'Anúncio';
-    const desc = item.desc || 'Confira mais detalhes no anúncio.';
+    const vendedor = escapeHtml(item.vendedor || 'Mega Distrito');
+    const local = typeof item.local === 'string' && item.local.trim() ? escapeHtml(item.local) : 'Magé';
+    const titulo = escapeHtml(item.titulo || 'Anúncio');
+    const desc = escapeHtml(item.desc || 'Confira mais detalhes no anúncio.');
     const tags = Array.isArray(item.tags) ? item.tags : [];
 
-    // ?? Background ??
+    // Background
     let bgInner;
     if (item.foto) {
-        bgInner = `<img class="reel-bg-img" src="${item.foto}" alt="${item.titulo}" loading="lazy">`;
+        bgInner = `<img class="reel-bg-img" src="${item.foto}" alt="${titulo}" loading="lazy">`;
     } else {
         const grad = _gradiente(item);
         bgInner = `
@@ -153,29 +153,29 @@ function _buildReelItem(item, idx) {
             </div>`;
     }
 
-    // ?? Badge desconto ??
+    // Badge desconto
     let offPill = '';
     if (item.precoAntigo && item.precoAntigo > item.preco) {
         const pct = Math.round((1 - item.preco / item.precoAntigo) * 100);
         offPill = `<div class="reel-off-pill">-${pct}%</div>`;
     }
 
-    // ?? Rating ??
+    // Rating
     const ratingTag = item.avaliacao
         ? `<span class="reel-tipo-badge" style="background:rgba(0,0,0,.35);">⭐ ${item.avaliacao.toFixed(1)}</span>`
         : '';
 
-    // ?? Tipo badge ??
+    // Tipo badge
     const tipoCls   = { produto:'rtb-produto', usado:'rtb-usado', servico:'rtb-servico' }[item.tipo];
     const tipoLabel = { produto:'Produto', usado:'Usado', servico:'Serviço' }[item.tipo];
 
-    // ?? Preço ??
+    // Preço
     const precoOld = item.precoAntigo && item.precoAntigo > item.preco
         ? `<span class="reel-price-old">${brl(item.precoAntigo)}</span>` : '';
     const unidade  = item.tipo === 'servico'
-        ? `<span class="reel-price-unit"> / ${item.ref?.unidade || 'serviço'}</span>` : '';
+        ? `<span class="reel-price-unit"> / ${escapeHtml(item.ref?.unidade || 'serviço')}</span>` : '';
 
-    // ?? Botão CTA ??
+    // Botão CTA
     const ctaCls = { produto:'reel-cta-produto', usado:'reel-cta-usado', servico:'reel-cta-servico' }[item.tipo];
     const ctaTxt = item.tipo === 'servico'
         ? `<i class="fab fa-whatsapp"></i> Contatar`
@@ -184,14 +184,14 @@ function _buildReelItem(item, idx) {
         ? `reelContatar('${item.fid}')`
         : `reelAddCarrinho('${item.fid}')`;
 
-    // ?? Tags ??
+    // Tags
     const tagsHTML = tags.slice(0,3)
-        .map(t => `<span class="reel-tag">${t}</span>`).join('');
+        .map(t => `<span class="reel-tag">${escapeHtml(t)}</span>`).join('');
 
     const avatarCor = _avatarCor(item);
     const inicial   = vendedor.charAt(0).toUpperCase();
 
-    // ?? Indicador swipe (só no primeiro card) ??
+    // Indicador swipe (só no primeiro card)
     const swipeHint = idx === 0
         ? `<div class="reel-swipe-hint">
                <i class="fas fa-chevron-up"></i>
@@ -288,9 +288,9 @@ function renderReel() {
     _bindObserver();
 }
 
-/* ?????????????????????????????????????????????
+/* ─────────────────────────────────────────────
    INTERSECTION OBSERVER (card ativo)
-????????????????????????????????????????????? */
+   ───────────────────────────────────────────── */
 function _bindObserver() {
     if (reelObserver) reelObserver.disconnect();
 
@@ -374,10 +374,16 @@ function reelVerAnuncio(fid) {
     const body  = document.getElementById('feed-modal-body');
     if (!modal || !body) return;
 
+    // Campos de texto dinâmico (escapados para evitar XSS)
+    const tituloSeguro   = escapeHtml(item.titulo || '');
+    const descSeguro     = escapeHtml(item.desc || '');
+    const vendedorSeguro = escapeHtml(item.vendedor || '');
+    const localSeguro    = escapeHtml(item.local || '');
+
     // Mídia
     let mediaHTML;
     if (item.foto) {
-        mediaHTML = `<div class="feed-modal-media-wrap"><img src="${item.foto}" alt="${item.titulo}"></div>`;
+        mediaHTML = `<div class="feed-modal-media-wrap"><img src="${item.foto}" alt="${tituloSeguro}"></div>`;
     } else {
         mediaHTML = `<div class="feed-modal-media-wrap">${item.emoji || '📦'}</div>`;
     }
@@ -385,20 +391,20 @@ function reelVerAnuncio(fid) {
     // Preço
     const precoOld = item.precoAntigo && item.precoAntigo > item.preco
         ? `<span class="feed-modal-preco-old">De ${brl(item.precoAntigo)}</span>` : '';
-    const unidade  = item.tipo === 'servico' ? ` / ${item.ref.unidade}` : '';
+    const unidade  = item.tipo === 'servico' ? ` / ${escapeHtml(item.ref.unidade || '')}` : '';
     const precoCls = item.tipo === 'servico' ? 'servico-cor' : '';
 
     // Meta
     const ratingRow   = item.avaliacao
         ? `<div class="feed-modal-meta-row"><i class="fas fa-star" style="color:#f9a825;"></i>${item.avaliacao.toFixed(1)} • ${item.avaliacoes} avaliações</div>` : '';
     const horarioRow  = item.tipo === 'servico' && item.ref.horario
-        ? `<div class="feed-modal-meta-row"><i class="fas fa-clock"></i>${item.ref.horario}</div>` : '';
+        ? `<div class="feed-modal-meta-row"><i class="fas fa-clock"></i>${escapeHtml(item.ref.horario)}</div>` : '';
     const atendeRow   = item.tipo === 'servico' && item.ref.atende
-        ? `<div class="feed-modal-meta-row"><i class="fas fa-route"></i>Atende: ${item.ref.atende}</div>` : '';
+        ? `<div class="feed-modal-meta-row"><i class="fas fa-route"></i>Atende: ${escapeHtml(item.ref.atende)}</div>` : '';
     const condicaoRow = item.tipo === 'usado'
-        ? `<div class="feed-modal-meta-row"><i class="fas fa-info-circle"></i>Condição: ${item.ref.condicaoLabel}</div>` : '';
+        ? `<div class="feed-modal-meta-row"><i class="fas fa-info-circle"></i>Condição: ${escapeHtml(item.ref.condicaoLabel || '')}</div>` : '';
 
-    const tagsHTML = item.tags.map(t => `<span class="feed-modal-tag">${t}</span>`).join('');
+    const tagsHTML = item.tags.map(t => `<span class="feed-modal-tag">${escapeHtml(t)}</span>`).join('');
 
     // Botão ação
     let btnAcao;
@@ -422,17 +428,17 @@ function reelVerAnuncio(fid) {
         ${mediaHTML}
         <div class="feed-modal-inner">
             <div class="feed-modal-top">
-                <h2 class="feed-modal-titulo">${item.titulo}</h2>
+                <h2 class="feed-modal-titulo">${tituloSeguro}</h2>
                 <button class="feed-modal-fechar" onclick="fecharReelModal()" aria-label="Fechar">×</button>
             </div>
             ${precoOld}
             <div class="feed-modal-preco ${precoCls}">${brl(item.preco)}${unidade ? `<span style="font-size:14px;font-weight:400;color:#888;">${unidade}</span>` : ''}</div>
             <div class="feed-modal-meta">
-                <div class="feed-modal-meta-row"><i class="fas fa-user"></i>${item.vendedor}</div>
-                <div class="feed-modal-meta-row"><i class="fas fa-map-marker-alt"></i>${item.local}</div>
+                <div class="feed-modal-meta-row"><i class="fas fa-user"></i>${vendedorSeguro}</div>
+                <div class="feed-modal-meta-row"><i class="fas fa-map-marker-alt"></i>${localSeguro}</div>
                 ${ratingRow}${horarioRow}${atendeRow}${condicaoRow}
             </div>
-            <p class="feed-modal-descricao">${item.desc}</p>
+            <p class="feed-modal-descricao">${descSeguro}</p>
             <div class="feed-modal-tags">${tagsHTML}</div>
             <div class="feed-modal-acoes">
                 <button class="btn btn-outline" id="modal-like-btn"
@@ -460,15 +466,15 @@ function fecharReelModal() {
     document.body.style.overflow = '';
 }
 
-/* ?? Contador de posição ?? */
+/* Contador de posição */
 function _atualizarCounter(idx, total) {
     const el = document.getElementById('reel-counter');
     if (el) el.textContent = `${idx + 1} / ${total}`;
 }
 
-/* ?????????????????????????????????????????????
+/* ─────────────────────────────────────────────
    FILTROS
-????????????????????????????????????????????? */
+   ───────────────────────────────────────────── */
 function bindReelFiltros() {
     document.querySelectorAll('.reel-tabbar button').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -480,9 +486,9 @@ function bindReelFiltros() {
     });
 }
 
-/* ?????????????????????????????????????????????
+/* ─────────────────────────────────────────────
    INICIALIZAÇÃO
-????????????????????????????????????????????? */
+   ───────────────────────────────────────────── */
 /* O layout do feed é fixado abaixo do header; como a altura do
    header varia (busca quebra de linha no mobile), medimos a real. */
 function _ajustarAlturaHeader() {

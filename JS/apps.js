@@ -181,13 +181,20 @@ function renderAppsFixados() {
 
     const cardLoja = `
         <button class="app-store-launch-card" id="open-app-store-card" type="button" aria-label="Abrir loja de aplicativos">
-            <span class="store-icon-wrap"><i class="fas fa-store"></i></span>
+            <span class="store-icon-wrap"><i class="fas fa-store" style="color:#FFFFFF"></i></span>
             <strong>Loja de Apps</strong>
             <small>Ver todos os aplicativos</small>
         </button>
     `;
 
-    grid.innerHTML = `${cardsFixados}${cardLoja}`;
+    if (fixados.length) {
+        grid.innerHTML = `${cardsFixados}${cardLoja}`;
+    } else {
+        grid.innerHTML = '';
+        if (empty && !empty.querySelector('#open-app-store-card')) {
+            empty.insertAdjacentHTML('afterbegin', cardLoja);
+        }
+    }
 }
 
 function abrirLojaApps() {
@@ -392,7 +399,7 @@ function bindApps() {
     bindAppGrid(gridLoja);
 
     if (gridFixados) {
-        gridFixados.addEventListener('click', e => {
+        const handlePinnedClick = e => {
             const launch = e.target.closest('#open-app-store-card');
             if (launch) {
                 abrirLojaApps();
@@ -411,7 +418,9 @@ function bindApps() {
                 const id = Number(tile.dataset.appId);
                 if (id) abrirAppPorId(id);
             }
-        });
+        };
+        gridFixados.addEventListener('click', handlePinnedClick);
+        document.getElementById('apps-pinned-empty')?.addEventListener('click', handlePinnedClick);
     }
 
     if (railDestaque) {

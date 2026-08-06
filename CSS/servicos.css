@@ -4,14 +4,16 @@
    ========================================================= */
 
 :root {
-    --serv-purple      : #5c35a8;
-    --serv-purple-dark : #3d2277;
-    --serv-purple-mid  : #7c4dbd;
-    --serv-purple-light: #b39ddb;
-    --serv-purple-pale : #ede7f6;
-    --serv-indigo      : #3949ab;
-    --serv-indigo-dark : #1a237e;
-    --serv-indigo-light: #5c6bc0;
+    /* Acento de Serviços realinhado ao azul "confiança" do sistema global
+       (ver DESIGN_GUIDE.md §9 — casco do app deve usar sempre a mesma paleta) */
+    --serv-purple      : var(--blue);
+    --serv-purple-dark : var(--blue-dark);
+    --serv-purple-mid  : var(--blue);
+    --serv-purple-light: var(--blue-light);
+    --serv-purple-pale : var(--blue-pale);
+    --serv-indigo      : var(--blue-dark);
+    --serv-indigo-dark : var(--blue-dark);
+    --serv-indigo-light: var(--blue);
     --serv-disponivel  : var(--green-mid);
     --serv-indisponivel: var(--red);
     --serv-whatsapp    : #25d366;

@@ -12,6 +12,8 @@ const ENT_CENTRO_PADRAO = { lat: -22.6656, lng: -43.0393 }; // Magé - RJ
 const ENT_INTERVALO_POLL_MS = 8000;
 const ENT_INTERVALO_MIN_ENVIO_POSICAO_MS = 8000;
 const ENT_DISTANCIA_MANOBRA_M = 30; // avança para o próximo passo quando chega perto
+const ENT_INTERVALO_SIMULACAO_MS = 1000;
+const ENT_SIMULACAO_DESTINO = { lat: -22.5931509, lng: -43.1926772, texto: 'Rua O, 270 - Fragoso, Magé - RJ' };
 
 const entState = {
     usuario: null,
@@ -28,6 +30,8 @@ const entState = {
     pedidoAtivo: null,
     navSteps: null,
     navStepIndex: 0,
+    simulando: false,
+    simulacaoIntervalId: null,
 };
 
 document.addEventListener('DOMContentLoaded', iniciarPaginaEntregador);
@@ -86,6 +90,7 @@ async function iniciarPainelEntregador() {
     toggle.addEventListener('change', () => alternarOnline(toggle.checked));
 
     document.getElementById('ent-ativa-confirmar').addEventListener('click', confirmarEtapaAtiva);
+    document.getElementById('ent-simular-btn').addEventListener('click', simularEntregaAteFragoso);
 
     const entregaAtual = await fetchEntregaAtual(entState.entregador.id);
     if (entregaAtual && entregaAtual.id) {
@@ -219,17 +224,21 @@ function aoErrarGeolocalizacao(erro) {
 }
 
 function aoAtualizarPosicao(posicao) {
-    const lat = posicao.coords.latitude;
-    const lng = posicao.coords.longitude;
-    entState.pos = { lat, lng };
-
-    atualizarMarcadorEntregador(lat, lng, posicao.coords.heading);
+    aplicarPosicaoNaTela(posicao.coords.latitude, posicao.coords.longitude, posicao.coords.heading);
 
     const agora = Date.now();
     if (agora - entState.ultimoEnvioPosicaoEm >= ENT_INTERVALO_MIN_ENVIO_POSICAO_MS) {
         entState.ultimoEnvioPosicaoEm = agora;
-        atualizarPosicaoEntregador(entState.entregador.id, lat, lng);
+        atualizarPosicaoEntregador(entState.entregador.id, posicao.coords.latitude, posicao.coords.longitude);
     }
+}
+
+/* Atualiza marcador + progresso da navegação — usado tanto pelo GPS real
+   quanto pela simulação (ver simularEntregaAteFragoso), sem mandar nada
+   pro servidor (isso é feito só pelo GPS real, em aoAtualizarPosicao). */
+function aplicarPosicaoNaTela(lat, lng, heading) {
+    entState.pos = { lat, lng };
+    atualizarMarcadorEntregador(lat, lng, heading);
 
     if (entState.pedidoAtivo) {
         if (!entState.routeLine && entState.destinoAtivo) {
@@ -238,6 +247,80 @@ function aoAtualizarPosicao(posicao) {
             atualizarProgressoNavegacao();
         }
     }
+}
+
+/* Ângulo (0–360°, 0 = norte) do ponto A para o ponto B — usado para a seta
+   de direção do marcador durante a simulação (sem heading real do GPS). */
+function calcularBearing(a, b) {
+    const toRad = g => g * Math.PI / 180;
+    const toDeg = r => r * 180 / Math.PI;
+    const dLng = toRad(b.lng - a.lng);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+/* ── Simulação de deslocamento (teste) ──
+   Anda sozinho pela rota real (OSRM) da posição atual até um endereço fixo,
+   pra testar a navegação turn-by-turn sem precisar sair de casa. Não manda
+   nada pro backend (pedido "simulacao" não existe no banco). */
+async function simularEntregaAteFragoso() {
+    if (!entState.pos) {
+        toast('Aguardando localização atual antes de simular…');
+        return;
+    }
+    pararSimulacao();
+
+    const origem = { ...entState.pos };
+    const destino = { lat: ENT_SIMULACAO_DESTINO.lat, lng: ENT_SIMULACAO_DESTINO.lng };
+
+    entState.pedidoAtivo = {
+        id: 'simulacao',
+        status: 'a_caminho',
+        item_nome: 'Entrega simulada (teste)',
+        valor: 0,
+        cliente_nome: 'Cliente de teste',
+        cliente_rua: 'Rua O, 270',
+        cliente_bairro: 'Fragoso',
+        cliente_cidade: 'Magé - RJ',
+        cliente_lat: destino.lat,
+        cliente_lng: destino.lng,
+    };
+    entState.simulando = true;
+    pararPollingDisponiveis();
+    document.getElementById('ent-disponiveis').hidden = true;
+    document.getElementById('ent-simular-btn').disabled = true;
+    renderizarEntregaAtiva();
+
+    const rota = await buscarRota(origem, destino);
+    const pontos = rota
+        ? rota.geometry.coordinates.map(([lng, lat]) => ({ lat, lng }))
+        : [origem, destino];
+
+    let indice = 0;
+    entState.simulacaoIntervalId = setInterval(() => {
+        if (indice >= pontos.length || !entState.simulando) {
+            pararSimulacao();
+            if (indice >= pontos.length) toast('Simulação concluída — chegou ao destino.');
+            return;
+        }
+        const atual = pontos[indice];
+        const proximo = pontos[Math.min(indice + 1, pontos.length - 1)];
+        aplicarPosicaoNaTela(atual.lat, atual.lng, calcularBearing(atual, proximo));
+        entState.map.panTo([atual.lat, atual.lng]);
+        indice += 1;
+    }, ENT_INTERVALO_SIMULACAO_MS);
+}
+
+function pararSimulacao() {
+    if (entState.simulacaoIntervalId != null) {
+        clearInterval(entState.simulacaoIntervalId);
+        entState.simulacaoIntervalId = null;
+    }
+    entState.simulando = false;
+    document.getElementById('ent-simular-btn').disabled = false;
 }
 
 /* ── Distância (Haversine, em metros) ── */
@@ -370,9 +453,11 @@ function renderizarEntregaAtiva() {
         : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(enderecoTexto)}`;
 
     const confirmarBtn = document.getElementById('ent-ativa-confirmar');
-    confirmarBtn.innerHTML = indoRetirar
-        ? '<i class="fas fa-check"></i> Retirei o pedido'
-        : '<i class="fas fa-check-double"></i> Entreguei';
+    confirmarBtn.innerHTML = entState.simulando
+        ? '<i class="fas fa-stop"></i> Parar simulação'
+        : indoRetirar
+            ? '<i class="fas fa-check"></i> Retirei o pedido'
+            : '<i class="fas fa-check-double"></i> Entreguei';
 
     if (entState.markerDestino) { entState.map.removeLayer(entState.markerDestino); entState.markerDestino = null; }
     if (destino) {
@@ -501,6 +586,18 @@ function atualizarProgressoNavegacao() {
 async function confirmarEtapaAtiva() {
     const pedido = entState.pedidoAtivo;
     if (!pedido) return;
+
+    if (entState.simulando) {
+        pararSimulacao();
+        entState.pedidoAtivo = null;
+        limparRota();
+        if (entState.markerDestino) { entState.map.removeLayer(entState.markerDestino); entState.markerDestino = null; }
+        document.getElementById('ent-nav-banner').hidden = true;
+        document.getElementById('ent-ativa').hidden = true;
+        toast('Simulação encerrada.');
+        iniciarPollingDisponiveis();
+        return;
+    }
 
     const indoRetirar = pedido.status === 'preparando';
     const resultado = indoRetirar

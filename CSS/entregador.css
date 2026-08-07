@@ -158,6 +158,26 @@
 .ent-toggle-online input:checked + .ent-toggle-track .ent-toggle-thumb { transform: translateX(20px); }
 .ent-toggle-label { font-size: var(--text-sm); font-weight: 700; color: var(--gray-700); white-space: nowrap; }
 
+/* Botão de simulação (teste) — anda sozinho pela rota até um endereço fixo,
+   pra testar a navegação turn-by-turn sem precisar sair de casa. */
+.ent-simular-btn {
+    align-self: flex-start;
+    background: var(--blue-pale);
+    color: var(--blue-dark);
+    border: 1.5px dashed var(--blue);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    transition: background var(--transition);
+}
+.ent-simular-btn:hover { background: var(--blue-light); }
+.ent-simular-btn:disabled { opacity: .6; cursor: default; }
+
 /* ── Mapa ── */
 .ent-map-wrap {
     position: relative;

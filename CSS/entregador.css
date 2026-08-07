@@ -168,12 +168,35 @@
 }
 .ent-map { width: 100%; height: 100%; z-index: 1; background: var(--gray-200); }
 
+.ent-marker-entregador-wrap {
+    position: relative;
+    width: 36px;
+    height: 36px;
+}
 .ent-marker-entregador {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
     width: 18px; height: 18px;
     background: var(--blue);
     border: 3px solid var(--white);
     border-radius: 50%;
     box-shadow: 0 0 0 4px rgba(2,136,209,.25);
+    z-index: 1;
+}
+/* Seta de direção (heading do GPS) — gira em torno da bolinha azul,
+   0deg = norte, sentido horário, igual ao heading do navigator.geolocation. */
+.ent-marker-heading {
+    position: absolute;
+    top: 0; left: 0;
+    width: 36px; height: 36px;
+    transform-origin: 50% 50%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    color: var(--blue);
+    font-size: 1.3rem;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
 }
 .ent-marker-pedido {
     width: 30px; height: 30px;

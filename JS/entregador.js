@@ -79,6 +79,7 @@ async function iniciarPainelEntregador() {
     atualizarTextoStatus(!!entState.entregador.disponivel);
 
     inicializarMapa();
+    focarLocalizacaoInicial();
 
     const toggle = document.getElementById('ent-toggle-online');
     toggle.checked = !!entState.entregador.disponivel;
@@ -122,17 +123,52 @@ function iconeDivMapa(classe, iconeFa) {
     return L.divIcon({
         className: '',
         html: `<div class="${classe}">${iconeFa ? `<i class="fas ${iconeFa}"></i>` : ''}</div>`,
-        iconSize: classe === 'ent-marker-entregador' ? [18, 18] : [30, 30],
-        iconAnchor: classe === 'ent-marker-entregador' ? [9, 9] : [15, 30],
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
     });
 }
 
-function atualizarMarcadorEntregador(lat, lng) {
+/* Marcador do entregador: bolinha azul + seta de direção (heading do GPS),
+   estilo Uber/Google Maps. Sem heading (parado ou sem suporte), mostra só a bolinha. */
+function iconeEntregador(heading) {
+    const temHeading = heading != null && !Number.isNaN(heading);
+    return L.divIcon({
+        className: '',
+        html: `
+            <div class="ent-marker-entregador-wrap">
+                ${temHeading ? `<div class="ent-marker-heading" style="transform: rotate(${heading}deg)"><i class="fas fa-caret-up"></i></div>` : ''}
+                <div class="ent-marker-entregador"></div>
+            </div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+    });
+}
+
+function atualizarMarcadorEntregador(lat, lng, heading) {
+    const icone = iconeEntregador(heading);
     if (!entState.markerEntregador) {
-        entState.markerEntregador = L.marker([lat, lng], { icon: iconeDivMapa('ent-marker-entregador') }).addTo(entState.map);
+        entState.markerEntregador = L.marker([lat, lng], { icon: icone }).addTo(entState.map);
     } else {
         entState.markerEntregador.setLatLng([lat, lng]);
+        entState.markerEntregador.setIcon(icone);
     }
+}
+
+/* Foca o mapa na localização atual assim que a página abre, mesmo antes de
+   ficar online — mostra logo onde o entregador está, como um app de navegação. */
+function focarLocalizacaoInicial() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+        posicao => {
+            const { latitude: lat, longitude: lng, heading } = posicao.coords;
+            entState.pos = entState.pos || { lat, lng };
+            entState.map.setView([lat, lng], 16);
+            atualizarMarcadorEntregador(lat, lng, heading);
+        },
+        erro => console.warn('[entregador] Não foi possível focar a localização inicial:', erro.message),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
 }
 
 /* ── Online / geolocalização ── */
@@ -187,7 +223,7 @@ function aoAtualizarPosicao(posicao) {
     const lng = posicao.coords.longitude;
     entState.pos = { lat, lng };
 
-    atualizarMarcadorEntregador(lat, lng);
+    atualizarMarcadorEntregador(lat, lng, posicao.coords.heading);
 
     const agora = Date.now();
     if (agora - entState.ultimoEnvioPosicaoEm >= ENT_INTERVALO_MIN_ENVIO_POSICAO_MS) {

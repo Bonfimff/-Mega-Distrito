@@ -98,6 +98,22 @@ const criarPedido = dados => apiPost('/pedidos', dados);
 const atualizarStatusPedido = (pedidoId, status) => apiPatch(`/pedidos/${pedidoId}/status`, { status });
 const criarAvaliacao = (pedidoId, dados) => apiPost(`/pedidos/${pedidoId}/avaliacao`, dados);
 
+// ── Entregadores / entregas (HTML/entregador.html) ──
+const cadastrarEntregador = dados => apiPost('/entregadores/cadastro', dados);
+const fetchEntregadorPorUsuario = usuarioId => apiGet(`/entregadores/usuario/${usuarioId}`);
+const atualizarDisponibilidadeEntregador = (entregadorId, disponivel) =>
+    apiPatch(`/entregadores/${entregadorId}/disponibilidade`, { disponivel });
+const atualizarPosicaoEntregador = (entregadorId, lat, lng) =>
+    apiPatch(`/entregadores/${entregadorId}/posicao`, { lat, lng });
+const fetchEntregasDisponiveis = (lat, lng) => {
+    const query = (lat != null && lng != null) ? `?lat=${lat}&lng=${lng}` : '';
+    return apiGet(`/entregas/disponiveis${query}`);
+};
+const aceitarEntrega = (pedidoId, entregadorId) => apiPost(`/entregas/${pedidoId}/aceitar`, { entregador_id: entregadorId });
+const fetchEntregaAtual = entregadorId => apiGet(`/entregadores/${entregadorId}/entrega-atual`);
+const confirmarRetiradaEntrega = pedidoId => apiPatch(`/entregas/${pedidoId}/retirado`);
+const confirmarEntregaCliente = pedidoId => apiPatch(`/entregas/${pedidoId}/entregue`);
+
 // ── Mensagens (painel do lojista) ──
 const fetchMensagensLoja = (lojaId, tipo) =>
     apiGet(`/lojas/${lojaId}/mensagens${tipo ? `?tipo=${tipo}` : ''}`);

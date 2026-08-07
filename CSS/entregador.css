@@ -1,0 +1,348 @@
+/* =========================================================
+   MEGA DISTRITO — PAINEL DO ENTREGADOR (HTML/entregador.html)
+   Estilo "app de motorista" (Uber/99): topo com status/online,
+   mapa em destaque, faixa de navegação turn-by-turn sobre o mapa
+   e lista de entregas disponíveis / entrega ativa abaixo.
+   ========================================================= */
+
+.ent-body { background: var(--gray-100); }
+
+/* Várias regras abaixo dão display:flex aos mesmos elementos que são
+   escondidos via atributo `hidden` — sem isso, o display:flex do CSS
+   de autor vence o `[hidden]{display:none}` do navegador (a origem da
+   regra importa mais que a especificidade na cascata). */
+[hidden] { display: none !important; }
+
+.ent-header-title {
+    display: none;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-base);
+    font-weight: 800;
+    color: var(--white);
+    margin: 0 auto;
+}
+.ent-header-title i { color: #a5d6a7; }
+
+.ent-header-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: rgba(255,255,255,.85);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition);
+}
+.ent-header-back:hover { background: rgba(255,255,255,.14); }
+
+@media (min-width: 640px) {
+    .ent-header-title { display: flex; }
+}
+
+.ent-shell {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 88px var(--space-4) var(--space-7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* ── Cartões centrados (login / onboarding) ── */
+.ent-card--centro {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-7) var(--space-5);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+}
+.ent-card--centro > i {
+    font-size: 2.6rem;
+    color: var(--green-dark);
+    margin-bottom: var(--space-2);
+}
+.ent-card--centro h2 { font-size: var(--text-lg); color: var(--color-heading); }
+.ent-card--centro p { color: var(--color-text-muted); margin-bottom: var(--space-3); max-width: 380px; }
+
+.ent-onboarding-form {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    text-align: left;
+}
+.ent-onboarding-form label { font-size: var(--text-sm); font-weight: 700; color: var(--gray-700); }
+.ent-onboarding-form select,
+.ent-onboarding-form input {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-base);
+    font-family: inherit;
+    background: var(--white);
+    color: var(--gray-900);
+}
+.ent-onboarding-form select:focus,
+.ent-onboarding-form input:focus { outline: none; border-color: var(--green-dark); }
+
+/* ── Painel principal ── */
+.ent-painel { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.ent-topbar {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+.ent-topbar-info { display: flex; align-items: center; gap: var(--space-3); }
+.ent-veiculo-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-lg);
+    flex-shrink: 0;
+}
+.ent-topbar-info strong { display: block; font-size: var(--text-base); color: var(--gray-900); }
+.ent-topbar-info small { display: block; font-size: var(--text-xs); color: var(--gray-500); font-weight: 600; }
+.ent-topbar-info small.ent-status-online { color: var(--green-dark); }
+
+/* Switch "ficar online" */
+.ent-toggle-online {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    user-select: none;
+}
+.ent-toggle-online input { position: absolute; opacity: 0; width: 0; height: 0; }
+.ent-toggle-track {
+    width: 46px;
+    height: 26px;
+    border-radius: 20px;
+    background: var(--gray-300);
+    position: relative;
+    transition: background var(--transition);
+    flex-shrink: 0;
+}
+.ent-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    transition: transform var(--transition);
+}
+.ent-toggle-online input:checked + .ent-toggle-track { background: var(--green-dark); }
+.ent-toggle-online input:checked + .ent-toggle-track .ent-toggle-thumb { transform: translateX(20px); }
+.ent-toggle-label { font-size: var(--text-sm); font-weight: 700; color: var(--gray-700); white-space: nowrap; }
+
+/* ── Mapa ── */
+.ent-map-wrap {
+    position: relative;
+    height: 360px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+.ent-map { width: 100%; height: 100%; z-index: 1; background: var(--gray-200); }
+
+.ent-marker-entregador {
+    width: 18px; height: 18px;
+    background: var(--blue);
+    border: 3px solid var(--white);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(2,136,209,.25);
+}
+.ent-marker-pedido {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bazar-orange, #f57c00);
+    color: var(--white);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: var(--shadow-sm);
+}
+.ent-marker-pedido i { transform: rotate(45deg); font-size: .75rem; }
+.ent-marker-destino {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--green-dark);
+    color: var(--white);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: var(--shadow-sm);
+}
+.ent-marker-destino i { transform: rotate(45deg); font-size: .75rem; }
+
+/* Faixa turn-by-turn, sobre o mapa (estilo Waze/Uber) */
+.ent-nav-banner {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    right: var(--space-3);
+    z-index: 2;
+    background: var(--green-xdark);
+    color: var(--white);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.ent-nav-icon {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.16);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+}
+.ent-nav-texto strong { display: block; font-size: var(--text-base); line-height: 1.25; }
+.ent-nav-texto small { display: block; font-size: var(--text-xs); opacity: .85; margin-top: 2px; }
+
+.ent-offline-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: rgba(33,33,33,.72);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    text-align: center;
+    padding: var(--space-5);
+}
+.ent-offline-overlay i { font-size: 2rem; opacity: .85; }
+.ent-offline-overlay p { max-width: 260px; font-size: var(--text-sm); opacity: .9; }
+.ent-offline-overlay.hidden { display: none; }
+
+/* ── Lista de entregas disponíveis ── */
+.ent-disponiveis-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+.ent-disponiveis-head h3 {
+    font-size: var(--text-base);
+    font-weight: 800;
+    display: flex; align-items: center; gap: var(--space-2);
+    color: var(--gray-900);
+}
+.ent-disponiveis-head h3 i { color: var(--bazar-orange, #f57c00); }
+.ent-disponiveis-count {
+    background: var(--green-pale);
+    color: var(--green-dark);
+    font-weight: 800;
+    font-size: var(--text-xs);
+    padding: 2px 10px;
+    border-radius: 50px;
+}
+.ent-disponiveis-lista { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.ent-entrega-card {
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.ent-entrega-card-info { flex: 1; min-width: 0; }
+.ent-entrega-card-loja { font-weight: 700; color: var(--gray-900); font-size: var(--text-sm); }
+.ent-entrega-card-meta {
+    display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3);
+    font-size: var(--text-xs); color: var(--gray-500); margin-top: 3px;
+}
+.ent-entrega-card-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.ent-entrega-card-valor { font-weight: 800; color: var(--green-xdark); font-size: var(--text-base); }
+.ent-entrega-card button {
+    flex-shrink: 0;
+    background: var(--green-dark);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-4);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background var(--transition);
+}
+.ent-entrega-card button:hover { background: var(--green-xdark); }
+.ent-entrega-card button:disabled { opacity: .6; cursor: default; }
+
+.ent-disponiveis-vazio {
+    text-align: center;
+    padding: var(--space-6) var(--space-4);
+    color: var(--gray-500);
+}
+.ent-disponiveis-vazio i { font-size: 2rem; display: block; margin-bottom: var(--space-2); color: var(--gray-300); }
+
+/* ── Entrega ativa ── */
+.ent-ativa {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.ent-ativa-etapa {
+    align-self: flex-start;
+    background: var(--blue-pale);
+    color: var(--blue-dark);
+    font-size: var(--text-xs);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 4px 12px;
+    border-radius: 50px;
+}
+.ent-ativa-etapa.ent-etapa-entregando { background: var(--green-pale); color: var(--green-dark); }
+.ent-ativa-destino { display: flex; align-items: center; gap: var(--space-3); }
+.ent-ativa-destino i { font-size: 1.4rem; color: var(--green-dark); width: 32px; text-align: center; flex-shrink: 0; }
+.ent-ativa-destino strong { display: block; font-size: var(--text-md); color: var(--gray-900); }
+.ent-ativa-destino small { display: block; font-size: var(--text-sm); color: var(--gray-500); }
+.ent-ativa-info {
+    display: flex; gap: var(--space-4); flex-wrap: wrap;
+    font-size: var(--text-sm); color: var(--gray-700);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--gray-200);
+}
+.ent-ativa-info span { display: inline-flex; align-items: center; gap: 6px; }
+.ent-ativa-info i { color: var(--green-dark); }
+.ent-ativa-acoes { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.ent-ativa-acoes .btn { flex: 1; justify-content: center; min-width: 160px; }
+
+@media (max-width: 480px) {
+    .ent-shell { padding: 80px var(--space-3) var(--space-6); }
+    .ent-map-wrap { height: 300px; }
+    .ent-ativa-acoes .btn { flex-basis: 100%; }
+}

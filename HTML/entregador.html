@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Painel do Entregador - Mega Distrito</title>
+	<link rel="stylesheet" href="../CSS/style.css">
+	<link rel="stylesheet" href="../CSS/apps.css">
+	<link rel="stylesheet" href="../CSS/entregador.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+</head>
+<body class="apps-layout ent-body">
+
+	<header id="header">
+		<div class="header-container">
+			<a href="../index.html#inicio" class="logo">
+				<span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+				<span class="logo-text">Mega <strong>Distrito</strong></span>
+			</a>
+			<h1 class="ent-header-title"><i class="fas fa-motorcycle"></i> Painel do Entregador</h1>
+			<a href="apps.html" class="ent-header-back" aria-label="Voltar para a gaveta de apps">
+				<i class="fas fa-arrow-left"></i> Apps
+			</a>
+		</div>
+	</header>
+
+	<main class="ent-shell">
+
+		<!-- Precisa estar logado -->
+		<section id="ent-login-necessario" class="ent-card ent-card--centro" hidden>
+			<i class="fas fa-circle-user"></i>
+			<h2>Entre na sua conta</h2>
+			<p>Você precisa estar logado para acessar o painel do entregador.</p>
+			<a class="btn btn-primary" href="conta.html">Entrar / Cadastrar</a>
+		</section>
+
+		<!-- Onboarding: ainda não é entregador cadastrado -->
+		<section id="ent-onboarding" class="ent-card ent-card--centro" hidden>
+			<i class="fas fa-motorcycle"></i>
+			<h2>Torne-se entregador</h2>
+			<p>Cadastre seu veículo para começar a ver entregas disponíveis perto de você.</p>
+			<form id="ent-onboarding-form" class="ent-onboarding-form">
+				<label for="ent-veiculo">Veículo</label>
+				<select id="ent-veiculo" name="veiculo">
+					<option value="moto">Moto</option>
+					<option value="bike">Bicicleta</option>
+					<option value="carro">Carro</option>
+					<option value="a_pe">A pé</option>
+				</select>
+
+				<label for="ent-placa">Placa (opcional)</label>
+				<input id="ent-placa" name="placa" type="text" placeholder="ABC1D23" maxlength="10" autocomplete="off">
+
+				<button class="btn btn-primary btn-block" type="submit">
+					<i class="fas fa-check"></i> Cadastrar como entregador
+				</button>
+			</form>
+		</section>
+
+		<!-- Painel principal (entregador já cadastrado) -->
+		<section id="ent-painel" class="ent-painel" hidden>
+
+			<div class="ent-topbar">
+				<div class="ent-topbar-info">
+					<span class="ent-veiculo-badge" id="ent-veiculo-badge"><i class="fas fa-motorcycle"></i></span>
+					<div>
+						<strong id="ent-nome-entregador">Entregador</strong>
+						<small id="ent-status-texto">Offline</small>
+					</div>
+				</div>
+				<label class="ent-toggle-online">
+					<input type="checkbox" id="ent-toggle-online">
+					<span class="ent-toggle-track"><span class="ent-toggle-thumb"></span></span>
+					<span class="ent-toggle-label" id="ent-toggle-label">Ficar online</span>
+				</label>
+			</div>
+
+			<div class="ent-map-wrap">
+				<div id="ent-map" class="ent-map"></div>
+
+				<!-- Faixa de navegação turn-by-turn (Waze/Uber) -->
+				<div id="ent-nav-banner" class="ent-nav-banner" hidden>
+					<span class="ent-nav-icon" id="ent-nav-icon"><i class="fas fa-arrow-up"></i></span>
+					<div class="ent-nav-texto">
+						<strong id="ent-nav-instrucao">Siga em frente</strong>
+						<small id="ent-nav-distancia">—</small>
+					</div>
+				</div>
+
+				<div id="ent-offline-overlay" class="ent-offline-overlay">
+					<i class="fas fa-power-off"></i>
+					<p>Você está offline. Fique online para ver entregas disponíveis.</p>
+				</div>
+			</div>
+
+			<!-- Lista de entregas disponíveis (só quando online e sem entrega ativa) -->
+			<div id="ent-disponiveis" class="ent-disponiveis" hidden>
+				<div class="ent-disponiveis-head">
+					<h3><i class="fas fa-box-open"></i> Entregas disponíveis</h3>
+					<span id="ent-disponiveis-count" class="ent-disponiveis-count">0</span>
+				</div>
+				<div id="ent-disponiveis-lista" class="ent-disponiveis-lista"></div>
+				<div id="ent-disponiveis-vazio" class="ent-disponiveis-vazio" hidden>
+					<i class="fas fa-mug-hot"></i>
+					<p>Nenhuma entrega disponível por perto agora. Continuamos procurando…</p>
+				</div>
+			</div>
+
+			<!-- Entrega ativa -->
+			<div id="ent-ativa" class="ent-ativa" hidden>
+				<div class="ent-ativa-etapa" id="ent-ativa-etapa">Indo até a loja</div>
+				<div class="ent-ativa-destino">
+					<i class="fas fa-store" id="ent-ativa-icone"></i>
+					<div>
+						<strong id="ent-ativa-nome-local">Loja</strong>
+						<small id="ent-ativa-endereco">Endereço</small>
+					</div>
+				</div>
+				<div class="ent-ativa-info">
+					<span><i class="fas fa-box"></i> <span id="ent-ativa-item">Item</span></span>
+					<span><i class="fas fa-sack-dollar"></i> <span id="ent-ativa-valor">R$ 0,00</span></span>
+				</div>
+				<div class="ent-ativa-acoes">
+					<a id="ent-ativa-maps" class="btn btn-outline" href="#" target="_blank" rel="noopener">
+						<i class="fas fa-diamond-turn-right"></i> Abrir no Google Maps
+					</a>
+					<button id="ent-ativa-confirmar" class="btn btn-primary" type="button">
+						<i class="fas fa-check"></i> Retirei o pedido
+					</button>
+				</div>
+			</div>
+
+		</section>
+	</main>
+
+	<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+	<script src="../JS/utils.js"></script>
+	<script src="../JS/api.js"></script>
+	<script src="../JS/entregador.js"></script>
+</body>
+</html>

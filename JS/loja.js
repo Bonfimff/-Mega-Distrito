@@ -68,14 +68,15 @@ function renderHeroLoja(loja) {
 
     const enderecoEl = document.getElementById('loja-endereco');
     if (loja.endereco) {
-        enderecoEl.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${loja.endereco}`;
+        // loja.endereco vem da API (cadastro do lojista) — escapado por ir via innerHTML
+        enderecoEl.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${escapeHtml(loja.endereco)}`;
     } else {
         enderecoEl.style.display = 'none';
     }
 
     const horarioTxt = formatHorario(loja);
     const horarioEl = document.getElementById('loja-horario');
-    if (horarioTxt) horarioEl.innerHTML = `<i class="fas fa-clock"></i> ${horarioTxt}`;
+    if (horarioTxt) horarioEl.innerHTML = `<i class="fas fa-clock"></i> ${escapeHtml(horarioTxt)}`;
     else horarioEl.style.display = 'none';
 
     const whatsBtn = document.getElementById('loja-whatsapp');
@@ -93,9 +94,13 @@ function renderFiltrosLoja(loja) {
     }
 
     const chips = [{ nome: 'Todos', valor: 'todos' }, ...loja.filtros.map(f => ({ nome: f.nome, valor: f.valor }))];
+    // Nota: data-filtro NÃO é escapado — o valor é lido de volta (dataset.filtro)
+    // e comparado por igualdade estrita com f.valor em itemPassaNoFiltro/click;
+    // escapar quebraria esse match se o valor tivesse & < > " '. Só o texto
+    // visível do chip (f.nome) precisa de escaping aqui.
     wrap.innerHTML = chips.map(f => `
         <button type="button" class="loja-filtro-chip ${f.valor === lojaFiltroAtivo ? 'active' : ''}" data-filtro="${f.valor}">
-            ${f.nome}
+            ${escapeHtml(f.nome)}
         </button>
     `).join('');
 
@@ -141,8 +146,8 @@ function buildItemCardHTML(item) {
                 <span class="loja-item-tipo-badge">${item.tipo === 'servico' ? 'Serviço' : 'Produto'}</span>
             </div>
             <div class="loja-item-body">
-                <h3 class="loja-item-nome">${item.nome}</h3>
-                ${item.descricao ? `<p class="loja-item-desc">${item.descricao}</p>` : ''}
+                <h3 class="loja-item-nome">${escapeHtml(item.nome)}</h3>
+                ${item.descricao ? `<p class="loja-item-desc">${escapeHtml(item.descricao)}</p>` : ''}
                 <p class="loja-item-preco">${preco > 0 ? brl(preco) : 'Gratuito'}</p>
                 <p class="loja-item-modalidades">${modalidades}</p>
                 ${acao}
@@ -151,9 +156,31 @@ function buildItemCardHTML(item) {
     `;
 }
 
+/** Renderiza (ou refiltra) a grade de itens da loja.
+ *  OBS. (performance): o filtro da loja é só por categoria/subcategoria
+ *  fixas (chips vindos de loja.filtros, comparação por substring — sem
+ *  busca por texto livre digitado pelo usuário), então, se os cards já
+ *  estiverem no DOM, reaproveitamos-os e só alternamos display via a
+ *  MESMA função itemPassaNoFiltro usada na primeira renderização (não há
+ *  lógica de match duplicada). Só reconstrói o HTML do zero na primeira
+ *  chamada (grid ainda vazio). */
 function renderItensLoja(loja) {
     const grid = document.getElementById('loja-itens-grid');
     const empty = document.getElementById('loja-itens-empty');
+
+    const cardsExistentes = grid.querySelectorAll('.loja-item-card');
+
+    if (cardsExistentes.length) {
+        let visiveis = 0;
+        cardsExistentes.forEach(card => {
+            const item = (loja.itens || []).find(i => String(i.id) === card.dataset.id);
+            const bate = item ? itemPassaNoFiltro(item, loja) : false;
+            card.style.display = bate ? '' : 'none';
+            if (bate) visiveis++;
+        });
+        empty.style.display = visiveis === 0 ? 'block' : 'none';
+        return;
+    }
 
     const visiveis = (loja.itens || []).filter(item => itemPassaNoFiltro(item, loja));
 

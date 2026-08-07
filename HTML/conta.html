@@ -37,29 +37,64 @@
 				</a>
 			</nav>
 		</div>
-
-		<div class="header-nav-row" id="conta-tabs-row" hidden>
-			<div class="header-nav-inner">
-				<div class="conta-tabs" role="tablist" aria-label="Seções da conta">
-					<button class="conta-tab active" role="tab" type="button" aria-selected="true" aria-controls="painel-encomendas">
-						<i class="fas fa-box"></i> Encomendas
-					</button>
-					<button class="conta-tab" role="tab" type="button" aria-selected="false" aria-controls="painel-dados">
-						<i class="fas fa-user-gear"></i> Meus Dados
-					</button>
-					<button class="conta-tab" role="tab" type="button" aria-selected="false" aria-controls="painel-enderecos">
-						<i class="fas fa-location-dot"></i> Endereços
-					</button>
-				</div>
-			</div>
-		</div>
 	</header>
 
 	<main class="section conta-page" style="padding-top: 96px;">
 		<div class="container">
 
+			<!-- Cabeçalho da conta (só aparece com sessão ativa) -->
+			<section id="conta-header-card" class="conta-header-card" hidden aria-label="Resumo da conta">
+				<h2 id="conta-header-titulo">Conta</h2>
+				<div class="conta-header-perfil">
+					<div class="conta-header-avatar" id="conta-header-avatar" aria-hidden="true"></div>
+					<div class="conta-header-info">
+						<strong id="conta-header-nome">—</strong>
+						<span id="conta-header-email">—</span>
+					</div>
+					<span class="conta-header-verificado">
+						<i class="fas fa-circle-check"></i> E-mail verificado
+					</span>
+					<button class="btn btn-outline conta-header-sair" id="conta-sair" type="button">
+						<i class="fas fa-right-from-bracket"></i> Sair da conta
+					</button>
+				</div>
+			</section>
+
+			<!-- Abas da conta -->
+			<div class="conta-tabs" id="conta-tabs-row" role="tablist" aria-label="Seções da conta" hidden>
+				<button class="conta-tab active" role="tab" type="button" aria-selected="true" aria-controls="painel-encomendas">
+					<i class="fas fa-box"></i> Encomendas
+				</button>
+				<button class="conta-tab" role="tab" type="button" aria-selected="false" aria-controls="painel-dados">
+					<i class="fas fa-user-gear"></i> Meus Dados
+					<span class="conta-tab-progresso" id="conta-progresso-dados" title="Cadastro completo">0%</span>
+				</button>
+				<button class="conta-tab" role="tab" type="button" aria-selected="false" aria-controls="painel-enderecos">
+					<i class="fas fa-location-dot"></i> Endereços
+				</button>
+				<button class="conta-tab" role="tab" type="button" aria-selected="false" aria-controls="painel-anuncios">
+					<i class="fas fa-tags"></i> Meus Anúncios
+				</button>
+			</div>
+
+			<!-- Resumo rápido -->
+			<div class="conta-stats" id="conta-stats" hidden>
+				<span class="conta-stat"><i class="fas fa-cart-shopping"></i> Pedidos ativos: <strong id="conta-stat-ativos">0</strong></span>
+				<span class="conta-stat"><i class="fas fa-box"></i> Último pedido: <strong id="conta-stat-ultimo">—</strong></span>
+				<span class="conta-stat"><i class="fas fa-location-dot"></i> Endereços salvos: <strong id="conta-stat-enderecos">0</strong></span>
+				<a class="conta-stat conta-stat-link" href="../index.html#contato"><i class="fas fa-circle-question"></i> Suporte / Central de ajuda</a>
+			</div>
+
 			<!-- Painel: Login / Cadastro (exibido quando não há sessão) -->
-			<div id="painel-auth" class="conta-panel">
+			<div id="painel-auth" class="conta-panel conta-auth-layout">
+				<div class="conta-auth-benefits">
+					<h3>Sua conta no Mega Distrito</h3>
+					<ul>
+						<li><i class="fas fa-box"></i> Acompanhe suas encomendas em tempo real</li>
+						<li><i class="fas fa-location-dot"></i> Salve endereços para comprar mais rápido</li>
+						<li><i class="fas fa-store"></i> Favoritos e histórico das lojas da cidade</li>
+					</ul>
+				</div>
 				<section class="conta-card conta-auth-card" aria-label="Entrar ou cadastrar">
 					<div class="conta-card-head">
 						<h4><i class="fas fa-user-lock"></i> <span id="auth-titulo">Entrar</span></h4>
@@ -127,9 +162,31 @@
 					<button class="pedido-filtro-chip" type="button" data-status="preparando">Preparando</button>
 					<button class="pedido-filtro-chip" type="button" data-status="caminho">A caminho</button>
 					<button class="pedido-filtro-chip" type="button" data-status="avaliar">A avaliar</button>
+					<button class="pedido-filtro-chip" type="button" data-status="concluido">Concluídos</button>
 				</div>
 
 				<div class="pedidos-list" id="pedidos-list" aria-live="polite"></div>
+
+				<!-- Resumo: dados + endereço padrão, com atalho pras outras abas -->
+				<div class="conta-resumo-grid">
+					<section class="conta-card conta-resumo-card" aria-label="Dados principais">
+						<div class="conta-resumo-card-head">
+							<h5><i class="fas fa-user-gear"></i> Dados Principais</h5>
+							<button class="btn btn-outline conta-resumo-gerenciar" type="button" data-ir-para="painel-dados">Gerenciar</button>
+						</div>
+						<p id="conta-resumo-nome">Nome: —</p>
+						<p id="conta-resumo-email">E-mail: —</p>
+						<p id="conta-resumo-telefone">Telefone: —</p>
+					</section>
+
+					<section class="conta-card conta-resumo-card" aria-label="Endereço padrão">
+						<div class="conta-resumo-card-head">
+							<h5><i class="fas fa-location-dot"></i> Endereço Padrão</h5>
+							<button class="btn btn-outline conta-resumo-gerenciar" type="button" data-ir-para="painel-enderecos">Gerenciar</button>
+						</div>
+						<p id="conta-resumo-endereco">Nenhum endereço cadastrado ainda.</p>
+					</section>
+				</div>
 			</div>
 
 			<!-- Painel: Meus Dados -->
@@ -151,7 +208,7 @@
 						</label>
 						<label class="conta-field">
 							<span>Telefone</span>
-							<input type="tel" id="conta-telefone" value="(21) 99876-5432">
+							<input type="tel" id="conta-telefone" placeholder="(21) 90000-0000">
 						</label>
 						<label class="conta-field">
 							<span>Nova senha</span>
@@ -160,9 +217,6 @@
 
 						<button class="btn btn-primary" id="conta-salvar-dados" type="button">
 							<i class="fas fa-save"></i> Salvar alterações
-						</button>
-						<button class="btn btn-outline" id="conta-sair" type="button">
-							<i class="fas fa-right-from-bracket"></i> Sair da conta
 						</button>
 					</form>
 				</section>
@@ -212,6 +266,140 @@
 							<button class="btn btn-outline" id="endereco-cancelar" type="button">Cancelar</button>
 							<button class="btn btn-primary" id="endereco-salvar" type="button">
 								<i class="fas fa-save"></i> Salvar endereço
+							</button>
+						</div>
+					</form>
+				</section>
+			</div>
+
+			<!-- Painel: Meus Anúncios (bazar + serviços/agenda) -->
+			<div id="painel-anuncios" class="conta-panel conta-panel--hidden">
+				<p class="anuncios-aviso">
+					<i class="fas fa-circle-info"></i>
+					Seus anúncios ficam salvos neste navegador. Ainda não estão conectados ao servidor — é uma prévia de como a gestão vai funcionar.
+				</p>
+
+				<section class="conta-card" aria-label="Meus produtos no Bazar">
+					<div class="conta-card-head">
+						<h4><i class="fas fa-tags"></i> Meus Produtos no Bazar</h4>
+						<p>Anuncie itens usados para vender aqui em Magé.</p>
+					</div>
+
+					<div class="anuncios-list" id="anuncios-bazar-list" aria-live="polite"></div>
+
+					<button class="btn btn-outline" id="anuncio-bazar-abrir-form" type="button">
+						<i class="fas fa-plus"></i> Anunciar produto no Bazar
+					</button>
+
+					<form id="anuncio-bazar-form" class="conta-form" onsubmit="return false;" hidden>
+						<label class="conta-field">
+							<span>Nome do produto</span>
+							<input type="text" id="anuncio-bazar-nome" placeholder="Ex: Bicicleta aro 26">
+						</label>
+						<label class="conta-field">
+							<span>Descrição</span>
+							<input type="text" id="anuncio-bazar-desc" placeholder="Conte o estado e detalhes do item">
+						</label>
+						<label class="conta-field">
+							<span>Categoria</span>
+							<select id="anuncio-bazar-categoria">
+								<option value="eletronicos">Eletrônicos</option>
+								<option value="casa">Casa e Cozinha</option>
+								<option value="ferramentas">Ferramentas</option>
+								<option value="moda">Moda</option>
+								<option value="outros">Outros</option>
+							</select>
+						</label>
+						<label class="conta-field">
+							<span>Condição</span>
+							<select id="anuncio-bazar-condicao">
+								<option value="otimo">Ótimo estado</option>
+								<option value="bom" selected>Bom estado</option>
+								<option value="regular">Estado regular</option>
+							</select>
+						</label>
+						<label class="conta-field">
+							<span>Preço (R$)</span>
+							<input type="number" id="anuncio-bazar-preco" placeholder="Ex: 89.90" min="0" step="0.01">
+						</label>
+						<label class="conta-field">
+							<span>Preço de novo (R$) — opcional, mostra o quanto o comprador economiza</span>
+							<input type="number" id="anuncio-bazar-preco-orig" placeholder="Ex: 150.00" min="0" step="0.01">
+						</label>
+
+						<div class="endereco-form-actions">
+							<button class="btn btn-outline" id="anuncio-bazar-cancelar" type="button">Cancelar</button>
+							<button class="btn btn-primary" id="anuncio-bazar-salvar" type="button">
+								<i class="fas fa-save"></i> Publicar no Bazar
+							</button>
+						</div>
+					</form>
+				</section>
+
+				<section class="conta-card" aria-label="Meus serviços e agenda">
+					<div class="conta-card-head">
+						<h4><i class="fas fa-briefcase"></i> Meus Serviços</h4>
+						<p>Ofereça um serviço e defina os dias em que você está disponível.</p>
+					</div>
+
+					<div class="anuncios-list" id="anuncios-servicos-list" aria-live="polite"></div>
+
+					<button class="btn btn-outline" id="anuncio-servico-abrir-form" type="button">
+						<i class="fas fa-plus"></i> Oferecer um serviço
+					</button>
+
+					<form id="anuncio-servico-form" class="conta-form" onsubmit="return false;" hidden>
+						<label class="conta-field">
+							<span>O que você oferece</span>
+							<input type="text" id="anuncio-servico-ocupacao" placeholder="Ex: Eletricista, Aulas de reforço, Manicure...">
+						</label>
+						<label class="conta-field">
+							<span>Descrição</span>
+							<input type="text" id="anuncio-servico-desc" placeholder="Conte sua experiência e o que está incluso">
+						</label>
+						<label class="conta-field">
+							<span>Bairro de atendimento</span>
+							<input type="text" id="anuncio-servico-bairro" placeholder="Ex: Centro">
+						</label>
+						<label class="conta-field">
+							<span>Preço</span>
+							<input type="number" id="anuncio-servico-preco" placeholder="Ex: 80.00" min="0" step="0.01">
+						</label>
+						<label class="conta-field">
+							<span>Unidade</span>
+							<select id="anuncio-servico-unidade">
+								<option value="visita">por visita</option>
+								<option value="hora">por hora</option>
+								<option value="diaria">por diária</option>
+								<option value="servico">por serviço</option>
+							</select>
+						</label>
+
+						<div class="conta-field">
+							<span>Dias disponíveis</span>
+							<div class="agenda-dias-grid" id="anuncio-servico-agenda-dias">
+								<label class="agenda-dia-toggle"><input type="checkbox" value="Seg"> Seg</label>
+								<label class="agenda-dia-toggle"><input type="checkbox" value="Ter"> Ter</label>
+								<label class="agenda-dia-toggle"><input type="checkbox" value="Qua"> Qua</label>
+								<label class="agenda-dia-toggle"><input type="checkbox" value="Qui"> Qui</label>
+								<label class="agenda-dia-toggle"><input type="checkbox" value="Sex"> Sex</label>
+								<label class="agenda-dia-toggle"><input type="checkbox" value="Sáb"> Sáb</label>
+								<label class="agenda-dia-toggle"><input type="checkbox" value="Dom"> Dom</label>
+							</div>
+						</div>
+						<label class="conta-field">
+							<span>Horário de atendimento</span>
+							<div class="agenda-horario-row">
+								<input type="time" id="anuncio-servico-horario-inicio" value="08:00">
+								<span>até</span>
+								<input type="time" id="anuncio-servico-horario-fim" value="18:00">
+							</div>
+						</label>
+
+						<div class="endereco-form-actions">
+							<button class="btn btn-outline" id="anuncio-servico-cancelar" type="button">Cancelar</button>
+							<button class="btn btn-primary" id="anuncio-servico-salvar" type="button">
+								<i class="fas fa-save"></i> Publicar serviço
 							</button>
 						</div>
 					</form>

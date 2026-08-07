@@ -61,6 +61,25 @@ function mapItemBazar(item) {
     };
 }
 
+/** Junta no PRODUTOS_USADOS os anúncios que o próprio usuário logado
+ *  publicou pela conta (Conta > Meus Anúncios — ver conta.js). Isso ainda
+ *  vive só no localStorage (não existe endpoint de backend pra usuário
+ *  comum publicar no Bazar sem ser dono de uma loja), então só aparece
+ *  pra quem anunciou, no navegador em que anunciou. */
+function mesclarAnunciosLocaisNoBazar() {
+    if (typeof contaObterSessao !== 'function') return;
+    const usuario = contaObterSessao();
+    if (!usuario) return;
+    let locais = [];
+    try { locais = JSON.parse(localStorage.getItem(`mage-bazar-usuario-${usuario.id}`)) || []; }
+    catch { locais = []; }
+    if (!locais.length) return;
+    const idsExistentes = new Set(PRODUTOS_USADOS.map(p => p.id));
+    locais.forEach(item => {
+        if (!idsExistentes.has(item.id)) PRODUTOS_USADOS.unshift(item);
+    });
+}
+
 let _vitrinePromise = null;
 
 function carregarVitrine() {
@@ -79,10 +98,26 @@ function carregarVitrine() {
 
 // INICIALIZAÇÃO
 // =====================
+function renderSkeletonGrid(gridId, count) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    grid.innerHTML = Array.from({ length: count }, () => (
+        '<div class="skeleton-card">' +
+            '<div class="skeleton-block skeleton-img"></div>' +
+            '<div class="skeleton-block skeleton-line" style="width:90%"></div>' +
+            '<div class="skeleton-block skeleton-line" style="width:60%"></div>' +
+            '<div class="skeleton-block skeleton-line" style="width:40%;height:20px"></div>' +
+        '</div>'
+    )).join('');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    renderSkeletonGrid('products-grid', 6);
+    renderSkeletonGrid('bazar-grid', 6);
     const carregamentos = [carregarVitrine()];
     if (typeof carregarApps === 'function') carregamentos.push(carregarApps());
     await Promise.all(carregamentos);
+    mesclarAnunciosLocaisNoBazar();
 
     if (document.getElementById('categories-grid')) renderCategorias();
     if (document.getElementById('products-grid'))   renderProdutos(PRODUTOS);
@@ -258,15 +293,15 @@ function realizarBusca() {
 /* ─────────────────────────────────────────────
    CARRINHO — AÇÕES
    ───────────────────────────────────────────── */
-function adicionarAoCarrinho(id) {
+function adicionarAoCarrinho(id, quantidade = 1) {
     const produto = PRODUTOS.find(p => p.id === id);
     if (!produto) return;
 
     const item = carrinho.find(i => i.id === id);
     if (item) {
-        item.quantidade++;
+        item.quantidade += quantidade;
     } else {
-        carrinho.push({ ...produto, quantidade: 1 });
+        carrinho.push({ ...produto, quantidade });
     }
 
     salvarCarrinho();
@@ -579,7 +614,7 @@ function buildBazarCardHTML(item) {
                 </div>
                 <div class="bazar-actions">
                     <button class="btn-bazar-interest" onclick="demonstrarInteresse(${item.id})">
-                        <i class="fab fa-whatsapp"></i> Tenho Interesse
+                        <i class="fas fa-comment-dots"></i> Tenho Interesse
                     </button>
                     <button class="btn-bazar-cart" title="Adicionar ao carrinho" onclick="adicionarBazarAoCarrinho(${item.id})">
                         <i class="fas fa-cart-plus"></i>
@@ -625,15 +660,11 @@ function bindFiltrosBazar() {
     });
 }
 
-/** Abre WhatsApp com mensagem de interesse (simulado) */
+/** Envia mensagem de interesse pelo chat da própria plataforma (simulado) */
 function demonstrarInteresse(id) {
     const item = PRODUTOS_USADOS.find(p => p.id === id);
     if (!item) return;
-    const msg = encodeURIComponent(
-        `Olá! Vi o anúncio "${item.nome}" por ${brl(item.preco)} no Mega Distrito. Ainda está disponível?`
-    );
-    // Abre WhatsApp do vendedor (número ficticio)
-    window.open(`https://wa.me/5521999990000?text=${msg}`, '_blank', 'noopener,noreferrer');
+    toast(`Mensagem enviada para ${item.vendedor} pelo chat! Você será avisado quando ele(a) responder.`);
 }
 
 /** Adiciona item do bazar ao carrinho */

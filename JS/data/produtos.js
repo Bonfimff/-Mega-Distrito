@@ -7,5 +7,7 @@
    da página — nunca mais hard-coded aqui.
    ========================================================= */
 
-let PRODUTOS = [];
+let PRODUTOS = [
+    { id: 1, nome: 'Notebook Ultrafino i5', categoria: 'eletronicos', preco: 2799.90, precoAntigo: 3499.90, avaliacao: 4.6, avaliacoes: 89, emoji: '💻' },
+];
 let PRODUTOS_USADOS = [];

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 	<meta charset="UTF-8">
@@ -18,36 +18,40 @@
 				<span class="logo-text">Mega <strong>Distrito</strong></span>
 			</a>
 
-			<!-- Navegação de seções (desktop) -->
-			<nav class="header-app-nav" aria-label="Seções" style="margin-left:auto;">
-				<a class="header-app-link" href="../index.html#inicio" aria-label="Início">
-					<span class="header-app-icon"><i class="fas fa-house"></i></span>
-					<span>Início</span>
-				</a>
-				<a class="header-app-link" href="apps.html" aria-label="Apps">
-					<span class="header-app-icon"><i class="fas fa-grip"></i></span>
-					<span>Apps</span>
-				</a>
-				<a class="header-app-link" href="feed.html" aria-label="Feed">
-					<span class="header-app-icon"><i class="fas fa-stream"></i></span>
-					<span>Feed</span>
-				</a>
-				<a class="header-app-link" href="conta.html" aria-label="Conta">
-					<span class="header-app-icon"><i class="fas fa-user"></i></span>
-					<span>Conta</span>
-				</a>
-			</nav>
+			<div class="gm-search-box">
+				<i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+				<input id="gm-search-input" type="search" placeholder="Buscar função na página..." autocomplete="off" aria-label="Buscar função na página">
+				<div id="gm-search-results" class="gm-search-results" hidden></div>
+			</div>
+
+			<div class="gm-header-tools" style="margin-left:auto;">
+				<button id="gm-help-btn" type="button" class="gm-help-btn" aria-label="Ajuda" aria-haspopup="true" aria-expanded="false">
+					<i class="fas fa-circle-question"></i>
+				</button>
+				<div id="gm-help-panel" class="gm-help-panel" hidden>
+					<div class="gm-help-panel-head">
+						<strong><i class="fas fa-circle-question"></i> Central de ajuda</strong>
+						<button id="gm-help-close" type="button" aria-label="Fechar ajuda"><i class="fas fa-times"></i></button>
+					</div>
+					<div class="gm-help-panel-body">
+						<p><strong>Painel</strong> — indicadores de vendas, avaliações e mensagens dos clientes.</p>
+						<p><strong>Atividade</strong> — acompanhe e avance cada pedido até a entrega.</p>
+						<p><strong>Loja</strong> — dados, aparência e horários de funcionamento.</p>
+						<p><strong>Catálogo</strong> — cadastre produtos ou serviços e filtros da vitrine.</p>
+						<p><strong>Equipe</strong> — níveis de acesso e funcionários da loja.</p>
+						<p><strong>Entregadores</strong> — cadastre entregadores próprios.</p>
+						<p>Use a busca ao lado para pular direto para qualquer função da página.</p>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div class="header-nav-row header-nav-row--gm">
 			<div class="header-nav-inner">
 				<div class="gm-tabs" role="tablist" aria-label="Seções de gerenciamento">
+					<span class="gm-tabs-group-label">Gerenciamento</span>
 					<button class="gm-tab active" role="tab" type="button" aria-selected="true" aria-controls="panel-painel">
 						<i class="fas fa-chart-line"></i> Painel
-					</button>
-					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-atividade">
-						<i class="fas fa-bell"></i> Atividade
-						<span class="gm-tab-badge js-atividade-badge" id="gm-atividade-badge" hidden>0</span>
 					</button>
 					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-loja">
 						<i class="fas fa-store"></i> Loja
@@ -55,6 +59,19 @@
 					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-catalogo">
 						<i class="fas fa-layer-group"></i> <span class="js-tab-label-catalogo">Catálogo</span>
 					</button>
+
+					<span class="gm-tabs-group-label">Operacional</span>
+					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-atividade">
+						<i class="fas fa-bell"></i> Atividade
+						<span class="gm-tab-badge js-atividade-badge" id="gm-atividade-badge" hidden>0</span>
+					</button>
+					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-equipe">
+						<i class="fas fa-users-gear"></i> Equipe
+					</button>
+					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-entregadores">
+						<i class="fas fa-motorcycle"></i> Entregadores
+					</button>
+
 					<button id="gm-tab-preview" class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-preview">
 						<i class="fas fa-mobile-screen"></i> Prévia
 					</button>
@@ -63,46 +80,70 @@
 		</div>
 	</header>
 
-	<!-- Botão de salvar: flutuante e sempre visível, independente da aba aberta -->
-	<button id="gm-save-btn" type="button" class="gm-save-fab" title="Salvar todas as alterações da loja">
-		<i class="fas fa-check"></i> <span>Salvar loja</span>
-	</button>
-
 	<main class="section gm-page" style="padding-top: 96px;">
 		<div class="container">
 
 
-			<div class="gm-sidebar">
-				<div class="gm-sidebar-identity">
-					<div class="gm-sidebar-identity-icon" id="gm-sidebar-icon" aria-hidden="true"></div>
-					<div class="gm-sidebar-identity-text">
-						<strong id="gm-sidebar-loja-nome">Loja Central</strong>
-						<a href="../HTML/loja.html?id=loja-central" target="_blank" rel="noopener noreferrer">
-							Ver página pública <i class="fas fa-arrow-up-right-from-square"></i>
-						</a>
-					</div>
-				</div>
-
-				<nav class="gm-sidebar-tabs" role="tablist" aria-label="Seções de gerenciamento">
-					<button class="gm-tab active" role="tab" type="button" aria-selected="true" aria-controls="panel-painel">
-						<i class="fas fa-chart-line"></i> Painel
-					</button>
-					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-atividade">
-						<i class="fas fa-bell"></i> Atividade
-						<span class="gm-tab-badge js-atividade-badge" hidden>0</span>
-					</button>
-					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-loja">
-						<i class="fas fa-store"></i> Loja
-					</button>
-					<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-catalogo">
-						<i class="fas fa-layer-group"></i> <span class="js-tab-label-catalogo">Catálogo</span>
-					</button>
-				</nav>
-			</div>
-
 			<div class="gm-layout gm-layout--preview-hidden">
 				<div class="gm-left-column">
-					<aside class="gm-store-rating-card" id="gm-store-rating-card" aria-label="Avaliações da loja"></aside>
+					<div class="gm-nav-card">
+						<div class="gm-nav-identity">
+							<span class="gm-sidebar-identity-icon" id="gm-sidebar-icon" aria-hidden="true"></span>
+							<div class="gm-nav-identity-text">
+								<strong id="gm-sidebar-loja-nome">Loja Central</strong>
+								<a class="gm-nav-accordion-public-link" href="../HTML/loja.html?id=loja-central" target="_blank" rel="noopener noreferrer">
+									Ver página pública <i class="fas fa-arrow-up-right-from-square"></i>
+								</a>
+							</div>
+						</div>
+
+						<details class="gm-nav-accordion" id="gm-nav-group-gerenciamento" open>
+							<summary class="gm-nav-accordion-summary">
+								<span class="gm-nav-accordion-title">Gerenciamento</span>
+								<span class="gm-nav-accordion-summary-actions">
+									<button type="button" class="gm-nav-pin-btn" data-pin-target="gm-nav-group-gerenciamento" aria-label="Fixar seção aberta" aria-pressed="false">
+										<i class="fas fa-thumbtack"></i>
+									</button>
+									<i class="fas fa-chevron-down gm-nav-accordion-chevron" aria-hidden="true"></i>
+								</span>
+							</summary>
+							<nav class="gm-sidebar-tabs" role="tablist" aria-label="Gerenciamento">
+								<button class="gm-tab active" role="tab" type="button" aria-selected="true" aria-controls="panel-painel">
+									<i class="fas fa-chart-line"></i> Painel
+								</button>
+								<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-loja">
+									<i class="fas fa-store"></i> Loja
+								</button>
+								<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-catalogo">
+									<i class="fas fa-layer-group"></i> <span class="js-tab-label-catalogo">Catálogo</span>
+								</button>
+							</nav>
+						</details>
+
+						<details class="gm-nav-accordion" id="gm-nav-group-operacional">
+							<summary class="gm-nav-accordion-summary">
+								<span class="gm-nav-accordion-title">Operacional</span>
+								<span class="gm-nav-accordion-summary-actions">
+									<button type="button" class="gm-nav-pin-btn" data-pin-target="gm-nav-group-operacional" aria-label="Fixar seção aberta" aria-pressed="false">
+										<i class="fas fa-thumbtack"></i>
+									</button>
+									<i class="fas fa-chevron-down gm-nav-accordion-chevron" aria-hidden="true"></i>
+								</span>
+							</summary>
+							<nav class="gm-sidebar-tabs" role="tablist" aria-label="Operacional">
+								<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-atividade">
+									<i class="fas fa-bell"></i> Atividade
+									<span class="gm-tab-badge js-atividade-badge" hidden>0</span>
+								</button>
+								<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-equipe">
+									<i class="fas fa-users-gear"></i> Equipe
+								</button>
+								<button class="gm-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-entregadores">
+									<i class="fas fa-motorcycle"></i> Entregadores
+								</button>
+							</nav>
+						</details>
+					</div>
 
 					<aside class="gm-messages-drawer" id="gm-messages-drawer" aria-label="Mensagens e interações">
 						<div class="gm-messages-drawer-header">
@@ -336,36 +377,10 @@
 
 					<!-- Painel: Catálogo -->
 					<div id="panel-catalogo" class="gm-tab-panel gm-tab-panel--hidden">
-						<section class="gm-builder-block" aria-label="Filtros da vitrine">
-							<div class="gm-builder-head">
-								<h4><i class="fas fa-filter"></i> Filtros da Vitrine</h4>
-								<p>Crie filtros rápidos que serão exibidos na página da loja.</p>
-							</div>
-
-							<div class="gm-row-2">
-								<div class="gm-group">
-									<label for="gm-filter-name">Nome do filtro</label>
-									<input id="gm-filter-name" type="text" placeholder="Ex.: Bebidas">
-								</div>
-								<div class="gm-group">
-									<label for="gm-filter-value">Valor do filtro</label>
-									<input id="gm-filter-value" type="text" placeholder="Ex.: bebidas">
-									<small>Referência a categoria/subcategoria que o filtro deve agrupar.</small>
-								</div>
-							</div>
-							<div class="gm-group">
-								<label for="gm-filter-manual">Produtos manuais</label>
-								<input id="gm-filter-manual" type="text" placeholder="Separe por vírgula: Suco Cola, Heineken, Super Combo">
-								<small>Adicione produtos específicos ao filtro mesmo que pertençam a outra categoria.</small>
-							</div>
-
-							<div class="gm-actions gm-actions-duo">
-								<button id="gm-add-filter" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar filtro</button>
-								<button id="gm-clear-filter-fields" type="button" class="btn btn-outline">Limpar filtros</button>
-							</div>
-
-							<div class="gm-filter-list" id="gm-filter-list" aria-live="polite"></div>
-						</section>
+						<div class="gm-catalog-list-head">
+							<h4><i class="fas fa-boxes-stacked"></i> <span id="gm-items-list-titulo">Itens cadastrados</span></h4>
+						</div>
+						<div class="gm-admin-list" id="gm-items-admin-list" aria-live="polite"></div>
 
 						<section class="gm-builder-block gm-builder-block--flat" aria-label="Cadastro de itens do catálogo">
 							<div class="gm-builder-head">
@@ -609,10 +624,36 @@
 							</form>
 						</section>
 
-						<div class="gm-catalog-list-head">
-							<h4><i class="fas fa-boxes-stacked"></i> <span id="gm-items-list-titulo">Itens cadastrados</span></h4>
-						</div>
-						<div class="gm-admin-list" id="gm-items-admin-list" aria-live="polite"></div>
+						<section class="gm-builder-block" aria-label="Filtros da vitrine">
+							<div class="gm-builder-head">
+								<h4><i class="fas fa-filter"></i> Filtros da Vitrine</h4>
+								<p>Crie filtros rápidos que serão exibidos na página da loja.</p>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-filter-name">Nome do filtro</label>
+									<input id="gm-filter-name" type="text" placeholder="Ex.: Bebidas">
+								</div>
+								<div class="gm-group">
+									<label for="gm-filter-value">Valor do filtro</label>
+									<input id="gm-filter-value" type="text" placeholder="Ex.: bebidas">
+									<small>Referência a categoria/subcategoria que o filtro deve agrupar.</small>
+								</div>
+							</div>
+							<div class="gm-group">
+								<label for="gm-filter-manual">Produtos manuais</label>
+								<input id="gm-filter-manual" type="text" placeholder="Separe por vírgula: Suco Cola, Heineken, Super Combo">
+								<small>Adicione produtos específicos ao filtro mesmo que pertençam a outra categoria.</small>
+							</div>
+
+							<div class="gm-actions gm-actions-duo">
+								<button id="gm-add-filter" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar filtro</button>
+								<button id="gm-clear-filter-fields" type="button" class="btn btn-outline">Limpar filtros</button>
+							</div>
+
+							<div class="gm-filter-list" id="gm-filter-list" aria-live="polite"></div>
+						</section>
 					</div>
 
 					<!-- Painel: Atividade (gerenciamento de trabalho — compras e contratações) -->
@@ -626,7 +667,117 @@
 						</section>
 					</div>
 
+					<!-- Painel: Equipe (funcionários e níveis de acesso) -->
+					<div id="panel-equipe" class="gm-tab-panel gm-tab-panel--hidden">
+						<section class="gm-builder-block" aria-label="Níveis de acesso">
+							<div class="gm-builder-head">
+								<h4><i class="fas fa-user-shield"></i> Níveis de Acesso</h4>
+								<p>Crie níveis e escolha o que cada um pode acessar no painel da loja.</p>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-nivel-nome">Nome do nível</label>
+									<input id="gm-nivel-nome" type="text" placeholder="Ex.: Vendedor, Gerente">
+								</div>
+							</div>
+							<div class="gm-group">
+								<label>Permissões</label>
+								<div class="gm-weekdays-grid" id="gm-nivel-permissoes">
+									<label class="gm-check-option"><input type="checkbox" name="gm-permissao" value="catalogo"> Catálogo</label>
+									<label class="gm-check-option"><input type="checkbox" name="gm-permissao" value="pedidos"> Pedidos</label>
+									<label class="gm-check-option"><input type="checkbox" name="gm-permissao" value="mensagens"> Mensagens</label>
+									<label class="gm-check-option"><input type="checkbox" name="gm-permissao" value="indicadores"> Indicadores</label>
+									<label class="gm-check-option"><input type="checkbox" name="gm-permissao" value="configuracoes"> Config. da loja</label>
+									<label class="gm-check-option"><input type="checkbox" name="gm-permissao" value="equipe"> Equipe</label>
+								</div>
+							</div>
+							<div class="gm-actions gm-actions-duo">
+								<button id="gm-add-nivel" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar nível</button>
+							</div>
+
+							<div class="gm-catalog-list-head">
+								<h4><i class="fas fa-shield-halved"></i> Níveis cadastrados</h4>
+							</div>
+							<div class="gm-niveis-list" id="gm-niveis-list" aria-live="polite"></div>
+						</section>
+
+						<section class="gm-builder-block gm-highlight-block" aria-label="Funcionários">
+							<div class="gm-builder-head">
+								<h4><i class="fas fa-people-group"></i> Funcionários</h4>
+								<p>Cadastre quem trabalha na sua loja e o nível de acesso de cada um.</p>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-funcionario-nome">Nome</label>
+									<input id="gm-funcionario-nome" type="text" placeholder="Nome do funcionário">
+								</div>
+								<div class="gm-group">
+									<label for="gm-funcionario-contato">Telefone ou e-mail</label>
+									<input id="gm-funcionario-contato" type="text" placeholder="Ex.: (21) 90000-0000">
+								</div>
+							</div>
+							<div class="gm-group">
+								<label for="gm-funcionario-nivel">Nível de acesso</label>
+								<select id="gm-funcionario-nivel"></select>
+							</div>
+							<div class="gm-actions gm-actions-duo">
+								<button id="gm-add-funcionario" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar funcionário</button>
+							</div>
+
+							<div class="gm-catalog-list-head">
+								<h4><i class="fas fa-address-card"></i> Funcionários cadastrados</h4>
+							</div>
+							<div class="gm-funcionarios-list" id="gm-funcionarios-list" aria-live="polite"></div>
+						</section>
+					</div>
+
+					<!-- Painel: Entregadores -->
+					<div id="panel-entregadores" class="gm-tab-panel gm-tab-panel--hidden">
+						<section class="gm-builder-block gm-highlight-block" aria-label="Entregadores da loja">
+							<div class="gm-builder-head">
+								<h4><i class="fas fa-motorcycle"></i> Entregadores da Loja</h4>
+								<p>Cadastre entregadores próprios para atender os pedidos da sua loja.</p>
+							</div>
+
+							<div class="gm-row-2">
+								<div class="gm-group">
+									<label for="gm-entregador-nome">Nome</label>
+									<input id="gm-entregador-nome" type="text" placeholder="Nome do entregador">
+								</div>
+								<div class="gm-group">
+									<label for="gm-entregador-telefone">Telefone</label>
+									<input id="gm-entregador-telefone" type="text" placeholder="Ex.: (21) 90000-0000">
+								</div>
+							</div>
+							<div class="gm-group">
+								<label for="gm-entregador-veiculo">Veículo</label>
+								<select id="gm-entregador-veiculo">
+									<option value="moto">Moto</option>
+									<option value="bike">Bicicleta</option>
+									<option value="carro">Carro</option>
+									<option value="a_pe">A pé</option>
+								</select>
+							</div>
+							<div class="gm-actions gm-actions-duo">
+								<button id="gm-add-entregador" type="button" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar entregador</button>
+							</div>
+
+							<div class="gm-catalog-list-head">
+								<h4><i class="fas fa-id-card"></i> Entregadores cadastrados</h4>
+							</div>
+							<div class="gm-entregadores-list" id="gm-entregadores-list" aria-live="polite"></div>
+						</section>
+					</div>
+
 					<div id="panel-preview" class="gm-tab-panel gm-tab-panel--hidden"></div>
+
+					<div class="gm-editor-save-bar">
+						<button id="gm-save-btn" type="button" class="btn btn-primary gm-save-btn" title="Salvar todas as alterações da loja">
+							<i class="fas fa-check"></i> <span>Salvar loja</span>
+						</button>
+					</div>
 				</section>
 
 				<section class="gm-preview" aria-label="Prévia da loja">
@@ -659,6 +810,7 @@
 					</article>
 				</section>
 
+				<div class="gm-right-column">
 				<aside class="gm-activity-panel" id="gm-activity-panel" aria-label="Atividade recente">
 					<div class="gm-activity-panel-header">
 						<h3><i class="fas fa-bolt"></i> Atividade recente</h3>
@@ -666,6 +818,9 @@
 					</div>
 					<div class="gm-activity-panel-content" id="gm-activity-panel-list" aria-live="polite"></div>
 				</aside>
+
+				<aside class="gm-store-rating-card" id="gm-store-rating-card" aria-label="Avaliações da loja"></aside>
+			</div>
 			</div>
 		</div>
 	</main>
@@ -697,7 +852,23 @@
 
 	<div class="gm-messages-overlay" id="gm-messages-overlay"></div>
 
+	<!-- Janelas de conversa flutuantes (estilo Facebook), lado a lado na base da página -->
+	<div id="gm-chat-dock" class="gm-chat-dock" aria-live="polite"></div>
+
 	<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+	<!-- Aviso de alterações não salvas ao tentar sair da página -->
+	<div id="gm-unsaved-modal" class="gm-unsaved-modal" hidden>
+		<div class="gm-unsaved-modal-box" role="alertdialog" aria-modal="true" aria-labelledby="gm-unsaved-titulo">
+			<h4 id="gm-unsaved-titulo"><i class="fas fa-triangle-exclamation"></i> Alterações não salvas</h4>
+			<p>Você tem alterações na sua loja que ainda não foram salvas. O que deseja fazer?</p>
+			<div class="gm-unsaved-modal-actions">
+				<button id="gm-unsaved-cancelar" type="button" class="btn btn-outline">Cancelar</button>
+				<button id="gm-unsaved-sair" type="button" class="gm-unsaved-sair">Sair sem salvar</button>
+				<button id="gm-unsaved-salvar" type="button" class="btn btn-primary">Salvar e sair</button>
+			</div>
+		</div>
+	</div>
 
 	<script src="../JS/utils.js"></script>
 	<script src="../JS/api.js"></script>

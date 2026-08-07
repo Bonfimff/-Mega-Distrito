@@ -2,6 +2,487 @@
     margin-bottom: 26px;
 }
 
+/* ── Busca de funções + ajuda (header) ── */
+.gm-header-tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: var(--space-2);
+    position: relative;
+}
+
+/* Abaixo de 1024px a busca fica ao lado do logo, empurrando (junto com
+   gm-header-tools) para a direita — mesmo comportamento de antes. A
+   partir de 1024px isso é sobrescrito para centralizar de verdade. */
+.gm-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 190px;
+    margin-left: auto;
+}
+
+.gm-search-box i.fa-magnifying-glass {
+    position: absolute;
+    left: 12px;
+    color: var(--color-text-muted);
+    font-size: .8rem;
+    pointer-events: none;
+}
+
+.gm-search-box input {
+    width: 100%;
+    padding: 8px 10px 8px 32px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--white);
+    font-size: var(--text-xs);
+    color: var(--color-heading);
+}
+
+.gm-search-box input:focus {
+    outline: none;
+    border-color: var(--color-link-strong);
+}
+
+.gm-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    min-width: 260px;
+    background: var(--white);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(12, 27, 44, .14);
+    overflow: hidden;
+    z-index: 60;
+}
+
+.gm-search-result {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    cursor: pointer;
+    font-size: var(--text-xs);
+    color: var(--color-heading);
+}
+
+.gm-search-result:last-child {
+    border-bottom: none;
+}
+
+.gm-search-result:hover,
+.gm-search-result.active {
+    background: #f0f5fa;
+}
+
+.gm-search-result i {
+    color: var(--color-link-strong);
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.gm-search-result-text {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+}
+
+.gm-search-result-label {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gm-search-result-section {
+    color: var(--color-text-muted);
+    font-size: .68rem;
+}
+
+.gm-search-empty {
+    padding: var(--space-2) var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+}
+
+.gm-help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--color-link-strong);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.gm-help-btn:hover {
+    background: #f0f5fa;
+}
+
+.gm-help-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background: var(--white);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(12, 27, 44, .14);
+    z-index: 60;
+}
+
+.gm-help-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.gm-help-panel-head strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-sm);
+    color: var(--color-heading);
+}
+
+.gm-help-panel-head button {
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: .9rem;
+}
+
+.gm-help-panel-body {
+    padding: var(--space-2) var(--space-3);
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.gm-help-panel-body p {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+}
+
+.gm-help-panel-body p:last-child {
+    margin-bottom: 0;
+}
+
+.gm-help-panel-body strong {
+    color: var(--color-heading);
+}
+
+/* ── Aviso de alterações não salvas ── */
+.gm-unsaved-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3);
+    background: rgba(12, 27, 44, .45);
+}
+
+.gm-unsaved-modal[hidden] {
+    display: none;
+}
+
+.gm-unsaved-modal-box {
+    width: 100%;
+    max-width: 380px;
+    background: var(--white);
+    border-radius: 16px;
+    padding: var(--space-4);
+    box-shadow: 0 20px 50px rgba(12, 27, 44, .3);
+}
+
+.gm-unsaved-modal-box h4 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-2);
+    color: var(--color-heading);
+    font-size: var(--text-base);
+}
+
+.gm-unsaved-modal-box h4 i {
+    color: #f5a623;
+}
+
+.gm-unsaved-modal-box p {
+    margin: 0 0 var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.gm-unsaved-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.gm-unsaved-sair {
+    border: 1px solid var(--red-border);
+    border-radius: 10px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--red-pale);
+    color: var(--red-dark);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.gm-unsaved-modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* ── Janelas de chat flutuantes (estilo Facebook) ──
+   Ancoradas no canto inferior ESQUERDO (não direito), por cima do
+   conteúdo da aba principal (gm-editor não tem z-index próprio, então
+   fica abaixo do dock por padrão). A primeira janela aberta fica colada
+   na borda esquerda; as seguintes empilham para a direita dela. */
+.gm-chat-dock {
+    position: fixed;
+    bottom: 0;
+    left: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 10px;
+    z-index: 500;
+    pointer-events: none;
+}
+
+.gm-chat-window {
+    width: 270px;
+    max-height: 360px;
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -8px 24px rgba(12, 27, 44, .18);
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.gm-chat-window-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 10px;
+    background: var(--color-heading);
+    color: var(--white);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.gm-chat-window-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .18);
+    font-size: .65rem;
+    font-weight: 800;
+}
+
+.gm-chat-window-headtext {
+    display: grid;
+    gap: 0;
+    min-width: 0;
+    flex: 1;
+}
+
+.gm-chat-window-headtext strong {
+    font-size: .78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gm-chat-window-headtext span {
+    font-size: .62rem;
+    opacity: .8;
+}
+
+.gm-chat-window-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.gm-chat-window-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--white);
+    font-size: .72rem;
+    cursor: pointer;
+}
+
+.gm-chat-window-action:hover {
+    background: rgba(255, 255, 255, .15);
+}
+
+.gm-chat-window-body {
+    display: flex;
+    flex-direction: column;
+    height: 320px;
+}
+
+.gm-chat-window-thread {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gm-chat-window-composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 6px;
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.gm-chat-window-composer textarea {
+    flex: 1;
+    resize: none;
+    max-height: 60px;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 6px 10px;
+    font-size: .74rem;
+    font-family: inherit;
+}
+
+.gm-chat-window-composer textarea:focus {
+    outline: none;
+    border-color: var(--color-link-strong);
+}
+
+.gm-chat-window-send {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--color-link-strong);
+    font-size: .82rem;
+    cursor: pointer;
+}
+
+.gm-chat-window-send:hover {
+    background: #f0f5fa;
+}
+
+@media (max-width: 720px) {
+    .gm-chat-dock {
+        right: 0;
+        left: 0;
+        justify-content: flex-start;
+        padding: 0 10px;
+        overflow-x: auto;
+    }
+
+    .gm-chat-window {
+        width: 78vw;
+        max-width: 300px;
+    }
+}
+
+.gm-search-highlight {
+    outline: 3px solid #ffb300;
+    outline-offset: 2px;
+    border-radius: 10px;
+    animation: gm-search-pulse 1.6s ease-out;
+}
+
+@keyframes gm-search-pulse {
+    0% { outline-color: #ffb300; }
+    100% { outline-color: transparent; }
+}
+
+@media (max-width: 720px) {
+    .gm-search-box {
+        width: 34px;
+    }
+
+    .gm-search-box input {
+        position: absolute;
+        right: 0;
+        width: 34px;
+        padding: 8px 8px 8px 30px;
+        opacity: 0;
+        pointer-events: none;
+        transition: width .18s, opacity .18s;
+    }
+
+    .gm-search-box.expanded input {
+        position: static;
+        width: 56vw;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .gm-search-box i.fa-magnifying-glass {
+        z-index: 1;
+        cursor: pointer;
+        pointer-events: auto;
+    }
+
+    .gm-search-results {
+        left: auto;
+        right: 0;
+        width: 80vw;
+    }
+
+    .gm-help-panel {
+        width: 80vw;
+        right: -8px;
+    }
+}
+
 .gm-layout {
     display: grid;
     grid-template-columns: minmax(340px, 420px) 1fr;
@@ -42,6 +523,23 @@
     border-radius: 999px;
 }
 
+/* Em telas estreitas a barra de abas costuma não caber inteira e rola
+   horizontalmente (overflow-x:auto sem scrollbar visível); esse degradê
+   na borda direita avisa que dá pra arrastar pra ver mais abas. */
+.header-nav-row--gm {
+    position: relative;
+}
+.header-nav-row--gm::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 28px;
+    background: linear-gradient(90deg, transparent, var(--green-dark) 65%);
+    pointer-events: none;
+}
+
 /* ── Abas (centralizadas no header) ── */
 .gm-tabs {
     display: flex;
@@ -49,6 +547,30 @@
     gap: var(--space-1);
     margin: 0 auto;
     flex-shrink: 0;
+}
+
+/* Rótulo separando os grupos "Gerenciamento" e "Operacional" nas abas.
+   Cores próprias (não var(--color-text-muted)/--color-border, feitas para
+   fundo branco) porque esta barra fica sobre o header verde. */
+.gm-tabs-group-label {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding-left: var(--space-2);
+    margin-left: var(--space-1);
+    border-left: 1px solid rgba(255, 255, 255, .25);
+    color: rgba(255, 255, 255, .6);
+    font-size: .64rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+
+.gm-tabs-group-label:first-child {
+    padding-left: 0;
+    margin-left: 0;
+    border-left: none;
 }
 
 .gm-tab {
@@ -86,20 +608,19 @@
     display: none;
 }
 
-/* ── Navegação lateral (telas grandes) — ver breakpoint 1024px no fim do arquivo ── */
-.gm-sidebar {
+/* ── Navegação (telas grandes): identidade fixa + duas sub-abas que
+   expandem (Gerenciamento/Operacional), no lugar onde ficava o card de
+   avaliações — ver breakpoint 1024px no fim do arquivo ── */
+.gm-nav-card {
     display: none;
 }
 
-.gm-sidebar-identity {
+.gm-nav-identity {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    min-width: 0;
     padding: var(--space-3);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--white);
-    margin-bottom: var(--space-2);
 }
 
 .gm-sidebar-identity-icon {
@@ -112,14 +633,14 @@
     background-color: var(--green-pale);
 }
 
-.gm-sidebar-identity-text {
+.gm-nav-identity-text {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
 }
 
-.gm-sidebar-identity-text strong {
+.gm-nav-identity-text strong {
     font-size: var(--text-sm);
     color: var(--color-heading);
     overflow: hidden;
@@ -127,14 +648,84 @@
     white-space: nowrap;
 }
 
-.gm-sidebar-identity-text a {
+.gm-nav-accordion-public-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: var(--text-xs);
     color: var(--color-link-strong);
     text-decoration: none;
 }
 
-.gm-sidebar-identity-text a:hover {
+.gm-nav-accordion-public-link:hover {
     text-decoration: underline;
+}
+
+.gm-nav-accordion {
+    border-top: 1px solid var(--color-border);
+}
+
+.gm-nav-accordion-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    cursor: pointer;
+    list-style: none;
+    font-weight: 800;
+    font-size: var(--text-sm);
+    color: var(--color-heading);
+}
+
+.gm-nav-accordion-summary::-webkit-details-marker {
+    display: none;
+}
+
+.gm-nav-accordion-summary-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.gm-nav-pin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--color-border);
+    font-size: .78rem;
+    cursor: pointer;
+    transform: rotate(35deg);
+    transition: color .15s ease, transform .15s ease;
+}
+
+.gm-nav-pin-btn:hover {
+    color: var(--color-text-muted);
+}
+
+.gm-nav-pin-btn[aria-pressed="true"] {
+    color: var(--green-dark);
+    transform: rotate(0deg);
+}
+
+.gm-nav-accordion-chevron {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    transition: transform .18s ease;
+}
+
+.gm-nav-accordion[open] .gm-nav-accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.gm-nav-accordion .gm-sidebar-tabs {
+    padding: 0 var(--space-3) var(--space-3);
 }
 
 .gm-sidebar-tabs {
@@ -195,6 +786,113 @@
     border: none;
     padding: 0;
     border-radius: 0;
+}
+
+/* Equipe: níveis de acesso e funcionários */
+.gm-empty-hint {
+    margin: 0;
+    padding: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-align: center;
+    border: 1px dashed var(--color-border);
+    border-radius: 12px;
+}
+
+.gm-niveis-list,
+.gm-funcionarios-list,
+.gm-entregadores-list {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: 12px;
+}
+
+.gm-nivel-card,
+.gm-funcionario-card,
+.gm-entregador-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--white);
+}
+
+.gm-nivel-card-info,
+.gm-funcionario-card-info,
+.gm-entregador-card-info {
+    display: grid;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.gm-nivel-card-info strong,
+.gm-funcionario-card-info strong,
+.gm-entregador-card-info strong {
+    color: var(--color-heading);
+    font-size: var(--text-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gm-nivel-card-info span,
+.gm-nivel-card-perms,
+.gm-funcionario-card-info span,
+.gm-entregador-card-info span {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+}
+
+.gm-nivel-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-2);
+    background: #e8f2ff;
+    color: #1c4b80;
+    border-radius: 999px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.gm-entregador-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: #eef1f5;
+    color: var(--color-heading);
+    font-size: var(--text-base);
+}
+
+.gm-status-toggle {
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    background: var(--white);
+    color: var(--color-text-muted);
+}
+
+.gm-status-toggle.ativo {
+    border-color: var(--green-border, #b7dfc0);
+    background: var(--green-pale, #e8f6ec);
+    color: var(--green-dark, #1e7d32);
+}
+
+.gm-status-toggle.inativo {
+    border-color: var(--red-border);
+    background: var(--red-pale);
+    color: var(--red-dark);
 }
 
 .gm-editor-head,
@@ -1234,8 +1932,13 @@
     align-content: start;
 }
 
-/* ── Coluna esquerda (telas grandes): avaliações + mensagens ── */
+/* ── Coluna esquerda (telas grandes): navegação + mensagens ── */
 .gm-left-column {
+    display: contents;
+}
+
+/* ── Coluna direita (telas grandes): atividade recente + avaliações ── */
+.gm-right-column {
     display: contents;
 }
 
@@ -2440,37 +3143,37 @@
 }
 
 /* ── Botão flutuante "Salvar loja" (sempre visível) ── */
-.gm-save-fab {
-    position: fixed;
-    right: 20px;
-    bottom: 96px;
-    z-index: 2360;
+.gm-editor-save-bar {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.gm-save-btn {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
     border: none;
     border-radius: 999px;
-    padding: 14px 20px;
+    padding: 14px 24px;
     background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-xdark) 100%);
     color: var(--white);
     font-size: var(--text-sm);
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 10px 26px rgba(2, 60, 20, .35);
+    box-shadow: 0 10px 26px rgba(2, 60, 20, .25);
     transition: transform .2s ease, opacity .2s ease;
 }
 
-.gm-save-fab:hover { transform: translateY(-3px); }
-.gm-save-fab:disabled { opacity: .7; cursor: default; transform: none; }
-.gm-save-fab i { font-size: 1rem; }
-
-@media (min-width: 769px) {
-    .gm-save-fab { bottom: 28px; }
-}
+.gm-save-btn:hover { transform: translateY(-2px); }
+.gm-save-btn:disabled { opacity: .7; cursor: default; transform: none; }
+.gm-save-btn i { font-size: 1rem; }
 
 @media (max-width: 380px) {
-    .gm-save-fab span { display: none; }
-    .gm-save-fab { padding: 14px; }
+    .gm-editor-save-bar { justify-content: stretch; }
+    .gm-save-btn { width: 100%; justify-content: center; }
 }
 
 /* ── Campo de imagem: URL + botão de upload ── */
@@ -2928,55 +3631,66 @@
         display: none;
     }
 
+    /* A barra do header (logo + busca/ajuda) herda max-width:1200px de
+       style.css (pensado para a vitrine). Alinhar com a largura liberada
+       em .gm-page .container, senão o header fica mais estreito que o
+       conteúdo do painel abaixo dele. position:relative dá contexto pra
+       centralizar a busca de verdade (ver .gm-search-box abaixo). */
+    .header-container {
+        max-width: 1680px;
+        position: relative;
+    }
+
+    /* Centralizada de fato no header (não só no espaço entre logo e
+       ajuda), então usamos position:absolute em vez do truque de
+       margin:auto — que só centraliza se logo e botão de ajuda tiverem
+       a mesma largura, o que não é o caso aqui. */
+    .gm-search-box {
+        width: 320px;
+        margin-left: 0;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+
     main.gm-page {
         padding-top: 20px !important;
     }
 
-    /* Barra superior: identidade da loja + navegação (era coluna lateral) */
-    .gm-sidebar {
-        display: flex;
-        align-items: center;
-        gap: var(--space-4);
-        flex-wrap: wrap;
-        position: sticky;
-        top: 56px;
-        z-index: 40;
-        background: var(--gray-100);
-        padding: var(--space-2) 0 var(--space-3);
-        margin-bottom: var(--space-2);
-    }
-
-    .gm-sidebar-identity {
-        margin-bottom: 0;
-        flex-shrink: 0;
-    }
-
-    .gm-sidebar-tabs {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: var(--space-2);
-    }
-
-    .gm-sidebar-tabs .gm-tab {
-        width: auto;
-    }
-
-    /* Painel/Atividade/Loja/Catálogo com a mesma altura do card "Loja Central" */
-    .gm-sidebar-identity,
-    .gm-sidebar-tabs .gm-tab {
-        height: 64px;
-        box-sizing: border-box;
-    }
-
-    /* Coluna lateral esquerda: avaliações + mensagens, sempre visível e ancorada.
-       align-self:stretch faz a coluna ocupar a altura inteira da linha do grid
-       (definida pelo editor, que é o item mais alto), dando à mensagem "espaço"
-       suficiente para o sticky funcionar mesmo quando ela mesma é curta. */
+    /* Coluna lateral esquerda: navegação (sub-aba expansível) + mensagens,
+       sempre visível e ancorada. align-self:stretch faz a coluna ocupar a
+       altura inteira da linha do grid (definida pelo editor, que é o item
+       mais alto), dando à mensagem "espaço" suficiente para o sticky
+       funcionar mesmo quando ela mesma é curta. */
     .gm-left-column {
         display: flex;
         flex-direction: column;
         gap: var(--space-3);
         align-self: stretch;
+    }
+
+    .gm-nav-card {
+        display: block;
+        flex-shrink: 0;
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        background: var(--white);
+        overflow: hidden;
+    }
+
+    .gm-sidebar-tabs {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    /* Coluna lateral direita: atividade recente + avaliações da loja.
+       Rola normalmente junto com o resto da página (sem sticky). */
+    .gm-right-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        align-self: start;
     }
 
     .gm-store-rating-card {
@@ -2990,12 +3704,12 @@
 
     .gm-messages-drawer {
         position: sticky;
-        top: 154px;
+        top: 76px;
         left: auto;
         width: auto;
         max-width: none;
         height: auto;
-        max-height: calc(100vh - 170px);
+        max-height: calc(100vh - 92px);
         overflow-y: auto;
         z-index: auto;
         transform: none;
@@ -3019,17 +3733,28 @@
         display: none;
     }
 
+    /* O painel de gerenciamento é um dashboard, não a vitrine — não faz
+       sentido herdar o max-width:1200px do .container das páginas de loja.
+       A partir daqui liberamos a largura para as 3 colunas aproveitarem
+       todo o espaço horizontal disponível na tela. */
+    .gm-page .container {
+        max-width: 1680px;
+    }
+
     .gm-layout,
     .gm-layout.gm-layout--preview-hidden,
     .gm-layout.gm-layout--preview-mode {
-        grid-template-columns: 300px minmax(420px, 640px) 1fr;
+        /* Colunas laterais (nav e atividade/avaliação) com a mesma largura;
+           coluna central (editor/painel) ocupa o espaço restante — a maior
+           parte da tela. */
+        grid-template-columns: 300px 1fr 300px;
     }
 
     .gm-layout .gm-editor,
     .gm-layout.gm-layout--preview-hidden .gm-editor,
     .gm-layout.gm-layout--preview-mode .gm-editor {
         display: block;
-        top: 154px;
+        top: 76px;
     }
 
     .gm-layout .gm-editor-head,
@@ -3053,13 +3778,10 @@
     .gm-activity-panel {
         display: flex;
         flex-direction: column;
-        position: sticky;
-        top: 154px;
-        max-height: calc(100vh - 170px);
+        flex-shrink: 0;
         border: 1px solid var(--color-border);
         border-radius: 16px;
         background: var(--white);
         overflow: hidden;
-        align-self: start;
     }
 }

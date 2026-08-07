@@ -61,6 +61,25 @@ function mapItemBazar(item) {
     };
 }
 
+/** Junta no PRODUTOS_USADOS os anúncios que o próprio usuário logado
+ *  publicou pela conta (Conta > Meus Anúncios — ver conta.js). Isso ainda
+ *  vive só no localStorage (não existe endpoint de backend pra usuário
+ *  comum publicar no Bazar sem ser dono de uma loja), então só aparece
+ *  pra quem anunciou, no navegador em que anunciou. */
+function mesclarAnunciosLocaisNoBazar() {
+    if (typeof contaObterSessao !== 'function') return;
+    const usuario = contaObterSessao();
+    if (!usuario) return;
+    let locais = [];
+    try { locais = JSON.parse(localStorage.getItem(`mage-bazar-usuario-${usuario.id}`)) || []; }
+    catch { locais = []; }
+    if (!locais.length) return;
+    const idsExistentes = new Set(PRODUTOS_USADOS.map(p => p.id));
+    locais.forEach(item => {
+        if (!idsExistentes.has(item.id)) PRODUTOS_USADOS.unshift(item);
+    });
+}
+
 let _vitrinePromise = null;
 
 function carregarVitrine() {
@@ -98,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const carregamentos = [carregarVitrine()];
     if (typeof carregarApps === 'function') carregamentos.push(carregarApps());
     await Promise.all(carregamentos);
+    mesclarAnunciosLocaisNoBazar();
 
     if (document.getElementById('categories-grid')) renderCategorias();
     if (document.getElementById('products-grid'))   renderProdutos(PRODUTOS);

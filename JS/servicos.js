@@ -514,11 +514,32 @@ async function carregarVagas() {
     if (vagas) VAGAS = vagas.map(mapVaga);
 }
 
+/** Junta em PROFISSIONAIS os serviços que o próprio usuário logado
+ *  cadastrou pela conta (Conta > Meus Anúncios — ver conta.js). Assim como
+ *  o Bazar, ainda vive só no localStorage (sem endpoint de backend pra
+ *  usuário comum virar prestador de serviço), então só aparece pra quem
+ *  cadastrou, no navegador em que cadastrou. Como não têm "especialidade"
+ *  (categoria dos filtros), só aparecem no filtro "Todos".  */
+function mesclarAnunciosLocaisNosServicos() {
+    if (typeof contaObterSessao !== 'function') return;
+    const usuario = contaObterSessao();
+    if (!usuario) return;
+    let locais = [];
+    try { locais = JSON.parse(localStorage.getItem(`mage-servicos-usuario-${usuario.id}`)) || []; }
+    catch { locais = []; }
+    if (!locais.length) return;
+    const idsExistentes = new Set(PROFISSIONAIS.map(p => p.id));
+    locais.forEach(servico => {
+        if (!idsExistentes.has(servico.id)) PROFISSIONAIS.unshift(servico);
+    });
+}
+
 /* =========================================================
    INICIALIZAÇÃO
    ========================================================= */
 document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([carregarProfissionais(), carregarVagas()]);
+    mesclarAnunciosLocaisNosServicos();
 
     if (document.getElementById('servicos-grid')) renderServicos(PROFISSIONAIS);
     if (document.getElementById('vagas-grid'))    renderVagas(VAGAS);

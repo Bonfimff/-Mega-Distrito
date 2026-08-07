@@ -165,13 +165,50 @@ const GM_AVALIACOES = {
 	],
 };
 
+/* Mensagens de demonstração (sem backend) para testar a caixa de
+   Mensagens e Interações antes de haver conversas reais. */
+const GM_MENSAGENS_DEMO = [
+	{
+		id: 9001,
+		tipo: 'compra',
+		cliente: 'Fernanda Souza',
+		mensagem: 'Oi! O Combo da Casa que comprei ainda vem hoje? Já são 18h.',
+		item: 'Combo da Casa',
+		quando: 'Há 8 minutos',
+		lida: false,
+		anexosCliente: [],
+		respostas: [],
+	},
+	{
+		id: 9002,
+		tipo: 'interacao',
+		cliente: 'Carlos Eduardo',
+		mensagem: 'Vocês fazem instalação no fim de semana também?',
+		item: 'Instalação Residencial',
+		quando: 'Há 1 hora',
+		lida: true,
+		anexosCliente: [],
+		respostas: [
+			{ texto: 'Fazemos sim, aos sábados até 14h!', anexos: [], quando: 'Há 50 minutos' },
+		],
+	},
+];
+
 let gmLojaId = null;
-let gmMensagens = [];
+let gmMensagens = GM_MENSAGENS_DEMO.map(m => ({ ...m, anexosCliente: [...m.anexosCliente], respostas: m.respostas.map(r => ({ ...r })) }));
+let gmMensagensFiltro = 'compra';
+let gmChatWindows = []; // janelas de conversa flutuantes (telas grandes), estilo Facebook: [{ id, minimizada }]
+const GM_CHAT_MAX_JANELAS = 3;
+
+// Em telas pequenas as conversas continuam abrindo em tela cheia dentro do
+// próprio painel de mensagens (sem espaço para janelas flutuantes).
+function gmTelaGrande() {
+	return window.matchMedia('(min-width: 1024px)').matches;
+}
 let gmMensagemAbertaId = -1;
 let gmComposerAnexos = [];
 let gmComposerTexto = '';
 let gmComposerMenuAberto = false;
-let gmMensagensFiltro = 'compra';
 
 const GM_TIPO_ANEXO_ICON = {
 	foto: 'fa-image',
@@ -235,6 +272,27 @@ let gmClosedDates = [];
 let gmPreviewVisible = false;
 let gmSalvandoLoja = false;
 let gmStoreProfile = PERFIL_LOJA_PADRAO;
+let gmFormSujo = false; // há alterações na loja/catálogo ainda não salvas
+let gmSaidaPendenteHref = null;
+
+const GM_PERMISSOES_LABELS = {
+	catalogo: 'Catálogo',
+	pedidos: 'Pedidos',
+	mensagens: 'Mensagens',
+	indicadores: 'Indicadores',
+	configuracoes: 'Config. da loja',
+	equipe: 'Equipe',
+};
+let gmNiveisAcesso = [
+	{ id: 'nivel-gerente', nome: 'Gerente', permissoes: ['catalogo', 'pedidos', 'mensagens', 'indicadores', 'configuracoes', 'equipe'] },
+	{ id: 'nivel-vendedor', nome: 'Vendedor', permissoes: ['catalogo', 'pedidos', 'mensagens'] },
+];
+let gmFuncionarios = [
+	{ id: 'func-1', nome: 'Marcos Lima', contato: '(21) 99999-1234', nivelId: 'nivel-gerente' },
+];
+let gmEntregadores = [
+	{ id: 'entregador-1', nome: 'Rafael Alves', telefone: '(21) 98888-4321', veiculo: 'moto', ativo: true },
+];
 
 // Rascunho do item em edição — fotos, vídeo e variações só entram em
 // gmItems quando "Adicionar item"/"Salvar item" é clicado.
@@ -1526,6 +1584,257 @@ function bindPreviewControls() {
 	setPreviewVisibility(false);
 }
 
+/* =========================================================
+   BUSCA DE FUNÇÕES + AJUDA (header)
+   ========================================================= */
+const GM_SEARCH_INDEX = [
+	{ label: 'Indicadores de vendas', secao: 'Painel', icon: 'fa-chart-line', tab: 'panel-painel', targetId: 'gm-dashboard-stats' },
+	{ label: 'Filtro de período', secao: 'Painel', icon: 'fa-calendar', tab: 'panel-painel', targetId: 'gm-stats-periodo-de' },
+	{ label: 'Avaliações da loja', secao: 'Painel', icon: 'fa-star', tab: 'panel-painel', targetId: 'gm-store-rating-card' },
+	{ label: 'Mensagens e Interações', secao: 'Painel', icon: 'fa-comments', tab: 'panel-painel', targetId: 'gm-messages-drawer' },
+	{ label: 'Complete sua loja (checklist)', secao: 'Painel', icon: 'fa-list-check', tab: 'panel-painel', targetId: 'gm-dashboard-checklist' },
+	{ label: 'Pedidos pendentes', secao: 'Painel', icon: 'fa-bell', tab: 'panel-painel', targetId: 'gm-pendentes-badge' },
+	{ label: 'Compras e Contratações', secao: 'Atividade', icon: 'fa-cash-register', tab: 'panel-atividade', targetId: 'gm-pedidos-list' },
+	{ label: 'Dados da loja', secao: 'Loja', icon: 'fa-store', tab: 'panel-loja', targetId: 'gm-step-1' },
+	{ label: 'Aparência e visual', secao: 'Loja', icon: 'fa-palette', tab: 'panel-loja', targetId: 'gm-step-2' },
+	{ label: 'Horários de funcionamento', secao: 'Loja', icon: 'fa-clock', tab: 'panel-loja', targetId: 'gm-step-3' },
+	{ label: 'Perfil da loja', secao: 'Loja', icon: 'fa-shapes', tab: 'panel-loja', targetId: 'gm-profile-picker' },
+	{ label: 'Novo produto ou serviço', secao: 'Catálogo', icon: 'fa-plus', tab: 'panel-catalogo', targetId: 'gm-item-form' },
+	{ label: 'Filtros da vitrine', secao: 'Catálogo', icon: 'fa-filter', tab: 'panel-catalogo', targetId: 'gm-filter-name' },
+	{ label: 'Itens cadastrados', secao: 'Catálogo', icon: 'fa-boxes-stacked', tab: 'panel-catalogo', targetId: 'gm-items-admin-list' },
+	{ label: 'Níveis de acesso', secao: 'Equipe', icon: 'fa-user-shield', tab: 'panel-equipe', targetId: 'gm-nivel-nome' },
+	{ label: 'Funcionários', secao: 'Equipe', icon: 'fa-people-group', tab: 'panel-equipe', targetId: 'gm-funcionario-nome' },
+	{ label: 'Entregadores da loja', secao: 'Entregadores', icon: 'fa-motorcycle', tab: 'panel-entregadores', targetId: 'gm-entregador-nome' },
+	{ label: 'Prévia da loja', secao: 'Prévia', icon: 'fa-mobile-screen', tab: 'panel-preview', targetId: '' },
+	{ label: 'Salvar loja', secao: 'Geral', icon: 'fa-check', tab: '', targetId: 'gm-save-btn' },
+];
+
+function normalizarBusca(texto) {
+	return (texto || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function irParaResultadoBusca(item) {
+	if (item.tab) {
+		document.querySelector(`.gm-tab[aria-controls="${item.tab}"]`)?.click();
+	}
+	if (item.targetId) {
+		const el = document.getElementById(item.targetId);
+		if (el) {
+			window.requestAnimationFrame(() => {
+				el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				el.classList.add('gm-search-highlight');
+				setTimeout(() => el.classList.remove('gm-search-highlight'), 1600);
+				if (typeof el.focus === 'function') {
+					try { el.focus({ preventScroll: true }); } catch { /* alguns elementos não são focáveis */ }
+				}
+			});
+		}
+	}
+}
+
+function fecharBuscaResultados() {
+	const results = document.getElementById('gm-search-results');
+	const box = document.querySelector('.gm-search-box');
+	if (results) { results.hidden = true; results.innerHTML = ''; }
+	if (box) box.classList.remove('expanded');
+}
+
+function bindSearchAndHelp() {
+	const input = document.getElementById('gm-search-input');
+	const results = document.getElementById('gm-search-results');
+	const box = document.querySelector('.gm-search-box');
+	const magnifier = box?.querySelector('i.fa-magnifying-glass');
+	if (!input || !results) return;
+
+	input.addEventListener('input', () => {
+		const termo = normalizarBusca(input.value.trim());
+		if (!termo) {
+			results.hidden = true;
+			results.innerHTML = '';
+			return;
+		}
+
+		const encontrados = GM_SEARCH_INDEX.filter(item =>
+			normalizarBusca(item.label).includes(termo) || normalizarBusca(item.secao).includes(termo)
+		).slice(0, 8);
+
+		results.innerHTML = '';
+		if (!encontrados.length) {
+			results.appendChild(createEl('div', 'gm-search-empty', 'Nenhuma função encontrada.'));
+		} else {
+			encontrados.forEach(item => {
+				const btn = createEl('button', 'gm-search-result');
+				btn.type = 'button';
+				const textWrap = createEl('div', 'gm-search-result-text');
+				textWrap.appendChild(createEl('span', 'gm-search-result-label', item.label));
+				textWrap.appendChild(createEl('span', 'gm-search-result-section', item.secao));
+				btn.innerHTML = `<i class="fas ${item.icon}"></i>`;
+				btn.appendChild(textWrap);
+				btn.addEventListener('click', () => {
+					irParaResultadoBusca(item);
+					input.value = '';
+					fecharBuscaResultados();
+				});
+				results.appendChild(btn);
+			});
+		}
+		results.hidden = false;
+	});
+
+	input.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape') {
+			input.blur();
+			fecharBuscaResultados();
+		}
+	});
+
+	magnifier?.addEventListener('click', () => {
+		if (!box.classList.contains('expanded')) {
+			box.classList.add('expanded');
+			input.focus();
+		}
+	});
+
+	document.addEventListener('click', (event) => {
+		if (box && !box.contains(event.target)) {
+			fecharBuscaResultados();
+		}
+	});
+
+	const helpBtn = document.getElementById('gm-help-btn');
+	const helpPanel = document.getElementById('gm-help-panel');
+	const helpClose = document.getElementById('gm-help-close');
+
+	const fecharAjuda = () => {
+		if (!helpPanel) return;
+		helpPanel.hidden = true;
+		helpBtn?.setAttribute('aria-expanded', 'false');
+	};
+
+	helpBtn?.addEventListener('click', () => {
+		if (!helpPanel) return;
+		const abrindo = helpPanel.hidden;
+		helpPanel.hidden = !abrindo;
+		helpBtn.setAttribute('aria-expanded', abrindo ? 'true' : 'false');
+	});
+
+	helpClose?.addEventListener('click', fecharAjuda);
+
+	document.addEventListener('click', (event) => {
+		if (helpPanel && !helpPanel.hidden && !helpPanel.contains(event.target) && event.target !== helpBtn && !helpBtn?.contains(event.target)) {
+			fecharAjuda();
+		}
+	});
+}
+
+/* =========================================================
+   ALTERAÇÕES NÃO SALVAS — avisa o lojista antes de sair da
+   página (ou navegar para outra seção do site) se houver dados
+   da loja/catálogo ainda não salvos.
+   ========================================================= */
+function marcarFormSujo() {
+	gmFormSujo = true;
+}
+
+function abrirModalNaoSalvo(hrefDestino) {
+	gmSaidaPendenteHref = hrefDestino;
+	const modal = document.getElementById('gm-unsaved-modal');
+	if (modal) modal.hidden = false;
+}
+
+function fecharModalNaoSalvo() {
+	gmSaidaPendenteHref = null;
+	const modal = document.getElementById('gm-unsaved-modal');
+	if (modal) modal.hidden = true;
+}
+
+function bindRastreioAlteracoes() {
+	const editor = document.querySelector('.gm-editor');
+	if (!editor) return;
+	const areasSalvas = '#panel-loja, #panel-catalogo';
+
+	editor.addEventListener('input', (event) => {
+		if (event.target instanceof HTMLElement && event.target.closest(areasSalvas)) marcarFormSujo();
+	});
+	editor.addEventListener('change', (event) => {
+		if (event.target instanceof HTMLElement && event.target.closest(areasSalvas)) marcarFormSujo();
+	});
+	editor.addEventListener('click', (event) => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement) || !target.closest(areasSalvas)) return;
+		const gatilho = target.closest('#gm-add-item, #gm-add-filter, #gm-add-closed-date, .gm-admin-remove');
+		if (gatilho) marcarFormSujo();
+	});
+}
+
+function bindSaidaComAlteracoes() {
+	window.addEventListener('beforeunload', (event) => {
+		if (!gmFormSujo) return;
+		event.preventDefault();
+		event.returnValue = '';
+	});
+
+	document.querySelectorAll('#header a[href]').forEach(link => {
+		link.addEventListener('click', (event) => {
+			if (!gmFormSujo) return;
+			event.preventDefault();
+			abrirModalNaoSalvo(link.href);
+		});
+	});
+
+	document.getElementById('gm-unsaved-cancelar')?.addEventListener('click', fecharModalNaoSalvo);
+
+	document.getElementById('gm-unsaved-sair')?.addEventListener('click', () => {
+		const href = gmSaidaPendenteHref;
+		gmFormSujo = false;
+		fecharModalNaoSalvo();
+		if (href) window.location.href = href;
+	});
+
+	document.getElementById('gm-unsaved-salvar')?.addEventListener('click', async (event) => {
+		const btn = event.currentTarget;
+		btn.disabled = true;
+		await salvarLojaCompleta();
+		btn.disabled = false;
+		const href = gmSaidaPendenteHref;
+		if (gmFormSujo) return; // salvar falhou: mantém o modal aberto
+		fecharModalNaoSalvo();
+		if (href) window.location.href = href;
+	});
+}
+
+/* =========================================================
+   NAVEGAÇÃO LATERAL (telas grandes): Gerenciamento/Operacional
+   como duas sub-abas independentes — só uma fica aberta por vez,
+   a menos que o lojista fixe alguma com o alfinete.
+   ========================================================= */
+function bindNavAccordions() {
+	const accordions = Array.from(document.querySelectorAll('details.gm-nav-accordion'));
+	if (!accordions.length) return;
+
+	accordions.forEach(acc => {
+		acc.addEventListener('toggle', () => {
+			if (!acc.open) return;
+			accordions.forEach(outra => {
+				if (outra !== acc && outra.open && !outra.classList.contains('gm-nav-pinned')) {
+					outra.open = false;
+				}
+			});
+		});
+	});
+
+	document.querySelectorAll('.gm-nav-pin-btn').forEach(btn => {
+		btn.addEventListener('click', (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			const alvo = document.getElementById(btn.dataset.pinTarget);
+			if (!alvo) return;
+			const fixado = alvo.classList.toggle('gm-nav-pinned');
+			btn.setAttribute('aria-pressed', fixado ? 'true' : 'false');
+		});
+	});
+}
+
 function bindTabs() {
 	const tabs = document.querySelectorAll('.gm-tab');
 	const panels = document.querySelectorAll('.gm-tab-panel');
@@ -1543,6 +1852,9 @@ function bindTabs() {
 
 			const target = document.getElementById(targetId);
 			if (target) target.classList.remove('gm-tab-panel--hidden');
+
+			const parentAccordion = tab.closest('details.gm-nav-accordion');
+			if (parentAccordion && !parentAccordion.open) parentAccordion.open = true;
 
 			if (targetId === 'panel-preview') {
 				setPreviewVisibility(true);
@@ -1986,7 +2298,9 @@ function renderMensagens() {
 
 	list.innerHTML = '';
 
-	if (gmMensagemAbertaId >= 0) {
+	// Telas pequenas: sem espaço para janelas flutuantes — a conversa aberta
+	// ocupa o próprio painel de mensagens, como antes.
+	if (!gmTelaGrande() && gmMensagemAbertaId >= 0) {
 		const msg = gmMensagens.find(m => m.id === gmMensagemAbertaId);
 		if (msg) {
 			list.appendChild(buildMensagemDetalhe(msg));
@@ -2024,7 +2338,7 @@ function mapMensagemApi(m) {
 async function carregarMensagens() {
 	if (!gmLojaId) return;
 	const dados = await fetchMensagensLoja(gmLojaId);
-	if (!Array.isArray(dados)) return;
+	if (!Array.isArray(dados) || !dados.length) return; // sem mensagens reais ainda: mantém a conversa de teste
 	gmMensagens = dados.map(mapMensagemApi);
 	renderMensagens();
 	atualizarBadgeAtividade();
@@ -2142,6 +2456,7 @@ async function salvarLojaCompleta() {
 		gmItemsOriginalIds = [...idsAtuais];
 
 		gmLojaSalvaAoMenosUmaVez = true;
+		gmFormSujo = false;
 		aplicarPreview();
 		gmToast('Loja salva e publicada com sucesso.');
 	} finally {
@@ -2154,7 +2469,17 @@ function filtrarMensagens(valor) {
 	renderMensagens();
 }
 
+/* =========================================================
+   ABRIR CONVERSA — em telas grandes vira uma janela flutuante
+   (estilo Facebook); em telas pequenas, sem espaço para isso,
+   continua abrindo em tela cheia dentro do painel de mensagens.
+   ========================================================= */
 function abrirMensagem(id) {
+	if (gmTelaGrande()) {
+		abrirChatFlutuante(id);
+		return;
+	}
+
 	gmMensagemAbertaId = id;
 	gmComposerAnexos = [];
 	gmComposerTexto = '';
@@ -2163,7 +2488,7 @@ function abrirMensagem(id) {
 	const msg = gmMensagens.find(m => m.id === id);
 	if (msg && !msg.lida) {
 		msg.lida = true;
-		marcarMensagemLida(id);
+		if (id < 9000) marcarMensagemLida(id);
 	}
 
 	renderMensagens();
@@ -2198,10 +2523,13 @@ async function enviarRespostaMensagem(id) {
 	const msg = gmMensagens.find(m => m.id === id);
 	if (!msg) return;
 
-	const resultado = await responderMensagem(id, texto);
-	if (!resultado) {
-		gmToast('Não foi possível enviar a resposta. Tente novamente.');
-		return;
+	const ehMensagemDeTeste = id >= 9000; // conversa local de demonstração, sem registro real no backend
+	if (!ehMensagemDeTeste) {
+		const resultado = await responderMensagem(id, texto);
+		if (!resultado) {
+			gmToast('Não foi possível enviar a resposta. Tente novamente.');
+			return;
+		}
 	}
 
 	msg.respostas = msg.respostas || [];
@@ -2213,6 +2541,148 @@ async function enviarRespostaMensagem(id) {
 
 	renderMensagens();
 	atualizarBadgeAtividade();
+}
+
+/* =========================================================
+   JANELAS DE CHAT FLUTUANTES (inspiradas no Facebook, apenas
+   telas grandes) — cada conversa aberta vira uma janela
+   minimizável ancorada na base da página, lado a lado.
+   ========================================================= */
+function abrirChatFlutuante(id) {
+	const msg = gmMensagens.find(m => m.id === id);
+	if (!msg) return;
+
+	if (!msg.lida) {
+		msg.lida = true;
+		if (id < 9000) marcarMensagemLida(id);
+	}
+
+	const janela = gmChatWindows.find(w => w.id === id);
+	if (janela) {
+		janela.minimizada = false;
+	} else {
+		gmChatWindows.push({ id, minimizada: false });
+		if (gmChatWindows.length > GM_CHAT_MAX_JANELAS) gmChatWindows.shift();
+	}
+
+	renderChatDock();
+	renderMensagens();
+	atualizarBadgeAtividade();
+}
+
+function fecharChatFlutuante(id) {
+	gmChatWindows = gmChatWindows.filter(w => w.id !== id);
+	renderChatDock();
+}
+
+function alternarMinimizarChat(id) {
+	const janela = gmChatWindows.find(w => w.id === id);
+	if (janela) janela.minimizada = !janela.minimizada;
+	renderChatDock();
+}
+
+async function enviarRespostaChatFlutuante(id, texto) {
+	const msg = gmMensagens.find(m => m.id === id);
+	if (!msg || !texto.trim()) return;
+
+	const ehMensagemDeTeste = id >= 9000; // conversa local de demonstração, sem registro real no backend
+	if (!ehMensagemDeTeste) {
+		const resultado = await responderMensagem(id, texto.trim());
+		if (!resultado) {
+			gmToast('Não foi possível enviar a resposta. Tente novamente.');
+			return;
+		}
+	}
+
+	msg.respostas = msg.respostas || [];
+	msg.respostas.push({ texto: texto.trim(), anexos: [], quando: 'agora' });
+
+	renderChatDock();
+	renderMensagens();
+	atualizarBadgeAtividade();
+}
+
+function buildChatWindow(msg, janela) {
+	const box = createEl('div', `gm-chat-window${janela.minimizada ? ' minimizada' : ''}`);
+
+	const header = createEl('div', 'gm-chat-window-header');
+	header.addEventListener('click', () => alternarMinimizarChat(msg.id));
+	header.appendChild(createEl('span', 'gm-chat-window-avatar', iniciaisNome(msg.cliente)));
+	const headText = createEl('div', 'gm-chat-window-headtext');
+	headText.appendChild(createEl('strong', '', msg.cliente));
+	headText.appendChild(createEl('span', '', msg.tipo === 'compra' ? 'Compra/contratação' : 'Interação'));
+	header.appendChild(headText);
+
+	const actions = createEl('div', 'gm-chat-window-actions');
+	const minBtn = createEl('button', 'gm-chat-window-action');
+	minBtn.type = 'button';
+	minBtn.setAttribute('aria-label', janela.minimizada ? 'Expandir conversa' : 'Minimizar conversa');
+	minBtn.innerHTML = `<i class="fas ${janela.minimizada ? 'fa-chevron-up' : 'fa-minus'}"></i>`;
+	minBtn.addEventListener('click', (event) => { event.stopPropagation(); alternarMinimizarChat(msg.id); });
+	actions.appendChild(minBtn);
+
+	const closeBtn = createEl('button', 'gm-chat-window-action');
+	closeBtn.type = 'button';
+	closeBtn.setAttribute('aria-label', 'Fechar conversa');
+	closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+	closeBtn.addEventListener('click', (event) => { event.stopPropagation(); fecharChatFlutuante(msg.id); });
+	actions.appendChild(closeBtn);
+
+	header.appendChild(actions);
+	box.appendChild(header);
+
+	if (!janela.minimizada) {
+		const body = createEl('div', 'gm-chat-window-body');
+
+		const thread = createEl('div', 'gm-chat-window-thread');
+		thread.appendChild(buildChatBubble(msg.mensagem, msg.anexosCliente, msg.quando, 'in'));
+		(msg.respostas || []).forEach(resp => thread.appendChild(buildChatBubble(resp.texto, resp.anexos, resp.quando, 'out')));
+		body.appendChild(thread);
+
+		const composer = createEl('div', 'gm-chat-window-composer');
+		const textarea = document.createElement('textarea');
+		textarea.rows = 1;
+		textarea.placeholder = 'Escreva uma mensagem...';
+
+		const enviar = () => {
+			const texto = textarea.value;
+			if (!texto.trim()) return;
+			textarea.value = '';
+			enviarRespostaChatFlutuante(msg.id, texto);
+		};
+
+		textarea.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter' && !event.shiftKey) {
+				event.preventDefault();
+				enviar();
+			}
+		});
+		composer.appendChild(textarea);
+
+		const sendBtn = createEl('button', 'gm-chat-window-send');
+		sendBtn.type = 'button';
+		sendBtn.setAttribute('aria-label', 'Enviar mensagem');
+		sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+		sendBtn.addEventListener('click', enviar);
+		composer.appendChild(sendBtn);
+
+		body.appendChild(composer);
+		box.appendChild(body);
+
+		window.requestAnimationFrame(() => { thread.scrollTop = thread.scrollHeight; });
+	}
+
+	return box;
+}
+
+function renderChatDock() {
+	const dock = document.getElementById('gm-chat-dock');
+	if (!dock) return;
+	dock.innerHTML = '';
+	gmChatWindows.forEach(janela => {
+		const msg = gmMensagens.find(m => m.id === janela.id);
+		if (msg) dock.appendChild(buildChatWindow(msg, janela));
+	});
 }
 
 function buildStatCard(icon, valor, label, cor = 'green') {
@@ -2388,6 +2858,203 @@ function renderStoreRatingCard() {
 	}
 }
 
+/* =========================================================
+   EQUIPE — níveis de acesso e funcionários
+   ========================================================= */
+function renderNiveisAcesso() {
+	const list = document.getElementById('gm-niveis-list');
+	const select = document.getElementById('gm-funcionario-nivel');
+	if (!list || !select) return;
+
+	list.innerHTML = '';
+	if (!gmNiveisAcesso.length) {
+		list.appendChild(createEl('p', 'gm-empty-hint', 'Nenhum nível cadastrado ainda.'));
+	}
+	gmNiveisAcesso.forEach(nivel => {
+		const card = createEl('article', 'gm-nivel-card');
+		const info = createEl('div', 'gm-nivel-card-info');
+		info.appendChild(createEl('strong', '', nivel.nome));
+		const permsLabel = nivel.permissoes.map(p => GM_PERMISSOES_LABELS[p] || p).join(', ') || 'Nenhuma permissão';
+		info.appendChild(createEl('span', 'gm-nivel-card-perms', permsLabel));
+		card.appendChild(info);
+
+		const removeBtn = createEl('button', 'gm-admin-remove', '');
+		removeBtn.type = 'button';
+		removeBtn.setAttribute('aria-label', `Remover nível ${nivel.nome}`);
+		removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+		removeBtn.addEventListener('click', () => {
+			const emUso = gmFuncionarios.some(f => f.nivelId === nivel.id);
+			if (emUso) {
+				gmToast('Este nível está em uso por um funcionário. Remova o funcionário primeiro.');
+				return;
+			}
+			gmNiveisAcesso = gmNiveisAcesso.filter(n => n.id !== nivel.id);
+			renderNiveisAcesso();
+		});
+		card.appendChild(removeBtn);
+		list.appendChild(card);
+	});
+
+	const selecionado = select.value;
+	select.innerHTML = '';
+	if (!gmNiveisAcesso.length) {
+		select.appendChild(createEl('option', '', 'Cadastre um nível primeiro'));
+		select.disabled = true;
+	} else {
+		select.disabled = false;
+		gmNiveisAcesso.forEach(nivel => {
+			const opt = createEl('option', '', nivel.nome);
+			opt.value = nivel.id;
+			select.appendChild(opt);
+		});
+		if (gmNiveisAcesso.some(n => n.id === selecionado)) select.value = selecionado;
+	}
+}
+
+function renderFuncionarios() {
+	const list = document.getElementById('gm-funcionarios-list');
+	if (!list) return;
+	list.innerHTML = '';
+
+	if (!gmFuncionarios.length) {
+		list.appendChild(createEl('p', 'gm-empty-hint', 'Nenhum funcionário cadastrado ainda.'));
+		return;
+	}
+
+	gmFuncionarios.forEach(func => {
+		const nivel = gmNiveisAcesso.find(n => n.id === func.nivelId);
+		const card = createEl('article', 'gm-funcionario-card');
+		const info = createEl('div', 'gm-funcionario-card-info');
+		info.appendChild(createEl('strong', '', func.nome));
+		info.appendChild(createEl('span', '', func.contato || 'Sem contato informado'));
+		card.appendChild(info);
+
+		card.appendChild(createEl('span', 'gm-nivel-badge', nivel ? nivel.nome : 'Sem nível'));
+
+		const removeBtn = createEl('button', 'gm-admin-remove', '');
+		removeBtn.type = 'button';
+		removeBtn.setAttribute('aria-label', `Remover funcionário ${func.nome}`);
+		removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+		removeBtn.addEventListener('click', () => {
+			gmFuncionarios = gmFuncionarios.filter(f => f.id !== func.id);
+			renderFuncionarios();
+			gmToast('Funcionário removido.');
+		});
+		card.appendChild(removeBtn);
+		list.appendChild(card);
+	});
+}
+
+function bindEquipe() {
+	document.getElementById('gm-add-nivel')?.addEventListener('click', () => {
+		const nomeInput = document.getElementById('gm-nivel-nome');
+		const nome = nomeInput?.value.trim();
+		if (!nome) {
+			gmToast('Informe o nome do nível de acesso.');
+			return;
+		}
+		const permissoes = Array.from(document.querySelectorAll('#gm-nivel-permissoes input[name="gm-permissao"]:checked')).map(el => el.value);
+		gmNiveisAcesso.push({ id: `nivel-${Date.now()}`, nome, permissoes });
+		nomeInput.value = '';
+		document.querySelectorAll('#gm-nivel-permissoes input[name="gm-permissao"]').forEach(el => { el.checked = false; });
+		renderNiveisAcesso();
+		gmToast('Nível de acesso adicionado.');
+	});
+
+	document.getElementById('gm-add-funcionario')?.addEventListener('click', () => {
+		const nomeInput = document.getElementById('gm-funcionario-nome');
+		const contatoInput = document.getElementById('gm-funcionario-contato');
+		const nivelSelect = document.getElementById('gm-funcionario-nivel');
+		const nome = nomeInput?.value.trim();
+		if (!nome) {
+			gmToast('Informe o nome do funcionário.');
+			return;
+		}
+		if (!gmNiveisAcesso.length || !nivelSelect?.value) {
+			gmToast('Cadastre um nível de acesso antes de adicionar funcionários.');
+			return;
+		}
+		gmFuncionarios.push({ id: `func-${Date.now()}`, nome, contato: contatoInput?.value.trim() || '', nivelId: nivelSelect.value });
+		nomeInput.value = '';
+		if (contatoInput) contatoInput.value = '';
+		renderFuncionarios();
+		gmToast('Funcionário adicionado.');
+	});
+}
+
+/* =========================================================
+   ENTREGADORES — entregadores próprios da loja
+   ========================================================= */
+const GM_VEICULO_LABELS = { moto: 'Moto', bike: 'Bicicleta', carro: 'Carro', a_pe: 'A pé' };
+const GM_VEICULO_ICONS = { moto: 'fa-motorcycle', bike: 'fa-bicycle', carro: 'fa-car', a_pe: 'fa-person-walking' };
+
+function renderEntregadores() {
+	const list = document.getElementById('gm-entregadores-list');
+	if (!list) return;
+	list.innerHTML = '';
+
+	if (!gmEntregadores.length) {
+		list.appendChild(createEl('p', 'gm-empty-hint', 'Nenhum entregador cadastrado ainda.'));
+		return;
+	}
+
+	gmEntregadores.forEach(entregador => {
+		const card = createEl('article', 'gm-entregador-card');
+		const icon = createEl('div', 'gm-entregador-card-icon');
+		icon.innerHTML = `<i class="fas ${GM_VEICULO_ICONS[entregador.veiculo] || 'fa-motorcycle'}"></i>`;
+		card.appendChild(icon);
+
+		const info = createEl('div', 'gm-entregador-card-info');
+		info.appendChild(createEl('strong', '', entregador.nome));
+		info.appendChild(createEl('span', '', `${entregador.telefone || 'Sem telefone'} · ${GM_VEICULO_LABELS[entregador.veiculo] || entregador.veiculo}`));
+		card.appendChild(info);
+
+		const statusBtn = createEl('button', `gm-status-toggle ${entregador.ativo ? 'ativo' : 'inativo'}`, entregador.ativo ? 'Ativo' : 'Inativo');
+		statusBtn.type = 'button';
+		statusBtn.addEventListener('click', () => {
+			entregador.ativo = !entregador.ativo;
+			renderEntregadores();
+		});
+		card.appendChild(statusBtn);
+
+		const removeBtn = createEl('button', 'gm-admin-remove', '');
+		removeBtn.type = 'button';
+		removeBtn.setAttribute('aria-label', `Remover entregador ${entregador.nome}`);
+		removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+		removeBtn.addEventListener('click', () => {
+			gmEntregadores = gmEntregadores.filter(e => e.id !== entregador.id);
+			renderEntregadores();
+			gmToast('Entregador removido.');
+		});
+		card.appendChild(removeBtn);
+		list.appendChild(card);
+	});
+}
+
+function bindEntregadores() {
+	document.getElementById('gm-add-entregador')?.addEventListener('click', () => {
+		const nomeInput = document.getElementById('gm-entregador-nome');
+		const telefoneInput = document.getElementById('gm-entregador-telefone');
+		const veiculoSelect = document.getElementById('gm-entregador-veiculo');
+		const nome = nomeInput?.value.trim();
+		if (!nome) {
+			gmToast('Informe o nome do entregador.');
+			return;
+		}
+		gmEntregadores.push({
+			id: `entregador-${Date.now()}`,
+			nome,
+			telefone: telefoneInput?.value.trim() || '',
+			veiculo: veiculoSelect?.value || 'moto',
+			ativo: true,
+		});
+		nomeInput.value = '';
+		if (telefoneInput) telefoneInput.value = '';
+		renderEntregadores();
+		gmToast('Entregador adicionado.');
+	});
+}
+
 function getPedidosNoPeriodo() {
 	const de = document.getElementById('gm-stats-periodo-de')?.value || '';
 	const ate = document.getElementById('gm-stats-periodo-ate')?.value || '';
@@ -2469,6 +3136,11 @@ function bindGerenciamento() {
 	renderMensagens();
 	renderPainel();
 	renderStoreRatingCard();
+	renderNiveisAcesso();
+	renderFuncionarios();
+	renderEntregadores();
+	bindEquipe();
+	bindEntregadores();
 	atualizarBadgeAtividade();
 	renderProfilePicker();
 	applyStoreProfileToItemForm();
@@ -2715,4 +3387,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	bindTabs();
 	bindGerenciamento();
 	bindHamburgerGerenciamento();
+	bindSearchAndHelp();
+	bindRastreioAlteracoes();
+	bindSaidaComAlteracoes();
+	bindNavAccordions();
 });
